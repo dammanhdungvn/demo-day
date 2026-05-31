@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprint 0 Summary — Team 49 (AI20K Cohort 2)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    color: #1f2937;
+    background: #f9fafb;
+    padding: 24px;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+    color: #fff;
+    padding: 32px 28px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  header h1 { font-size: 28px; margin-bottom: 8px; }
+  header .subtitle { opacity: 0.9; font-size: 15px; }
+  header .meta {
+    display: flex; gap: 24px; flex-wrap: wrap; margin-top: 16px;
+    font-size: 14px;
+  }
+  header .meta span { opacity: 0.95; }
+  header .meta strong { font-weight: 600; }
+
+  /* Section */
+  section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid #e5e7eb;
+  }
+  section h2 {
+    font-size: 22px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e5e7eb;
+    display: flex; align-items: center; gap: 10px;
+  }
+  section h2 .badge {
+    background: #1e40af; color: #fff; font-size: 14px;
+    width: 32px; height: 32px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  section h3 { font-size: 16px; margin: 18px 0 10px; color: #374151; }
+  section p { margin-bottom: 10px; }
+  section ul { margin: 8px 0 12px 24px; }
+  section ul li { margin-bottom: 6px; }
+  section a { color: #1e40af; text-decoration: none; word-break: break-all; }
+  section a:hover { text-decoration: underline; }
+
+  /* Status pills */
+  .pill {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+  }
+  .pill.done { background: #d1fae5; color: #065f46; }
+  .pill.priority { background: #fef3c7; color: #92400e; }
+  .pill.backup { background: #e5e7eb; color: #4b5563; }
+  .pill.todo { background: #dbeafe; color: #1e40af; }
+
+  /* Boxes */
+  .box {
+    background: #f9fafb;
+    border-left: 4px solid #1e40af;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 6px;
+  }
+  .box.warn { border-left-color: #d97706; background: #fffbeb; }
+  .box.success { border-left-color: #059669; background: #ecfdf5; }
+  .box.danger { border-left-color: #dc2626; background: #fef2f2; }
+  .box strong { color: #111827; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  table th, table td {
+    text-align: left; padding: 10px 12px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  table th { background: #f3f4f6; font-weight: 600; color: #374151; }
+  table tr:hover { background: #f9fafb; }
+
+  /* Timeline */
+  .timeline { list-style: none; margin: 12px 0; padding-left: 0; }
+  .timeline li {
+    position: relative; padding-left: 28px; margin-bottom: 14px;
+  }
+  .timeline li::before {
+    content: ""; position: absolute; left: 8px; top: 6px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #10b981; border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #10b981;
+  }
+  .timeline li.todo::before { background: #d1d5db; box-shadow: 0 0 0 2px #d1d5db; }
+
+  /* Code */
+  code {
+    background: #f3f4f6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", Monaco, Consolas, monospace;
+    font-size: 13px;
+    color: #be185d;
+  }
+  pre {
+    background: #1f2937; color: #f9fafb;
+    padding: 14px 16px; border-radius: 8px;
+    overflow-x: auto; font-size: 13px; margin: 10px 0;
+    font-family: "SF Mono", Monaco, Consolas, monospace;
+  }
+
+  /* Grid for "what we did" */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .card {
+    background: #f9fafb; padding: 16px;
+    border-radius: 8px; border: 1px solid #e5e7eb;
+  }
+  .card h4 { font-size: 15px; margin-bottom: 6px; color: #1e40af; }
+  .card p { font-size: 14px; margin: 0; color: #4b5563; }
+
+  /* Footer */
+  footer {
+    text-align: center; color: #9ca3af; font-size: 13px;
+    margin-top: 32px; padding: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>🚀 Sprint 0 — Khởi Động Dự Án</h1>
+    <p class="subtitle">Team 49 · AI20K Build Cohort 2 · VinUni × Vingroup</p>
+    <div class="meta">
+      <span><strong>Thời gian:</strong> 24/05/2026 — 31/05/2026</span>
+      <span><strong>Trạng thái:</strong> <span class="pill done">Hoàn thành Sprint 0</span></span>
+      <span><strong>Repo official:</strong> <a href="https://github.com/AI20K-Build-Cohort-2/C2-App-049" style="color:#fff;text-decoration:underline">C2-App-049</a></span>
+    </div>
+  </header>
+
+  <!-- TLDR -->
+  <section>
+    <h2>📌 TL;DR — 30 giây</h2>
+    <div class="box">
+      <p><strong>Sprint 0 đã làm xong:</strong> Rà 250 đề tài → chốt nhóm AI Literacy → shortlist 3 phương án → <strong>ưu tiên AI20K-089</strong> (AI Automation Learning, no-code) → research thị trường có dẫn chứng → setup repo official với AI logging hooks.</p>
+      <p style="margin-top:8px;"><strong>Sprint 1 sắp tới:</strong> Phỏng vấn 3–5 user thực + POC kỹ thuật sandbox → <strong>chốt đề chính thức cuối tuần</strong> (089 hoặc pivot sang 086/084).</p>
+    </div>
+    <div class="box warn">
+      ⚠️ <strong>Quan trọng:</strong> AI20K-089 là <em>candidate ưu tiên</em>, <strong>CHƯA</strong> phải quyết định cuối. Sẽ chốt sau Sprint 1.
+    </div>
+  </section>
+
+  <!-- SECTION 1: WHAT -->
+  <section>
+    <h2><span class="badge">1</span> Đã Làm Gì</h2>
+
+    <h3>5 đầu việc chính trong Sprint 0</h3>
+    <div class="grid">
+      <div class="card">
+        <h4>📋 Lọc 250 đề tài</h4>
+        <p>Rà soát toàn bộ ngân hàng đề, loại 8/10 nhóm lĩnh vực, khoanh vùng AI Literacy.</p>
+      </div>
+      <div class="card">
+        <h4>🎯 Shortlist 3 phương án</h4>
+        <p>AI20K-084 / 086 / 089. Phân tích pros/cons có cấu trúc bảng so sánh.</p>
+      </div>
+      <div class="card">
+        <h4>📊 Market research</h4>
+        <p>9 nguồn dẫn chứng (Straits, Grand View, Vietnam Report, Udemy, n8n…). Phân tích 4 buyer segment.</p>
+      </div>
+      <div class="card">
+        <h4>🛠 Setup repo official</h4>
+        <p>Clone C2-App-049, cài pre-push AI logging hook, config .env, fix encoding bugs.</p>
+      </div>
+      <div class="card">
+        <h4>📝 Khởi tạo bộ document</h4>
+        <p>README + JOURNAL + WORKLOG đầy đủ entry Sprint 0. Document quy ước maintain cho team.</p>
+      </div>
+    </div>
+
+    <h3>Timeline các quyết định trong WORKLOG.md</h3>
+    <ul class="timeline">
+      <li><strong>Chọn nhóm lĩnh vực AI Literacy</strong> — Team có experience tư vấn AI automation cho SME Việt → có competitive advantage rõ ràng.</li>
+      <li><strong>Shortlist 3 phương án trong AI Literacy</strong> — Loại 8 đề không demo được hoặc thiếu B2B value.</li>
+      <li><strong>Ưu tiên AI20K-089</strong> — Match team experience cao nhất, market validation rõ ràng (Udemy 55K+ students, n8n $2.5B). Để 084/086 làm fallback.</li>
+      <li><strong>Setup hạ tầng AI logging hook ngay từ Sprint 0</strong> — Để log toàn bộ AI usage từ phase research (không chỉ phase code).</li>
+      <li><strong>Quy ước maintain 3 file README/JOURNAL/WORKLOG</strong> — Theo đúng template chương trình.</li>
+    </ul>
+
+    <h3>3 phương án đang cân nhắc</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Mã đề</th>
+          <th>Tên đề</th>
+          <th>Trạng thái</th>
+          <th>Tech complexity</th>
+          <th>Demo factor</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>AI20K-089</strong></td>
+          <td>AI Automation Learning (no-code)</td>
+          <td><span class="pill priority">Đang ưu tiên</span></td>
+          <td>Trung bình</td>
+          <td>Cao (workflow chạy thật)</td>
+        </tr>
+        <tr>
+          <td>AI20K-086</td>
+          <td>Use Case Discovery</td>
+          <td><span class="pill backup">Fallback</span></td>
+          <td>Thấp</td>
+          <td>Trung bình</td>
+        </tr>
+        <tr>
+          <td>AI20K-084</td>
+          <td>Competency Assessment</td>
+          <td><span class="pill backup">Fallback</span></td>
+          <td>Cao (cần ML)</td>
+          <td>Trung bình</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECTION 2: WHY -->
+  <section>
+    <h2><span class="badge">2</span> Tại Sao Làm Như Vậy</h2>
+
+    <h3>Tại sao chọn nhóm AI Literacy?</h3>
+    <div class="box">
+      Team có <strong>1+ năm kinh nghiệm tư vấn AI automation</strong> cho doanh nghiệp Việt — đã triển khai n8n/Larkbase cho khách hàng thật, có case studies, có network để phỏng vấn user. 8/10 nhóm còn lại (y tế, bảo mật, robotics, BĐS…) đòi hỏi domain knowledge team không có.
+    </div>
+
+    <h3>Tại sao ưu tiên AI20K-089 (không phải 086 hay 084)?</h3>
+    <div class="box success">
+      <strong>3 lý do chính:</strong>
+      <ul>
+        <li><strong>Demo thuyết phục nhất:</strong> Cuối kỳ team sẽ show được workflow automation chạy thật → giá trị trực quan. Trong khi 084 demo là bảng điểm, 086 demo là list use case — cả hai khó "wow" giám khảo.</li>
+        <li><strong>Match team experience:</strong> Team đang trực tiếp làm n8n/Larkbase cho khách → có nội dung thật, không phải tự "research từ con số 0".</li>
+        <li><strong>Market validation rõ ràng:</strong> Udemy n8n course có 55,000+ students bestseller, n8n vừa raise Series C định giá $2.5B (10/2025). Có cầu thật, không phải giả định.</li>
+      </ul>
+    </div>
+
+    <h3>Tại sao CHƯA chốt 089 hẳn, vẫn để fallback?</h3>
+    <div class="box warn">
+      Có <strong>3 rủi ro lớn</strong> với 089 cần validate trước khi chốt:
+      <ul>
+        <li>Sandbox workflow trong web app có khả thi technical/cost không? (Cần POC nhỏ trong Sprint 1)</li>
+        <li>User có hoàn thành lộ trình học không? (Drop-off rate online learning thường rất cao)</li>
+        <li>Cạnh tranh trực tiếp với Udemy/Skillshare — định vị khác biệt thế nào?</li>
+      </ul>
+      Nếu Sprint 1 phát hiện blocker → team pivot sang 086 (đơn giản hơn) hoặc 084 (B2B value rõ hơn). <strong>Tránh "vendor lock-in" về đề tài.</strong>
+    </div>
+
+    <h3>Tại sao setup AI logging hook NGAY Sprint 0?</h3>
+    <div class="box">
+      Chương trình AI20K-2 chấm điểm <strong>"AI literacy"</strong> dựa trên log prompt team gửi cho các AI tool. Nếu chỉ bật log từ Sprint 2 (build MVP), thầy sẽ thấy log thiếu phần "AI cho strategic thinking" (research, lọc đề, phân tích) — đây cũng là kỹ năng quan trọng. Setup từ đầu để log đầy đủ.
+    </div>
+
+    <h3>Tại sao tách thành 3 file README/JOURNAL/WORKLOG?</h3>
+    <div class="box">
+      Theo đúng template starter code của chương trình. Mỗi file có vai trò riêng:
+      <table style="margin-top:8px;">
+        <tr><th>File</th><th>Mục đích</th><th>Khi nào update</th></tr>
+        <tr><td><code>README.md</code></td><td>Project info, market research, định hướng</td><td>Major change về định hướng</td></tr>
+        <tr><td><code>JOURNAL.md</code></td><td>Weekly learning journal</td><td><strong>Mỗi tuần</strong>, trước mỗi PR</td></tr>
+        <tr><td><code>WORKLOG.md</code></td><td>Technical decisions log</td><td><strong>Mỗi khi</strong> có decision/brainstorm</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 3: NEXT -->
+  <section>
+    <h2><span class="badge">3</span> Sprint 1 — Việc Sắp Làm</h2>
+
+    <h3>Mục tiêu Sprint 1</h3>
+    <div class="box success">
+      <strong>Chốt đề chính thức</strong> (089 hoặc pivot) + <strong>thiết kế MVP</strong> sẵn sàng để Sprint 2 vào code.
+    </div>
+
+    <h3>6 đầu việc</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Việc</th>
+          <th>Người làm</th>
+          <th>Deadline</th>
+          <th>Trạng thái</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>Phỏng vấn 3–5 SME owner/freelancer về pain point AI automation</td>
+          <td>TBD</td>
+          <td>Hết tuần</td>
+          <td><span class="pill todo">Chưa bắt đầu</span></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>POC kỹ thuật: validate sandbox workflow khả thi?</td>
+          <td>TBD</td>
+          <td>T4</td>
+          <td><span class="pill todo">Chưa bắt đầu</span></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>🎯 <strong>Quyết định cuối: chốt 089 / 086 / 084</strong></td>
+          <td>Cả team</td>
+          <td>T5</td>
+          <td><span class="pill priority">Milestone</span></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Vẽ user journey map cho 2 persona chính</td>
+          <td>TBD</td>
+          <td>T6</td>
+          <td><span class="pill todo">Chưa bắt đầu</span></td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>Wireframe lo-fi cho 3 screen quan trọng nhất</td>
+          <td>TBD</td>
+          <td>T7</td>
+          <td><span class="pill todo">Chưa bắt đầu</span></td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>Chốt tech stack chính thức (frontend / backend / DB / deploy)</td>
+          <td>Cả team</td>
+          <td>CN</td>
+          <td><span class="pill todo">Chưa bắt đầu</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Việc thành viên mới cần làm để onboard</h3>
+    <div class="box">
+      <ol style="margin-left:20px;margin-top:8px;">
+        <li>Clone repo official: <code>git clone https://github.com/AI20K-Build-Cohort-2/C2-App-049.git</code></li>
+        <li>Setup AI logging hook (Windows PowerShell):
+          <pre>powershell -ExecutionPolicy Bypass -File scripts\setup_hooks.ps1</pre>
+        </li>
+        <li>Copy <code>.env.example</code> → <code>.env</code>, điền API keys cá nhân (Anthropic/OpenAI). Các giá trị <code>AI_LOG_SERVER</code> và <code>AI_LOG_API_KEY</code> đã có sẵn từ chương trình.</li>
+        <li>Cài <code>python-dotenv</code>: <code>py -m pip install python-dotenv</code></li>
+        <li>Đọc <code>README.md</code> + <code>JOURNAL.md</code> + <code>WORKLOG.md</code> để nắm context Sprint 0.</li>
+        <li>Pick 1 việc Sprint 1 ở trên + báo team.</li>
+      </ol>
+    </div>
+
+    <h3>Quy ước commit từ Sprint 1</h3>
+    <div class="box">
+      <strong>Trước mỗi PR, BẮT BUỘC:</strong>
+      <ul>
+        <li>Update <code>JOURNAL.md</code> với entry mới (features tuần này, AI tool đã dùng, vấn đề khó, plan tuần tới).</li>
+        <li>Nếu có quyết định kỹ thuật mới → update <code>WORKLOG.md</code>.</li>
+        <li>Commit message theo conventional: <code>feat: …</code>, <code>fix: …</code>, <code>docs: …</code>, <code>chore: …</code>.</li>
+        <li>Push qua <code>git push</code> — hook tự động gửi AI log về server chương trình.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- LINKS -->
+  <section>
+    <h2><span class="badge">🔗</span> Tài Liệu & Link</h2>
+    <table>
+      <tr>
+        <td><strong>Repo official (thầy chấm)</strong></td>
+        <td><a href="https://github.com/AI20K-Build-Cohort-2/C2-App-049">github.com/AI20K-Build-Cohort-2/C2-App-049</a></td>
+      </tr>
+      <tr>
+        <td>README.md (project overview)</td>
+        <td><a href="https://github.com/AI20K-Build-Cohort-2/C2-App-049/blob/main/README.md">/README.md</a></td>
+      </tr>
+      <tr>
+        <td>JOURNAL.md (weekly journal)</td>
+        <td><a href="https://github.com/AI20K-Build-Cohort-2/C2-App-049/blob/main/JOURNAL.md">/JOURNAL.md</a></td>
+      </tr>
+      <tr>
+        <td>WORKLOG.md (decisions log)</td>
+        <td><a href="https://github.com/AI20K-Build-Cohort-2/C2-App-049/blob/main/WORKLOG.md">/WORKLOG.md</a></td>
+      </tr>
+    </table>
+  </section>
+
+  <footer>
+    File này được tạo lúc Sprint 0 closing (31/05/2026) bởi Lucas (lead). Nếu có câu hỏi, mở issue trong repo hoặc nhắn group team.
+  </footer>
+
+</div>
+</body>
+</html>
