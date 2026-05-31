@@ -8,12 +8,14 @@
 # Exits 0 silently if no Python is found — hooks must never block the AI tool.
 set -u
 
-if command -v python3 >/dev/null 2>&1; then
+if command -v python3 >/dev/null 2>&1 && python3 -c "" >/dev/null 2>&1; then
   PY=python3
-elif command -v python >/dev/null 2>&1; then
-  PY=python
-elif command -v py >/dev/null 2>&1; then
+elif command -v py >/dev/null 2>&1 && py -3 -c "" >/dev/null 2>&1; then
+  # Prefer 'py' launcher on Windows before plain 'python' because
+  # the Microsoft Store stub registers itself as 'python' but fails to run.
   PY="py -3"
+elif command -v python >/dev/null 2>&1 && python -c "" >/dev/null 2>&1; then
+  PY=python
 else
   # PATH lookup failed — probe standard Windows install locations.
   PY=""
