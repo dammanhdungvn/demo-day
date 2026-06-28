@@ -1,0 +1,497 @@
+{
+  "project": "TeachFlow AI",
+  "source_of_truth": [
+    "docs/version1/MVP.md",
+    "docs/version1/PRD_MVP.md",
+    "docs/version1/USER_STORIES_MVP.md"
+  ],
+  "status_legend": {
+    "not-started": "Chua bat dau",
+    "in-progress": "Dang lam",
+    "blocked": "Dang bi chan, can user quyet dinh",
+    "done": "Da hoan thanh va co evidence"
+  },
+  "current_active_feature": "P0-001",
+  "global_rules": [
+    "Chi lam P0 Critical cho den khi demo flow end-to-end pass.",
+    "Moi task phai co test hoac test plan truoc khi code.",
+    "Moi feature phai di theo vertical slice: backend, frontend, test, manual validation.",
+    "Neu business rule thieu hoac mau thuan, dung lai va hoi user.",
+    "Khong hardcode secrets, Supabase keys, AI provider keys, hoac backend URL.",
+    "User la nguoi testing cuoi cung, vi vay moi feature phai co manual validation steps ro rang."
+  ],
+  "critical_test_focus": [
+    "role permission",
+    "class membership",
+    "student access restriction",
+    "RAG retrieval",
+    "AI output schema validation",
+    "lesson status transition",
+    "admin publish flow"
+  ],
+  "p1_locked_until_all_p0_done": [
+    "US-032 Reject lesson",
+    "US-033 Markdown export",
+    "US-034 PPTX Basic export",
+    "US-035 Audit events day du hon",
+    "US-036 Upload books UI",
+    "US-037 Incremental ingestion production-ready"
+  ],
+  "p2_forbidden_in_mvp": [
+    "Student AI tutor",
+    "Adaptive learning",
+    "GraphRAG hoac multimodal RAG nang cao",
+    "YouTube/link ingestion",
+    "LMS features: gradebook, diem danh, bai nop",
+    "SCORM/xAPI/LTI",
+    "Collaborative editing realtime",
+    "Native mobile app",
+    "Analytics dashboard nang cao"
+  ],
+  "features": [
+    {
+      "id": "P0-001",
+      "name": "Project setup, env baseline, verification",
+      "description": "Khoi tao nen tang frontend/backend dung stack va co duong verification restartable.",
+      "priority": "P0 Critical",
+      "status": "not-started",
+      "dependencies": [],
+      "user_stories": ["US-001"],
+      "business_goal": "Khoi tao nen tang frontend/backend dung stack va co duong verification restartable.",
+      "vertical_slice": {
+        "backend": [
+          "Tao backend FastAPI bang uv, chay port 3000, base path /api/v1.",
+          "Tao health endpoint toi thieu duoi /api/v1."
+        ],
+        "frontend": [
+          "Tao frontend Vite React TypeScript/TSX bang pnpm.",
+          "Tao API client doc VITE_BACKEND_URL tu env."
+        ],
+        "tests": [
+          "Backend health endpoint test.",
+          "Frontend typecheck/build smoke test.",
+          "Test hoac script guard dam bao frontend khong hardcode localhost:3000/api/v1."
+        ],
+        "manual_validation": [
+          "Chay backend tai http://localhost:3000/api/v1/health.",
+          "Chay frontend va xac nhan UI goi API qua VITE_BACKEND_URL.",
+          "Chay ./init.sh thanh cong."
+        ]
+      },
+      "acceptance_criteria": [
+        "Frontend dung Vite React TSX.",
+        "Backend dung FastAPI + uv.",
+        "Backend port 3000, API base /api/v1.",
+        ".env.example co VITE_BACKEND_URL va cac key backend can thiet.",
+        "Khong hardcode API keys."
+      ],
+      "evidence": ""
+    },
+    {
+      "id": "P0-002",
+      "name": "Auth, demo accounts, role routing",
+      "description": "Admin, Teacher, Student dang nhap va chi vao dung workspace/quyen.",
+      "priority": "P0 Critical",
+      "status": "not-started",
+      "dependencies": ["P0-001"],
+      "user_stories": ["US-002", "US-031"],
+      "business_goal": "Admin, Teacher, Student dang nhap va chi vao dung workspace/quyen.",
+      "vertical_slice": {
+        "backend": [
+          "Auth/demo account flow co role admin, teacher, student.",
+          "Backend role check cho endpoint quan trong."
+        ],
+        "frontend": [
+          "Login UI va redirect theo role.",
+          "An action ngoai quyen tren dashboard."
+        ],
+        "tests": [
+          "Role permission test cho admin/teacher/student.",
+          "Backend reject role sai o endpoint bao ve."
+        ],
+        "manual_validation": [
+          "Dang nhap demo Admin vao Admin Dashboard.",
+          "Dang nhap demo Teacher vao Teacher Dashboard.",
+          "Dang nhap demo Student vao Student Dashboard.",
+          "Thu truy cap route/API sai role va xac nhan bi chan."
+        ]
+      },
+      "acceptance_criteria": [
+        "Co demo Admin, Teacher, Student account.",
+        "User co role.",
+        "Redirect theo role.",
+        "Backend kiem tra role o API quan trong."
+      ],
+      "evidence": ""
+    },
+    {
+      "id": "P0-003",
+      "name": "Course, class profile, student membership",
+      "description": "Teacher tao course/class va add Student co san vao class de khoa access theo membership.",
+      "priority": "P0 Critical",
+      "status": "not-started",
+      "dependencies": ["P0-002"],
+      "user_stories": ["US-003", "US-004", "US-005"],
+      "business_goal": "Teacher tao course/class va add Student co san vao class de khoa access theo membership.",
+      "vertical_slice": {
+        "backend": [
+          "CRUD toi thieu cho courses/classes theo teacher ownership.",
+          "Endpoint add Student co san vao class.",
+          "Membership check cho class_students."
+        ],
+        "frontend": [
+          "Teacher UI tao/xem course.",
+          "Teacher UI tao class profile.",
+          "Teacher UI chon Student co san va add vao class."
+        ],
+        "tests": [
+          "Teacher chi thay course/class cua minh.",
+          "Class membership test: Student duoc add thay class, Student khac khong thay.",
+          "Student level chi chap nhan weak, average, strong."
+        ],
+        "manual_validation": [
+          "Teacher tao course Introduction to Artificial Intelligence.",
+          "Teacher tao class KTPM-K18 voi level Average, 12 sessions, 90 phut.",
+          "Teacher add Student demo vao class.",
+          "Student demo thay class; Student khac khong thay."
+        ]
+      },
+      "acceptance_criteria": [
+        "Course thuoc Teacher hien tai.",
+        "Class thuoc course.",
+        "Student level gom weak, average, strong.",
+        "Backend kiem tra class membership."
+      ],
+      "evidence": ""
+    },
+    {
+      "id": "P0-004",
+      "name": "Knowledge base source selection and RAG retrieval",
+      "description": "Teacher chon documents da pre-ingest va backend retrieve chunks lien quan tu Supabase/pgvector.",
+      "priority": "P0 Critical",
+      "status": "not-started",
+      "dependencies": ["P0-002", "P0-003"],
+      "user_stories": ["US-006", "US-007", "US-008"],
+      "business_goal": "Teacher chon documents da pre-ingest va backend retrieve chunks lien quan tu Supabase/pgvector.",
+      "vertical_slice": {
+        "backend": [
+          "Model/API documents va document_chunks tu Supabase.",
+          "RetrievalService nhan topic/session va selected_document_ids, tra top-k chunks.",
+          "Luu retrieved context vao generation job."
+        ],
+        "frontend": [
+          "Knowledge source picker hien title, status, chunk count.",
+          "Chi cho chon completed documents.",
+          "Warning neu chua chon document."
+        ],
+        "tests": [
+          "RAG retrieval tra chunks dung selected documents.",
+          "Chunk response co document_title, page_number neu co, excerpt.",
+          "Dam bao khong gui toan bo PDF/document vao LLM."
+        ],
+        "manual_validation": [
+          "Mo Teacher source picker va chi chon completed documents.",
+          "Generate retrieval cho topic Transformer Architecture.",
+          "Xem top-k chunks va citations/source evidence."
+        ]
+      },
+      "acceptance_criteria": [
+        "Production khong doc ./data/books/.",
+        "Documents/chunks/embeddings ton tai trong Supabase.",
+        "Retrieval chay tren DB va tra citations toi thieu."
+      ],
+      "evidence": ""
+    },
+    {
+      "id": "P0-005",
+      "name": "AI provider abstraction and course outline generation",
+      "description": "Teacher generate outline theo course/class/documents, output duoc validate schema va edit duoc.",
+      "priority": "P0 Critical",
+      "status": "not-started",
+      "dependencies": ["P0-003", "P0-004"],
+      "user_stories": ["US-009", "US-010"],
+      "business_goal": "Teacher generate outline theo course/class/documents, output duoc validate schema va edit duoc.",
+      "vertical_slice": {
+        "backend": [
+          "AIProvider abstraction: generate_structured, generate_text, embed_text.",
+          "Provider va API key doc tu .env.",
+          "Generate outline dung session_count va class profile.",
+          "Validate schema truoc khi luu."
+        ],
+        "frontend": [
+          "UI generate outline tu course/class/source documents.",
+          "UI review/edit outline sessions.",
+          "Teacher chon mot session de generate lesson."
+        ],
+        "tests": [
+          "AI output schema validation cho outline.",
+          "Outline dung session_count.",
+          "Provider config khong hardcode trong route/controller."
+        ],
+        "manual_validation": [
+          "Teacher generate outline cho class KTPM-K18.",
+          "Xac nhan co 12 sessions, objectives, key topics, activities, exercises.",
+          "Edit mot session title/content va luu lai."
+        ]
+      },
+      "acceptance_criteria": [
+        "Outline co adaptation theo student_level.",
+        "Output validate schema.",
+        "Output duoc luu.",
+        "Teacher edit outline co ban duoc."
+      ],
+      "evidence": ""
+    },
+    {
+      "id": "P0-006",
+      "name": "Lesson blocks, required block types, citations, warnings",
+      "description": "AI tao lesson theo blocks co citations; block thieu grounding co warning ro.",
+      "priority": "P0 Critical",
+      "status": "not-started",
+      "dependencies": ["P0-005"],
+      "user_stories": ["US-011", "US-012", "US-013", "US-014"],
+      "business_goal": "AI tao lesson theo blocks co citations; block thieu grounding co warning ro.",
+      "vertical_slice": {
+        "backend": [
+          "Generate lesson blocks tu outline session va retrieved chunks.",
+          "Validate lesson block schema.",
+          "Luu lesson thanh blocks, khong luu text blob lon.",
+          "Citation fields: document_title, page_number, excerpt, chunk_id, confidence."
+        ],
+        "frontend": [
+          "Hien block list va citation/warning gan tung block.",
+          "Hien warning cho block thieu citation."
+        ],
+        "tests": [
+          "Lesson schema validation.",
+          "Block status mac dinh needs_review.",
+          "Block thieu citation tao warning dung text.",
+          "Required demo block types co toi thieu learning_objectives, concept_explanation, analogy_or_example, quiz, slide."
+        ],
+        "manual_validation": [
+          "Teacher generate lesson cho session Transformer Architecture.",
+          "Xem blocks va citations.",
+          "Xac nhan block thieu citation co warning: Noi dung nay chua duoc grounding day du tu tai lieu nguon."
+        ]
+      },
+      "acceptance_criteria": [
+        "Moi block co type, title, content, order_index, status.",
+        "Block mac dinh needs_review.",
+        "Citations hien trong Teacher Lesson Studio va Admin Review.",
+        "Teacher co the approve_with_warning cho block thieu citation."
+      ],
+      "evidence": ""
+    },
+    {
+      "id": "P0-007",
+      "name": "Teacher Lesson Studio review flow",
+      "description": "Teacher review lesson theo block, edit/regenerate/approve va submit cho Admin.",
+      "priority": "P0 Critical",
+      "status": "not-started",
+      "dependencies": ["P0-006"],
+      "user_stories": ["US-015", "US-016", "US-017", "US-018", "US-019"],
+      "business_goal": "Teacher review lesson theo block, edit/regenerate/approve va submit cho Admin.",
+      "vertical_slice": {
+        "backend": [
+          "Endpoints edit/save block, regenerate one block, approve, approve_with_warning, reject.",
+          "Lesson status transition den submitted_for_admin_review.",
+          "Chan submit neu con block chinh chua review."
+        ],
+        "frontend": [
+          "Lesson Studio: block list, center content, right citation panel.",
+          "Controls edit/save/regenerate/approve/approve_with_warning/reject/submit.",
+          "Review progress, loading, empty, error state."
+        ],
+        "tests": [
+          "Lesson status transition tests.",
+          "Regenerate mot block khong doi block khac.",
+          "Submit bi chan khi block chinh chua review.",
+          "Teacher ownership check."
+        ],
+        "manual_validation": [
+          "Edit mot block va xac nhan saved state.",
+          "Regenerate mot block va xac nhan block khac giu nguyen.",
+          "Approve/approve_with_warning/reject va xem progress.",
+          "Submit lesson va thay trong Admin queue."
+        ]
+      },
+      "acceptance_criteria": [
+        "Teacher edit block duoc.",
+        "Teacher regenerate mot block duoc.",
+        "Review progress cap nhat.",
+        "Lesson status doi thanh submitted_for_admin_review khi submit hop le."
+      ],
+      "evidence": ""
+    },
+    {
+      "id": "P0-008",
+      "name": "Admin moderation and publish flow",
+      "description": "Admin review lesson submitted, xem citations/warnings, publish hoac request changes.",
+      "priority": "P0 Critical",
+      "status": "not-started",
+      "dependencies": ["P0-007"],
+      "user_stories": ["US-020", "US-021", "US-022", "US-023"],
+      "business_goal": "Admin review lesson submitted, xem citations/warnings, publish hoac request changes.",
+      "vertical_slice": {
+        "backend": [
+          "Admin review queue endpoint.",
+          "Approve_and_publish status transition sang published.",
+          "Request_changes kem feedback status changes_requested.",
+          "Admin khong co endpoint sua truc tiep lesson content."
+        ],
+        "frontend": [
+          "Admin Dashboard review queue.",
+          "Admin review screen hien blocks/citations/warnings/teacher approval status.",
+          "Approve & Publish va Request Changes UI."
+        ],
+        "tests": [
+          "Admin publish flow test.",
+          "Non-admin bi chan khoi admin endpoints.",
+          "Request changes khong hien lesson cho Student.",
+          "Published lesson hien voi Student dung class."
+        ],
+        "manual_validation": [
+          "Admin login, mo review queue.",
+          "Xem warning count, citations, blocks.",
+          "Approve & Publish mot lesson.",
+          "Request changes mot lesson khac va Teacher thay feedback."
+        ]
+      },
+      "acceptance_criteria": [
+        "Admin xem blocks/citations/warnings.",
+        "Admin approve & publish duoc.",
+        "Admin request changes kem feedback duoc.",
+        "Admin khong sua truc tiep content."
+      ],
+      "evidence": ""
+    },
+    {
+      "id": "P0-009",
+      "name": "Student class-based published lesson access",
+      "description": "Student chi xem published lessons thuoc class minh duoc add vao.",
+      "priority": "P0 Critical",
+      "status": "not-started",
+      "dependencies": ["P0-003", "P0-008"],
+      "user_stories": ["US-024", "US-025", "US-026", "US-031"],
+      "business_goal": "Student chi xem published lessons thuoc class minh duoc add vao.",
+      "vertical_slice": {
+        "backend": [
+          "Student classes endpoint theo membership.",
+          "Student lessons endpoint chi tra published va dung class.",
+          "Direct URL permission check."
+        ],
+        "frontend": [
+          "Student Dashboard hien class membership.",
+          "Lesson list chi hien published lessons.",
+          "Reading view khong co edit/regenerate/approve controls."
+        ],
+        "tests": [
+          "Student access restriction test.",
+          "Student khong thuoc class bi 403/404 khi direct URL.",
+          "Draft/submitted/rejected lessons bi an."
+        ],
+        "manual_validation": [
+          "Student demo thay class KTPM-K18 va lesson published.",
+          "Student khac khong thay class/lesson.",
+          "Paste direct URL lesson ngoai class va xac nhan bi chan.",
+          "Reading view khong co teacher/admin controls."
+        ]
+      },
+      "acceptance_criteria": [
+        "Student thay class minh duoc add.",
+        "Student chi thay lessons published.",
+        "Direct URL access van kiem tra quyen."
+      ],
+      "evidence": ""
+    },
+    {
+      "id": "P0-010",
+      "name": "Web Presentation and PDF export",
+      "description": "Teacher/Student mo presentation va export PDF co ban cho lesson duoc phep xem.",
+      "priority": "P0 Critical",
+      "status": "not-started",
+      "dependencies": ["P0-007", "P0-009"],
+      "user_stories": ["US-027", "US-028"],
+      "business_goal": "Teacher/Student mo presentation va export PDF co ban cho lesson duoc phep xem.",
+      "vertical_slice": {
+        "backend": [
+          "Permission check cho presentation/export endpoints neu co backend route.",
+          "Luu export record toi thieu neu can theo PRD."
+        ],
+        "frontend": [
+          "Presentation mode co next/previous, fullscreen, keyboard navigation, progress indicator.",
+          "PDF export bang print layout/browser print neu du validate MVP.",
+          "Markdown/PPTX disabled hoac coming soon neu chua lam."
+        ],
+        "tests": [
+          "Presentation permission check.",
+          "PDF export permission check.",
+          "Export khong crash app khi co loi."
+        ],
+        "manual_validation": [
+          "Teacher preview presentation lesson draft co trang thai ro.",
+          "Student mo presentation cua published lesson thuoc class.",
+          "Dung phim next/previous va fullscreen.",
+          "Bam Export PDF va xac nhan output/print layout doc duoc."
+        ]
+      },
+      "acceptance_criteria": [
+        "Presentation layout de doc tren may chieu.",
+        "Export PDF button active.",
+        "Export khong crash app.",
+        "Student chi export lesson minh co quyen xem."
+      ],
+      "evidence": ""
+    },
+    {
+      "id": "P0-011",
+      "name": "UX states, demo seed, deployment readiness",
+      "description": "Hoan thien flow demo end-to-end voi UI hien dai, states ro rang va deploy on dinh.",
+      "priority": "P0 Critical",
+      "status": "not-started",
+      "dependencies": [
+        "P0-001",
+        "P0-002",
+        "P0-003",
+        "P0-004",
+        "P0-005",
+        "P0-006",
+        "P0-007",
+        "P0-008",
+        "P0-009",
+        "P0-010"
+      ],
+      "user_stories": ["US-029", "US-030"],
+      "business_goal": "Hoan thien flow demo end-to-end voi UI hien dai, states ro rang va deploy on dinh.",
+      "vertical_slice": {
+        "backend": [
+          "Seed/demo data hoac script tai lieu hoa cho Admin/Teacher/Student, course/class demo va KB.",
+          "Health/readiness checks phu hop deploy."
+        ],
+        "frontend": [
+          "Sidebar, card layout, Lesson Studio, citation panel, presentation projector-friendly.",
+          "Loading/empty/error states va toast success/error cho flow chinh."
+        ],
+        "tests": [
+          "E2E smoke test hoac manual scripted test cho demo flow day du.",
+          "Check khong co API key trong frontend bundle/source.",
+          "Regression check cho role/class access."
+        ],
+        "manual_validation": [
+          "Teacher login -> create/open course demo -> create/open class KTPM-K18 -> add Student demo.",
+          "Select knowledge source -> generate outline -> generate lesson blocks -> view citations.",
+          "Edit/regenerate/approve blocks -> submit to Admin.",
+          "Admin review -> approve & publish.",
+          "Student view class -> open published lesson -> presentation -> export PDF."
+        ]
+      },
+      "acceptance_criteria": [
+        "UI hien dai, ro rang, khong roi.",
+        "Loading/empty/error states cho flow chinh.",
+        "Demo flow acceptance trong USER_STORIES_MVP.md pass.",
+        "Deploy link chay on dinh."
+      ],
+      "evidence": ""
+    }
+  ]
+}
