@@ -2,6 +2,8 @@
 
 SOP này hướng dẫn AI agent triển khai MVP theo đúng `docs/version1`. Khi có mâu thuẫn giữa SOP và đặc tả, đọc lại `MVP.md`, `PRD_MVP.md`, `USER_STORIES_MVP.md`; nếu vẫn chưa rõ thì hỏi user.
 
+`README.md` không phải source-of-truth của TeachFlow AI. Không dùng README để lấy yêu cầu sản phẩm, scope, backlog, tech stack hoặc quyết định nghiệp vụ.
+
 ## 1. Startup
 
 1. Xác nhận đang ở root repo.
@@ -9,11 +11,22 @@ SOP này hướng dẫn AI agent triển khai MVP theo đúng `docs/version1`. K
 3. Đọc 3 file đặc tả trong `docs/version1/`.
 4. Đọc `feature_list.json` để chọn đúng một feature P0 có dependency đã xong.
 5. Đọc `docs/harness/SOP.md` để nắm quy trình chi tiết.
-6. Đọc `progress.md` và `session-handoff.md`.
-7. Chạy `./init.sh` để kiểm tra baseline trước khi sửa code.
-8. Tạo hoặc cập nhật task note theo `docs/harness/TASK_NOTE_TEMPLATE.md`.
+6. Đọc `docs/harness/ARCHITECTURE.md`, `docs/harness/QUALITY_SCORE.md`, `docs/harness/RELIABILITY_SECURITY.md`.
+7. Đọc `progress.md` và `session-handoff.md`.
+8. Chạy `./init.sh` để kiểm tra baseline trước khi sửa code.
+9. Tạo hoặc cập nhật exec plan trong `docs/harness/exec-plans/active/` theo `docs/harness/TASK_NOTE_TEMPLATE.md`.
 
 Không bắt đầu code nếu chưa có test hoặc test plan cho task hiện tại.
+
+## 1.0 Triết Lý Harness Áp Dụng Cho Dự Án Nhỏ
+
+Dự án này là sản phẩm cá nhân, dự kiến không quá 100 user, nên không dùng harness enterprise nặng. Áp dụng vừa đủ các nguyên tắc:
+
+- Repo là system-of-record: kế hoạch, quyết định, evidence và debt phải ghi vào repo.
+- AGENTS.md là router ngắn; tài liệu sâu nằm trong `docs/harness/`.
+- Kiểm tra cơ học tốt hơn trí nhớ: rule quan trọng phải được test, script hoặc checklist hóa.
+- Feedback loop phục hồi: nếu task bị ngắt, agent sau đọc `progress.md`, `session-handoff.md`, exec plan active và chạy `./init.sh` để tiếp tục.
+- Dọn dẹp là trách nhiệm hạng nhất: shortcut MVP được phép nếu ghi debt rõ và không phá P0 demo.
 
 ## 1.1 P0-001 Scaffold Chính Thức
 
@@ -32,10 +45,11 @@ mkdir backend
 cd backend
 uv init --app
 uv add fastapi --extra standard
-uv run fastapi dev app/main.py --host 0.0.0.0 --port 3000
+# Sau khi thay main.py bằng FastAPI app tối thiểu:
+uv run fastapi dev main.py --host 0.0.0.0 --port 3000
 ```
 
-Sau scaffold, agent phải điều chỉnh app theo PRD: backend port `3000`, API base path `/api/v1`, health endpoint `/api/v1/health`, và frontend đọc `VITE_BACKEND_URL` từ env.
+`uv init --app` tạo `main.py` ở root `backend/`. Nếu agent muốn chuyển sang `app/main.py`, phải tạo file đó trước và cập nhật command/test tương ứng. Sau scaffold, agent phải điều chỉnh app theo PRD: backend port `3000`, API base path `/api/v1`, health endpoint `/api/v1/health`, và frontend đọc `VITE_BACKEND_URL` từ env.
 
 ## 2. Quy Tắc Vertical Slice
 
@@ -70,7 +84,7 @@ P1/P2 bị khóa cho đến khi toàn bộ P0 pass. Nếu task có dấu hiệu 
 
 ## 4. Test Trước Khi Code
 
-Trước khi sửa code, task note phải có phần test plan. Nếu test framework đã tồn tại, ưu tiên viết test trước. Nếu chưa có framework, ghi test plan chi tiết rồi tạo framework trong cùng vertical slice setup.
+Trước khi sửa code, exec plan phải có phần test plan. Nếu test framework đã tồn tại, ưu tiên viết test trước. Nếu chưa có framework, ghi test plan chi tiết rồi tạo framework trong cùng vertical slice setup.
 
 Các logic cần kiểm tra kỹ:
 
@@ -89,6 +103,7 @@ Các logic cần kiểm tra kỹ:
 - Không hardcode `localhost:3000/api/v1` trong source frontend.
 - Backend đọc Supabase/AI keys từ env.
 - Frontend không chứa service role key hoặc AI provider key.
+- `./data/books/` chỉ dùng local pre-ingest; raw PDFs/books không được commit và không được đưa vào deploy artifact.
 
 Nếu cần key thật hoặc Supabase project chưa rõ, hỏi user. Không tự thêm key giả vào source code.
 
@@ -142,5 +157,7 @@ Feature chỉ `done` khi:
 1. Ghi việc đã làm, việc còn lại, blockers vào `progress.md`.
 2. Cập nhật status/evidence của feature trong `feature_list.json`.
 3. Cập nhật `session-handoff.md` nếu còn task dang dở.
-4. Ghi rõ command verification đã chạy.
-5. Nếu chưa thể hoàn thành vì thiếu thông tin, ghi câu hỏi cụ thể cho user.
+4. Cập nhật exec plan active/completed.
+5. Cập nhật `docs/harness/exec-plans/tech-debt-tracker.md` nếu có debt hoặc quyết định tạm thời.
+6. Ghi rõ command verification đã chạy.
+7. Nếu chưa thể hoàn thành vì thiếu thông tin, ghi câu hỏi cụ thể cho user.

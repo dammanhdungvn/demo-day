@@ -18,7 +18,9 @@
     "Moi feature phai di theo vertical slice: backend, frontend, test, manual validation.",
     "Neu business rule thieu hoac mau thuan, dung lai va hoi user.",
     "Khong hardcode secrets, Supabase keys, AI provider keys, hoac backend URL.",
-    "User la nguoi testing cuoi cung, vi vay moi feature phai co manual validation steps ro rang."
+    "User la nguoi testing cuoi cung, vi vay moi feature phai co manual validation steps ro rang.",
+    "README.md khong phai source-of-truth cua TeachFlow AI; chi doc docs/version1 de lay MVP, PRD va User Stories.",
+    "./data/books/ chi dung local pre-ingest; khong commit raw PDFs/books va khong deploy folder nay."
   ],
   "critical_test_focus": [
     "role permission",
@@ -61,6 +63,7 @@
       "vertical_slice": {
         "backend": [
           "Tao backend FastAPI bang uv theo docs chinh thuc: mkdir backend, cd backend, uv init --app, uv add fastapi --extra standard.",
+          "Vi uv init --app tao backend/main.py, dev command mac dinh la uv run fastapi dev main.py --host 0.0.0.0 --port 3000 sau khi main.py da la FastAPI app.",
           "Backend chay port 3000, base path /api/v1.",
           "Tao health endpoint toi thieu duoi /api/v1."
         ],

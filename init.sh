@@ -44,6 +44,10 @@ require_file "docs/version1/PRD_MVP.md"
 require_file "docs/version1/USER_STORIES_MVP.md"
 require_file "docs/harness/SOP.md"
 require_file "docs/harness/TASK_NOTE_TEMPLATE.md"
+require_file "docs/harness/ARCHITECTURE.md"
+require_file "docs/harness/QUALITY_SCORE.md"
+require_file "docs/harness/RELIABILITY_SECURITY.md"
+require_file "docs/harness/exec-plans/tech-debt-tracker.md"
 require_file ".env.example"
 
 info "Kiem tra feature_list.json hop le"
@@ -123,8 +127,10 @@ if [ -f "backend/pyproject.toml" ]; then
     fi
     if [ -d "app" ]; then
       uv run python -m compileall app
+    elif [ -f "main.py" ]; then
+      uv run python -m compileall main.py
     else
-      warn "backend/app chua ton tai; P0-001 can tao FastAPI app"
+      warn "backend/app hoac backend/main.py chua ton tai; P0-001 can tao FastAPI app"
     fi
   )
 else

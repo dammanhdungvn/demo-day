@@ -1,6 +1,9 @@
 # Environment
 .env
 
+# Local pre-ingest source files only. Do not commit/deploy raw books.
+data/books/
+
 # Python
 __pycache__/
 *.py[cod]

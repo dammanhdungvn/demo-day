@@ -5,6 +5,7 @@
 - **Goal:** Dung harness de trien khai MVP TeachFlow AI theo P0 Critical.
 - **Current status:** Harness da duoc tao; source code app chua duoc khoi tao.
 - **Next active feature:** `P0-001 - Project setup, env baseline, verification`.
+- **Source-of-truth:** chi `docs/version1/MVP.md`, `docs/version1/PRD_MVP.md`, `docs/version1/USER_STORIES_MVP.md`. Khong dung `README.md`.
 
 ## Completed This Session
 
@@ -12,7 +13,8 @@
 - Tao `feature_list.json` tu PRD/User Stories P0 Critical.
 - Tao `progress.md` voi trang thai ban dau va decision log.
 - Tao `init.sh` de verify harness, env example, frontend/backend khi ton tai.
-- Tao SOP va task note template trong `docs/harness/`.
+- Tao SOP va exec plan template trong `docs/harness/`.
+- Tao docs harness nang cao vua du cho du an ca nhan: `ARCHITECTURE.md`, `QUALITY_SCORE.md`, `RELIABILITY_SECURITY.md`, va `docs/harness/exec-plans/`.
 - Chuan hoa `.env.example` theo TeachFlow AI.
 
 ## Verification Evidence
@@ -40,9 +42,11 @@
 
 - Dung `VITE_BACKEND_URL=http://localhost:3000/api/v1` cho frontend.
 - Backend dung FastAPI + `uv`, port `3000`, base path `/api/v1`.
-- P0-001 scaffold phai dung docs chinh thuc: `pnpm create vite frontend --template react-ts`; backend dung `uv init --app`, `uv add fastapi --extra standard`.
+- P0-001 scaffold phai dung docs chinh thuc: `pnpm create vite frontend --template react-ts`; backend dung `uv init --app`, `uv add fastapi --extra standard`, sau do chay `uv run fastapi dev main.py --host 0.0.0.0 --port 3000` neu giu file root `main.py`.
 - P1/P2 khong duoc lam truoc khi P0 Critical pass end-to-end.
 - Moi task can test/test plan truoc code va manual validation cho user.
+- `data/books/` chi la local pre-ingest, khong commit/deploy raw PDFs/books.
+- Repo la system-of-record: exec plans, debt, evidence phai nam trong repo thay vi chat history.
 
 ## Blockers / Risks
 
@@ -55,8 +59,8 @@
 1. Read `AGENTS.md`.
 2. Run `./init.sh`.
 3. Read `feature_list.json`, `progress.md`, and this handoff.
-4. Create a task note for `P0-001`.
-5. Write tests/test plan before implementing setup code.
+4. Create one active exec plan under `docs/harness/exec-plans/active/` using `docs/harness/TASK_NOTE_TEMPLATE.md`.
+5. Write tests/test plan inside that exec plan before implementing setup code.
 
 ## Recommended Next Step
 
