@@ -38,7 +38,7 @@ Every useful coding-agent harness has five subsystems:
 Use the bundled script when working on a local repository:
 
 ```bash
-node skills/harness-creator/scripts/create-harness.mjs --target /path/to/project
+node .agents/skills/harness-creator/scripts/create-harness.mjs --target /path/to/project
 ```
 
 Options:
@@ -55,7 +55,7 @@ Then explain what was created and how the user should replace placeholder featur
 Run:
 
 ```bash
-node skills/harness-creator/scripts/validate-harness.mjs --target /path/to/project
+node .agents/skills/harness-creator/scripts/validate-harness.mjs --target /path/to/project
 ```
 
 Report the five subsystem scores, the lowest-scoring area, and the first 2-3 changes that would improve reliability. Treat the lowest score as a candidate bottleneck; confirm with failures, logs, or task outcomes before claiming causality.
@@ -65,8 +65,8 @@ Report the five subsystem scores, the lowest-scoring area, and the first 2-3 cha
 Use when the user wants a shareable assessment:
 
 ```bash
-node skills/harness-creator/scripts/render-assessment-html.mjs --target /path/to/project
-node skills/harness-creator/scripts/run-benchmark.mjs --target /path/to/project --html /path/to/report.html
+node .agents/skills/harness-creator/scripts/render-assessment-html.mjs --target /path/to/project
+node .agents/skills/harness-creator/scripts/run-benchmark.mjs --target /path/to/project --html /path/to/report.html
 ```
 
 Be clear that this is a structural benchmark. Real effectiveness still needs before/after agent sessions on representative tasks.

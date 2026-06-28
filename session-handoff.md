@@ -40,6 +40,7 @@
 
 - Dung `VITE_BACKEND_URL=http://localhost:3000/api/v1` cho frontend.
 - Backend dung FastAPI + `uv`, port `3000`, base path `/api/v1`.
+- P0-001 scaffold phai dung docs chinh thuc: `pnpm create vite frontend --template react-ts`; backend dung `uv init --app`, `uv add fastapi --extra standard`.
 - P1/P2 khong duoc lam truoc khi P0 Critical pass end-to-end.
 - Moi task can test/test plan truoc code va manual validation cho user.
 

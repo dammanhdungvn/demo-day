@@ -20,6 +20,7 @@
 - `P0-001`: Khoi tao frontend Vite React TypeScript/TSX.
 - `P0-001`: Khoi tao backend FastAPI bang `uv`, port `3000`, base path `/api/v1`.
 - `P0-001`: Tao health endpoint, API client dung `VITE_BACKEND_URL`, va baseline tests.
+- Khi bat dau `P0-001`, dung scaffold chinh thuc: `pnpm create vite frontend --template react-ts`; backend dung `uv init --app`, `uv add fastapi --extra standard`.
 
 ## Blockers / Rui Ro
 
@@ -42,6 +43,8 @@
 - `python3 -m json.tool feature_list.json` pass.
 - `git diff --check` pass.
 - `node .agents/skills/harness-creator/scripts/validate-harness.mjs --target .` pass voi score `100/100`.
+- Review fix: dong bo startup order giua `AGENTS.md` va `docs/harness/SOP.md`.
+- Review fix: sua command path vendored skill tu `skills/harness-creator/...` sang `.agents/skills/harness-creator/...`.
 
 ## Next Session Startup
 

@@ -7,12 +7,35 @@ SOP này hướng dẫn AI agent triển khai MVP theo đúng `docs/version1`. K
 1. Xác nhận đang ở root repo.
 2. Đọc `AGENTS.md`.
 3. Đọc 3 file đặc tả trong `docs/version1/`.
-4. Chạy `./init.sh`.
-5. Đọc `feature_list.json` để chọn đúng một feature P0 có dependency đã xong.
+4. Đọc `feature_list.json` để chọn đúng một feature P0 có dependency đã xong.
+5. Đọc `docs/harness/SOP.md` để nắm quy trình chi tiết.
 6. Đọc `progress.md` và `session-handoff.md`.
-7. Tạo hoặc cập nhật task note theo `docs/harness/TASK_NOTE_TEMPLATE.md`.
+7. Chạy `./init.sh` để kiểm tra baseline trước khi sửa code.
+8. Tạo hoặc cập nhật task note theo `docs/harness/TASK_NOTE_TEMPLATE.md`.
 
 Không bắt đầu code nếu chưa có test hoặc test plan cho task hiện tại.
+
+## 1.1 P0-001 Scaffold Chính Thức
+
+Khi khởi tạo dự án, dùng command từ tài liệu chính thức, không tự dựng cấu trúc thủ công nếu chưa có lý do rõ:
+
+- Frontend Vite React TypeScript/TSX:
+
+```bash
+pnpm create vite frontend --template react-ts
+```
+
+- Backend FastAPI quản lý bằng `uv`:
+
+```bash
+mkdir backend
+cd backend
+uv init --app
+uv add fastapi --extra standard
+uv run fastapi dev app/main.py --host 0.0.0.0 --port 3000
+```
+
+Sau scaffold, agent phải điều chỉnh app theo PRD: backend port `3000`, API base path `/api/v1`, health endpoint `/api/v1/health`, và frontend đọc `VITE_BACKEND_URL` từ env.
 
 ## 2. Quy Tắc Vertical Slice
 

@@ -60,11 +60,12 @@
       "business_goal": "Khoi tao nen tang frontend/backend dung stack va co duong verification restartable.",
       "vertical_slice": {
         "backend": [
-          "Tao backend FastAPI bang uv, chay port 3000, base path /api/v1.",
+          "Tao backend FastAPI bang uv theo docs chinh thuc: mkdir backend, cd backend, uv init --app, uv add fastapi --extra standard.",
+          "Backend chay port 3000, base path /api/v1.",
           "Tao health endpoint toi thieu duoi /api/v1."
         ],
         "frontend": [
-          "Tao frontend Vite React TypeScript/TSX bang pnpm.",
+          "Tao frontend Vite React TypeScript/TSX theo docs chinh thuc: pnpm create vite frontend --template react-ts.",
           "Tao API client doc VITE_BACKEND_URL tu env."
         ],
         "tests": [

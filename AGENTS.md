@@ -30,8 +30,8 @@ Nếu tài liệu mâu thuẫn, thiếu business rule, hoặc không đủ thôn
 
 ## Tech Constraints
 
-- Frontend: Vite + React + TypeScript/TSX. Nếu chưa có project, có thể khởi tạo bằng `pnpm create vite`.
-- Backend + AI: FastAPI, quản lý package bằng `uv`.
+- Frontend: Vite + React + TypeScript/TSX. Nếu chưa có project, khởi tạo theo docs chính thức bằng `pnpm create vite frontend --template react-ts`.
+- Backend + AI: FastAPI, quản lý package bằng `uv`. Nếu chưa có project, khởi tạo theo docs chính thức bằng `uv init --app` rồi `uv add fastapi --extra standard`.
 - Backend chạy port `3000`, API base path `/api/v1`.
 - Frontend đọc API base từ `import.meta.env.VITE_BACKEND_URL` hoặc abstraction tương đương. Không hardcode `localhost:3000/api/v1` trong source frontend.
 - API keys, Supabase keys, AI provider keys, backend URL luôn đọc từ `.env` hoặc `.env.example`.
