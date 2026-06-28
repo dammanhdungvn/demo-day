@@ -59,29 +59,28 @@ Không hardcode secret trong source code.
 Frontend đọc:
 
 ```env
-VITE_BACKEND_URL=http://localhost:3000/api/v1
+URL_BACKEND=http://localhost:3000/api/v1
+BACKEND_CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 ```
 
 Backend đọc các key từ `.env`, ví dụ:
 
 ```env
-SUPABASE_URL=
-SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-DATABASE_URL=
-AI_PROVIDER=
-AI_API_KEY=
-GENERATION_MODEL=
-EMBEDDING_MODEL=
+URL_SUPABASE=
+PUBLIC_API_KEY_SUPABASE=
+SECRET_API_KEY_SUPABASE=
+OPENAI_API_KEY=
+OPENAI_MODEL=
 ```
+
+Khi deploy frontend lên domain thật, cập nhật `BACKEND_CORS_ORIGINS` bằng danh sách origin frontend được phép, phân tách bằng dấu phẩy.
 
 Frontend không bao giờ chứa:
 
 ```txt
-AI_API_KEY
-SUPABASE_SERVICE_ROLE_KEY
 OPENAI_API_KEY
-NVIDIA_API_KEY
+SECRET_API_KEY_SUPABASE
+NVIDIA_OPENAI_API_KEY
 ```
 
 ---
@@ -692,7 +691,7 @@ Motion nếu cần
 Frontend đọc backend URL:
 
 ```ts
-import.meta.env.VITE_BACKEND_URL
+URL_BACKEND từ `.env` qua abstraction/Vite config
 ```
 
 Không hardcode backend URL.

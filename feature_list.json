@@ -11,7 +11,7 @@
     "blocked": "Dang bi chan, can user quyet dinh",
     "done": "Da hoan thanh va co evidence"
   },
-  "current_active_feature": "P0-001",
+  "current_active_feature": "P0-002",
   "global_rules": [
     "Chi lam P0 Critical cho den khi demo flow end-to-end pass.",
     "Moi task phai co test hoac test plan truoc khi code.",
@@ -56,7 +56,7 @@
       "name": "Project setup, env baseline, verification",
       "description": "Khoi tao nen tang frontend/backend dung stack va co duong verification restartable.",
       "priority": "P0 Critical",
-      "status": "not-started",
+      "status": "done",
       "dependencies": [],
       "user_stories": ["US-001"],
       "business_goal": "Khoi tao nen tang frontend/backend dung stack va co duong verification restartable.",
@@ -69,7 +69,7 @@
         ],
         "frontend": [
           "Tao frontend Vite React TypeScript/TSX theo docs chinh thuc: pnpm create vite frontend --template react-ts.",
-          "Tao API client doc VITE_BACKEND_URL tu env."
+          "Tao API client doc URL_BACKEND tu root env qua vite.config.ts."
         ],
         "tests": [
           "Backend health endpoint test.",
@@ -78,7 +78,7 @@
         ],
         "manual_validation": [
           "Chay backend tai http://localhost:3000/api/v1/health.",
-          "Chay frontend va xac nhan UI goi API qua VITE_BACKEND_URL.",
+          "Chay frontend va xac nhan UI goi API qua URL_BACKEND.",
           "Chay ./init.sh thanh cong."
         ]
       },
@@ -86,10 +86,10 @@
         "Frontend dung Vite React TSX.",
         "Backend dung FastAPI + uv.",
         "Backend port 3000, API base /api/v1.",
-        ".env.example co VITE_BACKEND_URL va cac key backend can thiet.",
+        ".env.example co URL_BACKEND va cac key backend can thiet.",
         "Khong hardcode API keys."
       ],
-      "evidence": ""
+      "evidence": "Da tao backend FastAPI + uv voi GET /api/v1/health, frontend Vite React TSX voi health card, API URL doc tu URL_BACKEND qua vite.config.ts. Da chay ./init.sh pass; frontend typecheck/lint/test/build pass; backend pytest pass voi health route/payload test khong dung TestClient; git diff --check pass; manual curl /api/v1/health da tra status ok."
     },
     {
       "id": "P0-002",

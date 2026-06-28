@@ -339,7 +339,8 @@ API base:
 Frontend đọc backend URL từ:
 
 ```env
-VITE_BACKEND_URL=http://localhost:3000/api/v1
+URL_BACKEND=http://localhost:3000/api/v1
+BACKEND_CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 ```
 
 ---

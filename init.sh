@@ -4,6 +4,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
+export XDG_CACHE_HOME="$ROOT/.cache"
+export UV_CACHE_DIR="$ROOT/.cache/uv"
+mkdir -p "$UV_CACHE_DIR"
+
 fail() {
   echo "FAIL: $*" >&2
   exit 1
@@ -34,6 +38,12 @@ run_frontend_script_if_present() {
   fi
 }
 
+has_env_key() {
+  local file_path="$1"
+  local key="$2"
+  grep -qE "^[[:space:]]*(export[[:space:]]+)?${key}[[:space:]]*=" "$file_path"
+}
+
 info "Kiem tra harness files"
 require_file "AGENTS.md"
 require_file "feature_list.json"
@@ -61,26 +71,27 @@ fi
 
 info "Kiem tra .env.example co cac bien bat buoc"
 required_env_keys=(
-  "VITE_BACKEND_URL"
-  "BACKEND_URL"
-  "SUPABASE_URL"
-  "SUPABASE_ANON_KEY"
-  "SUPABASE_SERVICE_ROLE_KEY"
-  "DATABASE_URL"
-  "AI_PROVIDER"
-  "AI_API_KEY"
-  "GENERATION_MODEL"
-  "EMBEDDING_MODEL"
+  "URL_BACKEND"
+  "URL_SUPABASE"
+  "PUBLIC_API_KEY_SUPABASE"
+  "SECRET_API_KEY_SUPABASE"
+  "OPENAI_API_KEY"
+  "OPENAI_MODEL"
 )
 
 for key in "${required_env_keys[@]}"; do
-  if ! grep -qE "^${key}=" .env.example; then
+  if ! has_env_key ".env.example" "$key"; then
     fail ".env.example thieu bien ${key}"
   fi
 done
 
 if [ -f ".env" ]; then
-  info "Tim thay .env local"
+  info "Tim thay .env local; kiem tra ten bien bat buoc"
+  for key in "${required_env_keys[@]}"; do
+    if ! has_env_key ".env" "$key"; then
+      fail ".env thieu bien ${key}; chi kiem tra ten bien, khong in gia tri secret"
+    fi
+  done
 else
   warn "Chua co .env local; copy tu .env.example khi can chay app"
 fi
@@ -106,9 +117,9 @@ fi
 if [ -d "frontend/src" ]; then
   info "Kiem tra frontend khong hardcode backend URL hoac secret keys"
   if grep -R --line-number "localhost:3000/api/v1" frontend/src; then
-    fail "Frontend source khong duoc hardcode localhost:3000/api/v1; hay dung VITE_BACKEND_URL"
+    fail "Frontend source khong duoc hardcode localhost:3000/api/v1; hay dung URL_BACKEND tu env"
   fi
-  if grep -R --line-number -E "AI_API_KEY|OPENAI_API_KEY|NVIDIA_OPENAI_API_KEY|SUPABASE_SERVICE_ROLE_KEY" frontend/src; then
+  if grep -R --line-number -E "OPENAI_API_KEY|NVIDIA_OPENAI_API_KEY|SECRET_API_KEY_SUPABASE" frontend/src; then
     fail "Frontend source dang expose secret key name; kiem tra lai env boundary"
   fi
 fi

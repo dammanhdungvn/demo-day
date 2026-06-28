@@ -40,9 +40,9 @@ Nếu tài liệu mâu thuẫn, thiếu business rule, hoặc không đủ thôn
 - Frontend: Vite + React + TypeScript/TSX. Nếu chưa có project, khởi tạo theo docs chính thức bằng `pnpm create vite frontend --template react-ts`.
 - Backend + AI: FastAPI, quản lý package bằng `uv`. Nếu chưa có project, khởi tạo theo docs chính thức bằng `uv init --app` rồi `uv add fastapi --extra standard`. `uv init --app` tạo `main.py` ở root backend, nên P0-001 phải chạy dev command theo file thật hoặc cập nhật cấu trúc trước khi chạy.
 - Backend chạy port `3000`, API base path `/api/v1`.
-- Frontend đọc API base từ `import.meta.env.VITE_BACKEND_URL` hoặc abstraction tương đương. Không hardcode `localhost:3000/api/v1` trong source frontend.
+- Frontend đọc API base từ `URL_BACKEND` trong `.env` qua abstraction/Vite config. Không hardcode `localhost:3000/api/v1` trong source frontend.
 - API keys, Supabase keys, AI provider keys, backend URL luôn đọc từ `.env` hoặc `.env.example`.
-- Frontend không được chứa `AI_API_KEY`, `OPENAI_API_KEY`, `NVIDIA_OPENAI_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
+- Frontend không được chứa `OPENAI_API_KEY`, `NVIDIA_OPENAI_API_KEY`, `SECRET_API_KEY_SUPABASE`.
 - `./data/books/` chỉ dùng local pre-ingest. Không commit raw PDFs/books, không deploy folder này.
 
 ## Before Coding Any Task

@@ -49,7 +49,7 @@ uv add fastapi --extra standard
 uv run fastapi dev main.py --host 0.0.0.0 --port 3000
 ```
 
-`uv init --app` tạo `main.py` ở root `backend/`. Nếu agent muốn chuyển sang `app/main.py`, phải tạo file đó trước và cập nhật command/test tương ứng. Sau scaffold, agent phải điều chỉnh app theo PRD: backend port `3000`, API base path `/api/v1`, health endpoint `/api/v1/health`, và frontend đọc `VITE_BACKEND_URL` từ env.
+`uv init --app` tạo `main.py` ở root `backend/`. Nếu agent muốn chuyển sang `app/main.py`, phải tạo file đó trước và cập nhật command/test tương ứng. Sau scaffold, agent phải điều chỉnh app theo PRD: backend port `3000`, API base path `/api/v1`, health endpoint `/api/v1/health`, và frontend đọc `URL_BACKEND` từ env qua `vite.config.ts`.
 
 ## 2. Quy Tắc Vertical Slice
 
@@ -99,8 +99,9 @@ Các logic cần kiểm tra kỹ:
 ## 5. Env Và Secrets
 
 - `.env.example` là template; `.env` là local secret file.
-- Frontend chỉ dùng `VITE_BACKEND_URL` hoặc abstraction đọc từ env.
+- Frontend chỉ dùng `URL_BACKEND` qua abstraction đọc từ env; không tạo thêm biến duplicate nếu không cần.
 - Không hardcode `localhost:3000/api/v1` trong source frontend.
+- Backend đọc `BACKEND_CORS_ORIGINS` từ env để cho phép origin frontend local/deploy gọi API.
 - Backend đọc Supabase/AI keys từ env.
 - Frontend không chứa service role key hoặc AI provider key.
 - `./data/books/` chỉ dùng local pre-ingest; raw PDFs/books không được commit và không được đưa vào deploy artifact.

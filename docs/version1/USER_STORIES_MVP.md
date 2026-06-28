@@ -48,7 +48,7 @@ Không làm P1/P2 trước khi P0 Critical chạy ổn định.
 * Backend dùng FastAPI.
 * Backend chạy port `3000`.
 * API base path là `/api/v1`.
-* Frontend đọc `VITE_BACKEND_URL`.
+* Frontend đọc `URL_BACKEND` từ `.env` qua abstraction/Vite config.
 * Có `.env.example`.
 * Không hardcode API keys.
 
