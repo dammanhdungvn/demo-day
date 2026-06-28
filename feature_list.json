@@ -11,7 +11,7 @@
     "blocked": "Dang bi chan, can user quyet dinh",
     "done": "Da hoan thanh va co evidence"
   },
-  "current_active_feature": "P0-002",
+  "current_active_feature": null,
   "global_rules": [
     "Chi lam P0 Critical cho den khi demo flow end-to-end pass.",
     "Moi task phai co test hoac test plan truoc khi code.",
@@ -96,7 +96,7 @@
       "name": "Auth, demo accounts, role routing",
       "description": "Admin, Teacher, Student dang nhap va chi vao dung workspace/quyen.",
       "priority": "P0 Critical",
-      "status": "not-started",
+      "status": "done",
       "dependencies": ["P0-001"],
       "user_stories": ["US-002", "US-031"],
       "business_goal": "Admin, Teacher, Student dang nhap va chi vao dung workspace/quyen.",
@@ -126,14 +126,14 @@
         "Redirect theo role.",
         "Backend kiem tra role o API quan trong."
       ],
-      "evidence": ""
+      "evidence": "2026-06-28: Hoan thanh P0-002 demo auth + role routing. Backend co demo accounts admin/teacher/student, login/logout/me, role dependencies va protected dashboards /admin/dashboard, /teacher/dashboard, /student/dashboard. Frontend co login UI, one-click demo login, session storage, role dashboard va route push theo role; action ngoai role hien dang guarded/non-clickable. Tests: ./init.sh pass voi frontend typecheck/lint/test/build, backend pytest 8 passed; targeted backend auth tests 6 passed; frontend auth/session/workspace tests pass. HTTP smoke tren dev server: demo accounts 200 count 3, teacher login 200 role teacher, teacher dashboard 200, teacher goi admin dashboard 403, invalid token /me 401. Review findings da fix: demo quick login fill password va submit, route push theo role, future actions khong render thanh active button."
     },
     {
       "id": "P0-003",
       "name": "Course, class profile, student membership",
       "description": "Teacher tao course/class va add Student co san vao class de khoa access theo membership.",
       "priority": "P0 Critical",
-      "status": "not-started",
+      "status": "done",
       "dependencies": ["P0-002"],
       "user_stories": ["US-003", "US-004", "US-005"],
       "business_goal": "Teacher tao course/class va add Student co san vao class de khoa access theo membership.",
@@ -166,14 +166,14 @@
         "Student level gom weak, average, strong.",
         "Backend kiem tra class membership."
       ],
-      "evidence": ""
+      "evidence": "2026-06-28: Hoan thanh P0-003 course/class/membership vertical slice. Backend co in-memory demo store cho courses/classes/class_students, endpoints /courses, /courses/{course_id}/classes, /classes/{class_id}/students, /students, /student/classes; role/ownership/membership checks chay trong service functions va routes. Frontend Teacher dashboard co UI tao course, tao class profile, add Student demo; Student dashboard co UI xem class membership. Tests: ./init.sh pass voi frontend typecheck/lint/test/build, Vitest 6 files/20 tests pass, backend pytest 14 pass; targeted learning tests pass. HTTP smoke tren dev server: teacher create course 200 teacher_id demo-teacher, create class KTPM-K18 200, list students 200 count 1, add membership 200 student_id demo-student, student/classes 200 count 1 KTPM-K18, student goi /courses 403, teacher goi /student/classes 403. Debt TD-003 ghi in-memory store can thay bang Supabase persistence khi vao production."
     },
     {
       "id": "P0-004",
       "name": "Knowledge base source selection and RAG retrieval",
       "description": "Teacher chon documents da pre-ingest va backend retrieve chunks lien quan tu Supabase/pgvector.",
       "priority": "P0 Critical",
-      "status": "not-started",
+      "status": "done",
       "dependencies": ["P0-002", "P0-003"],
       "user_stories": ["US-006", "US-007", "US-008"],
       "business_goal": "Teacher chon documents da pre-ingest va backend retrieve chunks lien quan tu Supabase/pgvector.",
@@ -204,14 +204,14 @@
         "Documents/chunks/embeddings ton tai trong Supabase.",
         "Retrieval chay tren DB va tra citations toi thieu."
       ],
-      "evidence": ""
+      "evidence": "2026-06-28: Hoan thanh P0-004 knowledge source selection + RAG retrieval. Supabase pooler da fix URL-encode va test thanh cong bang chinh URI (`pooler_connect_ok db=postgres user=postgres postgres=17.6`). Da tao schema Supabase public `documents`, `document_chunks`, `generation_jobs` voi pgvector va RLS enabled cho ca 3 bang. Script local pre-ingest `backend/scripts/ingest_books.py` extract PDF theo page, chunk, tao deterministic local hash embedding 384 chieu va insert vao Supabase; app runtime chi doc Supabase, khong doc `data/books/`. DB evidence: 5 completed documents, 4,256 document_chunks, retrieval_jobs completed. Backend co `GET /api/v1/documents` va `POST /api/v1/rag/retrieve`, Teacher-only, selected documents phai status completed, retrieval tra chunk_id/document_title/page_number/excerpt/score va luu retrieved context vao generation_jobs. Frontend Teacher dashboard co source picker, completed-only checkboxes, warning khi chua chon source va retrieval preview/citations. Tests/evidence: `./init.sh` pass; frontend typecheck/lint/test/build pass voi 6 files/22 tests; backend pytest 19 pass; targeted P0-004 backend 5 pass va frontend API 6 pass; HTTP smoke Teacher login/documents/retrieve 200, Student /documents 403. Review: khong co `/review` tool truc tiep trong session, da manual review diff + `git diff --check` pass va fix ingest progress/path issue. Debt TD-004 ghi local-hash embedding va moi ingest 5/10 PDF."
     },
     {
       "id": "P0-005",
       "name": "AI provider abstraction and course outline generation",
       "description": "Teacher generate outline theo course/class/documents, output duoc validate schema va edit duoc.",
       "priority": "P0 Critical",
-      "status": "not-started",
+      "status": "done",
       "dependencies": ["P0-003", "P0-004"],
       "user_stories": ["US-009", "US-010"],
       "business_goal": "Teacher generate outline theo course/class/documents, output duoc validate schema va edit duoc.",
@@ -244,14 +244,14 @@
         "Output duoc luu.",
         "Teacher edit outline co ban duoc."
       ],
-      "evidence": ""
+      "evidence": "2026-06-28: Hoan thanh P0-005 AI provider abstraction + course outline generation. Backend co AIProvider protocol, OpenAI provider doc `OPENAI_API_KEY`/`OPENAI_MODEL` tu env backend-only, structured output JSON schema validation, endpoints Teacher-only `POST /outlines/generate`, `GET /outlines?class_id=...`, `PATCH /outlines/{outline_id}/sessions/{session_index}`. Generate outline reuse RAG context tu P0-004, validate session_count/indexes, gan source_references/citations va luu outline in-memory cho demo. Frontend Teacher Dashboard co AI course outline panel: generate tu selected course/class/source docs/topic, chon outline/session, edit/save title/objectives/key topics/activities/exercises/adaptation notes va xem source references. Tests/evidence: targeted backend `tests/test_ai_outline.py` 4 passed, P0-004 retrieval tests 5 passed, frontend API tests 8 passed, backend full pytest 23 passed, frontend typecheck/lint/build pass. Live HTTP smoke voi OpenAI key hien co: Teacher login 200, create course/class 200, documents 200 count 5, generate outline 200 voi 2 sessions, first session co 3 source refs, update session 200. Debt TD-005 ghi outline store in-memory."
     },
     {
       "id": "P0-006",
       "name": "Lesson blocks, required block types, citations, warnings",
       "description": "AI tao lesson theo blocks co citations; block thieu grounding co warning ro.",
       "priority": "P0 Critical",
-      "status": "not-started",
+      "status": "done",
       "dependencies": ["P0-005"],
       "user_stories": ["US-011", "US-012", "US-013", "US-014"],
       "business_goal": "AI tao lesson theo blocks co citations; block thieu grounding co warning ro.",
@@ -284,14 +284,14 @@
         "Citations hien trong Teacher Lesson Studio va Admin Review.",
         "Teacher co the approve_with_warning cho block thieu citation."
       ],
-      "evidence": ""
+      "evidence": "2026-06-28: Hoan thanh P0-006 lesson block generation. Backend co models/schema/service/route `POST /lessons/generate` Teacher-only, generate lesson tu outline session, validate AI output co 5 demo block types bat buoc `learning_objectives`, `concept_explanation`, `analogy_or_example`, `quiz`, `slide`; blocks default `needs_review`, co order_index, citations tu retrieved chunks va warning theo spec neu thieu citation. Frontend AI course outline panel co nut `Generate lesson blocks` va render blocks/status/citations/warnings. Tests/evidence: backend targeted `tests/test_lesson_blocks.py` 3 passed, backend full pytest 26 passed, frontend API tests 9 passed, frontend typecheck/lint/build pass. Live HTTP smoke voi OpenAI: Teacher create course/class, generate outline 1 session, generate lesson 200 voi 5 blocks dung required types va first block co 3 citations. Debt TD-006 ghi lesson store in-memory."
     },
     {
       "id": "P0-007",
       "name": "Teacher Lesson Studio review flow",
       "description": "Teacher review lesson theo block, edit/regenerate/approve va submit cho Admin.",
       "priority": "P0 Critical",
-      "status": "not-started",
+      "status": "done",
       "dependencies": ["P0-006"],
       "user_stories": ["US-015", "US-016", "US-017", "US-018", "US-019"],
       "business_goal": "Teacher review lesson theo block, edit/regenerate/approve va submit cho Admin.",
@@ -325,14 +325,14 @@
         "Review progress cap nhat.",
         "Lesson status doi thanh submitted_for_admin_review khi submit hop le."
       ],
-      "evidence": ""
+      "evidence": "2026-06-28: Hoan thanh P0-007 Teacher Lesson Studio review flow. Backend co Teacher-only actions: `PATCH /lesson-blocks/{block_id}` edit title/content, `POST /lesson-blocks/{block_id}/regenerate`, `POST /lesson-blocks/{block_id}/status`, `POST /lessons/{lesson_id}/submit`; submit bi chan neu con block `needs_review`, sau khi review het thi lesson status thanh `submitted_for_admin_review`. Frontend lesson block panel co editor, save, regenerate, approve, approve warning, reject va submit lesson. Tests/evidence: backend full pytest 28 pass, frontend API tests 10 pass, frontend typecheck/lint/build pass. Live smoke: generate lesson 200, edit block 200, regenerate block 200 status needs_review, submit before review 400, approve all blocks 200, submit after review 200 `submitted_for_admin_review`."
     },
     {
       "id": "P0-008",
       "name": "Admin moderation and publish flow",
       "description": "Admin review lesson submitted, xem citations/warnings, publish hoac request changes.",
       "priority": "P0 Critical",
-      "status": "not-started",
+      "status": "done",
       "dependencies": ["P0-007"],
       "user_stories": ["US-020", "US-021", "US-022", "US-023"],
       "business_goal": "Admin review lesson submitted, xem citations/warnings, publish hoac request changes.",
@@ -367,14 +367,14 @@
         "Admin request changes kem feedback duoc.",
         "Admin khong sua truc tiep content."
       ],
-      "evidence": ""
+      "evidence": "2026-06-28: Hoan thanh P0-008 Admin moderation and publish flow. Backend co Admin-only `GET /api/v1/admin/review-queue`, `POST /api/v1/admin/lessons/{lesson_id}/publish`, `POST /api/v1/admin/lessons/{lesson_id}/request-changes`; publish chi cho lesson `submitted_for_admin_review`, request changes luu `admin_feedback` va chuyen status `changes_requested`; Admin khong co endpoint sua content block. Frontend Admin Dashboard co review queue, block/citation/warning/status view, feedback textarea, Approve & Publish va Request changes actions. Tests/evidence: backend full pytest 32 pass, frontend 27 tests pass, frontend typecheck/lint/build pass, `git diff --check` pass. Live smoke HTTP: Teacher/Admin login 200, queue 200 count 1, publish 200 status `published`, request changes 200 status `changes_requested` co feedback, Teacher goi admin publish 403."
     },
     {
       "id": "P0-009",
       "name": "Student class-based published lesson access",
       "description": "Student chi xem published lessons thuoc class minh duoc add vao.",
       "priority": "P0 Critical",
-      "status": "not-started",
+      "status": "done",
       "dependencies": ["P0-003", "P0-008"],
       "user_stories": ["US-024", "US-025", "US-026", "US-031"],
       "business_goal": "Student chi xem published lessons thuoc class minh duoc add vao.",
@@ -406,14 +406,14 @@
         "Student chi thay lessons published.",
         "Direct URL access van kiem tra quyen."
       ],
-      "evidence": ""
+      "evidence": "2026-06-28: Hoan thanh P0-009 Student class-based published lesson access. Backend co Student-only `GET /api/v1/student/lessons` va `GET /api/v1/student/lessons/{lesson_id}`, chi tra lesson status `published` va class_id thuoc membership; direct access ngoai membership hoac chua publish tra 404, Teacher/Admin bi 403. Frontend Student Dashboard hien My classes, Published lessons va reading view blocks/citations khong co edit/regenerate/approve/publish controls. Tests/evidence: backend full pytest 35 pass, frontend 28 tests pass, frontend typecheck/lint/build pass, `git diff --check` pass. Live HTTP smoke: add Student 200, Student lessons truoc publish count 0, Admin publish status `published`, Student lessons sau publish count 1, Student detail 200 voi 5 blocks, Teacher goi Student lessons 403."
     },
     {
       "id": "P0-010",
       "name": "Web Presentation and PDF export",
       "description": "Teacher/Student mo presentation va export PDF co ban cho lesson duoc phep xem.",
       "priority": "P0 Critical",
-      "status": "not-started",
+      "status": "done",
       "dependencies": ["P0-007", "P0-009"],
       "user_stories": ["US-027", "US-028"],
       "business_goal": "Teacher/Student mo presentation va export PDF co ban cho lesson duoc phep xem.",
@@ -445,14 +445,14 @@
         "Export khong crash app.",
         "Student chi export lesson minh co quyen xem."
       ],
-      "evidence": ""
+      "evidence": "2026-06-28: Hoan thanh P0-010 Web Presentation and PDF export. Frontend co slide builder/test, `LessonPresentation` cho Teacher Lesson Studio va Student reading view, next/previous, ArrowLeft/ArrowRight navigation, progress indicator, fullscreen, Export PDF bang `window.print()` va print CSS in tat ca slides/citations. Backend khong them route moi; permission reuse tu Teacher lesson ownership va Student `fetchStudentLesson` membership/published checks. Tests/evidence: frontend presentation unit tests pass, frontend full 7 files/30 tests pass, typecheck/lint/build pass, backend full pytest 35 pass, `git diff --check` pass."
     },
     {
       "id": "P0-011",
       "name": "UX states, demo seed, deployment readiness",
       "description": "Hoan thien flow demo end-to-end voi UI hien dai, states ro rang va deploy on dinh.",
       "priority": "P0 Critical",
-      "status": "not-started",
+      "status": "done",
       "dependencies": [
         "P0-001",
         "P0-002",
@@ -495,7 +495,7 @@
         "Demo flow acceptance trong USER_STORIES_MVP.md pass.",
         "Deploy link chay on dinh."
       ],
-      "evidence": ""
+      "evidence": "2026-06-28: Hoan thanh P0-011 deployment readiness. Them `docs/harness/DEMO_RUNBOOK.md` bang tieng Viet voi local run commands, demo accounts, manual end-to-end validation flow Teacher -> RAG -> Lesson Studio -> Admin Publish -> Student View -> Presentation/PDF, deploy notes, env names va known MVP debt; khong ghi secret. Final `./init.sh` pass: frontend typecheck/lint/test/build pass voi 7 files/30 tests, backend pytest 35 pass, frontend secret/backend URL guard pass. Post-review fix cung ngay: lesson status boundary da duoc khoa; Teacher khong resubmit published lesson, khong mutate submitted/published blocks, edit changed block reset `needs_review`, Teacher reload duoc `changes_requested` + `admin_feedback`; backend full pytest 39 pass, frontend 7 files/30 tests pass, build pass."
     }
   ]
 }

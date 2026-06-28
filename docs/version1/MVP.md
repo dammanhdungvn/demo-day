@@ -339,9 +339,11 @@ API base:
 Frontend đọc backend URL từ:
 
 ```env
-URL_BACKEND=http://localhost:3000/api/v1
+URL_BACKEND=/api/v1
 BACKEND_CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 ```
+
+Ghi chú chạy local: `URL_BACKEND=/api/v1` dùng Vite dev proxy để tránh browser gọi nhầm `localhost` khi frontend được mở qua forwarded/preview URL. Khi deploy frontend static, đặt `URL_BACKEND` thành public backend base URL có `/api/v1`.
 
 ---
 

@@ -15,6 +15,12 @@ describe('backend URL config', () => {
     )
   })
 
+  it('supports a same-origin API base for local Vite proxy', () => {
+    expect(buildApiUrl('/auth/demo-accounts', '/api/v1')).toBe(
+      '/api/v1/auth/demo-accounts',
+    )
+  })
+
   it('fails clearly when the backend URL is missing', () => {
     expect(() => getBackendUrl('')).toThrow('URL_BACKEND')
   })

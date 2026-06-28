@@ -59,9 +59,11 @@ Không hardcode secret trong source code.
 Frontend đọc:
 
 ```env
-URL_BACKEND=http://localhost:3000/api/v1
+URL_BACKEND=/api/v1
 BACKEND_CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 ```
+
+Khi chạy local với Vite, `URL_BACKEND=/api/v1` đi qua dev proxy tới backend `127.0.0.1:3000` để tránh lỗi browser resolve `localhost` sai môi trường. Khi deploy frontend static, `URL_BACKEND` phải là public backend base URL có `/api/v1`.
 
 Backend đọc các key từ `.env`, ví dụ:
 

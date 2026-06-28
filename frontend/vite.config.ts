@@ -16,6 +16,14 @@ export default defineConfig(({ mode }) => {
     define: {
       __TEACHFLOW_URL_BACKEND__: JSON.stringify(backendUrl),
     },
+    server: {
+      proxy: {
+        '/api': {
+          target: 'http://127.0.0.1:3000',
+          changeOrigin: true,
+        },
+      },
+    },
     plugins: [react()],
   }
 })
