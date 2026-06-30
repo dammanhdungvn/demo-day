@@ -9,14 +9,19 @@ import {
   AlertTriangle,
   CheckCircle2,
   ClipboardCheck,
+  Edit3,
   FileText,
+  Link2,
   RefreshCcw,
   Save,
   Send,
   Search,
+  Trash2,
+  UploadCloud,
   UserCheck,
   UserX,
   UsersRound,
+  X,
   XCircle,
 } from 'lucide-react'
 import {
@@ -68,13 +73,27 @@ import {
   filterManagedUsers,
   type ManagedUserFilterState,
 } from './userManagement'
+import { KnowledgeUploadPanel } from '../knowledge/KnowledgeControls'
 import {
-  DocumentStatusList,
-  KnowledgeUploadPanel,
-} from '../knowledge/KnowledgeControls'
+  documentGovernanceLabels,
+  documentStatusLabel,
+  isSourceDocumentUsable,
+} from '../knowledge/knowledgeHelpers'
 
 function managedUserStatusLabel(status: ManagedUserStatus): string {
   return status === 'active' ? 'Đang hoạt động' : 'Đã tạm khóa'
+}
+
+function formatDateTime(value?: string | null): string {
+  return value ? new Date(value).toLocaleString('vi-VN') : 'Chưa có'
+}
+
+function sourceTypeLabel(document: SourceDocument): string {
+  if (document.source_type === 'url' || document.source_type === 'web_url') {
+    return 'URL'
+  }
+
+  return 'PDF'
 }
 
 export function AdminWorkspace({
@@ -96,8 +115,13 @@ export function AdminWorkspace({
   >({})
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<OrganizationInviteRole>('teacher')
+  const [documentPage, setDocumentPage] = useState(1)
   const [invitePage, setInvitePage] = useState(1)
   const [managedUserPage, setManagedUserPage] = useState(1)
+  const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null)
+  const [editingManagedUserId, setEditingManagedUserId] = useState<string | null>(
+    null,
+  )
   const [managedUserFilters, setManagedUserFilters] =
     useState<ManagedUserFilterState>({
       query: '',
@@ -139,6 +163,14 @@ export function AdminWorkspace({
     selectedReviewLesson?.blocks.find((block) => block.id === selectedAdminBlockId) ??
     selectedReviewLesson?.blocks[0] ??
     null
+  const paginatedDocuments = useMemo(
+    () =>
+      buildPaginationState(documents, {
+        page: documentPage,
+        pageSize: 8,
+      }),
+    [documentPage, documents],
+  )
   const paginatedInvites = useMemo(
     () =>
       buildPaginationState(invites, {
@@ -240,6 +272,10 @@ export function AdminWorkspace({
   }, [managedUserFilters])
 
   useEffect(() => {
+    setDocumentPage(1)
+  }, [documents.length])
+
+  useEffect(() => {
     if (!reviewLessons.length) {
       setSelectedReviewLessonId(null)
       return
@@ -259,6 +295,35 @@ export function AdminWorkspace({
         lesson.id === updatedLesson.id ? updatedLesson : lesson,
       ),
     )
+  }
+
+  function focusKnowledgeUpload(mode: 'pdf' | 'url') {
+    setKnowledgeStatusMessage(
+      mode === 'pdf'
+        ? 'Chọn file PDF trong khung thêm tài liệu bên dưới.'
+        : 'Nhập URL trong khung thêm tài liệu bên dưới.',
+    )
+    window.requestAnimationFrame(() => {
+      document.getElementById('admin-knowledge-add')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    })
+  }
+
+  function startInvite(role: OrganizationInviteRole) {
+    setInviteRole(role)
+    setInviteStatusMessage(
+      role === 'teacher'
+        ? 'Nhập email để thêm Teacher bằng mã mời.'
+        : 'Nhập email để thêm Student bằng mã mời.',
+    )
+    window.requestAnimationFrame(() => {
+      document.getElementById('admin-invite-panel')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    })
   }
 
   async function handlePublish(lesson: LessonSession) {
@@ -363,6 +428,23 @@ export function AdminWorkspace({
     }))
   }
 
+  function startDocumentEdit(document: SourceDocument) {
+    setEditingDocumentId(document.id)
+    setDocumentTitleDrafts((current) => ({
+      ...current,
+      [document.id]: current[document.id] ?? document.title,
+    }))
+  }
+
+  function cancelDocumentEdit(document: SourceDocument) {
+    setEditingDocumentId((current) => (current === document.id ? null : current))
+    setDocumentTitleDrafts((current) => {
+      const next = { ...current }
+      delete next[document.id]
+      return next
+    })
+  }
+
   async function handleAdminSaveDocumentTitle(document: SourceDocument) {
     const title = (documentTitleDrafts[document.id] ?? document.title).trim()
     if (!title) {
@@ -388,6 +470,7 @@ export function AdminWorkspace({
         delete next[updatedDocument.id]
         return next
       })
+      setEditingDocumentId(null)
       setKnowledgeStatusMessage(`Đã lưu tên tài liệu: ${updatedDocument.title}.`)
     } catch (error: unknown) {
       setKnowledgeStatusMessage(getErrorMessage(error, 'Không lưu được tên tài liệu'))
@@ -428,6 +511,26 @@ export function AdminWorkspace({
     }))
   }
 
+  function startManagedUserEdit(user: ManagedUser) {
+    setEditingManagedUserId(user.id)
+    setManagedUserDrafts((current) => ({
+      ...current,
+      [user.id]: current[user.id] ?? {
+        name: user.name,
+        email: user.email,
+      },
+    }))
+  }
+
+  function cancelManagedUserEdit(user: ManagedUser) {
+    setEditingManagedUserId((current) => (current === user.id ? null : current))
+    setManagedUserDrafts((current) => {
+      const next = { ...current }
+      delete next[user.id]
+      return next
+    })
+  }
+
   async function handleManagedUserSave(user: ManagedUser) {
     const draft = managedUserDrafts[user.id] ?? {
       name: user.name,
@@ -456,6 +559,7 @@ export function AdminWorkspace({
         delete next[updatedUser.id]
         return next
       })
+      setEditingManagedUserId(null)
       setManagedUserStatusMessage(`Đã lưu thông tin ${updatedUser.name}.`)
     } catch (error: unknown) {
       setManagedUserStatusMessage(
@@ -789,59 +893,256 @@ export function AdminWorkspace({
 
       {activePage === 'admin-knowledge' && (
         <section
-          className="knowledge-panel admin-knowledge-panel"
+          className="knowledge-panel admin-knowledge-panel admin-management-surface"
           id={WORKSPACE_SECTION_IDS.adminKnowledge}
           tabIndex={-1}
         >
-        <div className="panel-heading">
-          <p className="section-label">Kho tri thức dài hạn của AI</p>
-          <span className="status-pill neutral-pill">Admin library</span>
-        </div>
-        <KnowledgeUploadPanel
-          idleMessage="Chưa chọn PDF cho library dài hạn."
-          pdfLabel="PDF library"
-          submitLabel="Upload vào library"
-          token={token}
-          urlLabel="URL library"
-          urlSubmitLabel="Ingest vào library"
-          onUploaded={handleAdminDocumentUploaded}
-        />
-        <p className="state-panel compact-state">{knowledgeStatusMessage}</p>
-        {documents.length > 0 ? (
-          <DocumentStatusList
-            busyDocumentId={archivingDocumentId}
-            busyTitleDocumentId={savingDocumentTitleId}
-            busyReindexDocumentId={reindexingDocumentId}
-            documents={documents}
-            onArchive={(document) => void handleAdminArchiveDocument(document)}
-            onReindex={(document) => void handleAdminReindexDocument(document)}
-            onSaveTitle={(document) => void handleAdminSaveDocumentTitle(document)}
-            onTitleChange={handleAdminDocumentTitleChange}
-            titleDrafts={documentTitleDrafts}
+          <div className="management-header">
+            <div>
+              <p className="section-label">Admin library</p>
+              <h3>Quản lý tài liệu AI</h3>
+              <p className="muted">
+                Kho tri thức dài hạn được AI dùng làm nguồn tham khảo cho tổ chức.
+              </p>
+            </div>
+            <div className="management-actions">
+              <button
+                aria-label="Thêm PDF"
+                className="ghost-button icon-button management-icon-button"
+                title="Thêm PDF"
+                type="button"
+                onClick={() => focusKnowledgeUpload('pdf')}
+              >
+                <UploadCloud aria-hidden="true" size={16} />
+              </button>
+              <button
+                aria-label="Thêm URL"
+                className="primary-button icon-button management-icon-button"
+                title="Thêm URL"
+                type="button"
+                onClick={() => focusKnowledgeUpload('url')}
+              >
+                <Link2 aria-hidden="true" size={16} />
+              </button>
+            </div>
+          </div>
+
+          <p className="state-panel compact-state">{knowledgeStatusMessage}</p>
+
+          <DataTable
+            columns={[
+              {
+                header: 'Tên tài liệu',
+                key: 'title',
+                render: (document) => {
+                  const isEditing = editingDocumentId === document.id
+                  return (
+                    <span className="admin-document-title-cell">
+                      {isEditing ? (
+                        <input
+                          aria-label={`Tên tài liệu ${document.title}`}
+                          className="table-inline-input"
+                          disabled={savingDocumentTitleId === document.id}
+                          value={documentTitleDrafts[document.id] ?? document.title}
+                          onChange={(event) =>
+                            handleAdminDocumentTitleChange(
+                              document,
+                              event.target.value,
+                            )
+                          }
+                        />
+                      ) : (
+                        <strong>{document.title}</strong>
+                      )}
+                      <small>{document.file_name}</small>
+                    </span>
+                  )
+                },
+              },
+              {
+                header: 'Loại',
+                key: 'type',
+                render: (document) => sourceTypeLabel(document),
+              },
+              {
+                header: 'Nguồn',
+                key: 'source',
+                render: (document) =>
+                  documentGovernanceLabels(document).join(' · ') || 'Library',
+              },
+              {
+                header: 'Trạng thái',
+                key: 'status',
+                render: (document) => (
+                  <span
+                    className={`status-pill ${
+                      document.is_active ? '' : 'neutral-pill'
+                    }`}
+                  >
+                    {document.is_active ? documentStatusLabel(document) : 'Inactive'}
+                  </span>
+                ),
+              },
+              {
+                header: 'Cập nhật',
+                key: 'updated',
+                render: (document) => formatDateTime(document.updated_at),
+              },
+              {
+                header: 'Hành động',
+                key: 'actions',
+                render: (document) => {
+                  const isEditing = editingDocumentId === document.id
+                  const isSaving = savingDocumentTitleId === document.id
+                  const isArchiving = archivingDocumentId === document.id
+                  const isReindexing = reindexingDocumentId === document.id
+                  return (
+                    <span className="table-action-group">
+                      {isEditing ? (
+                        <>
+                          <button
+                            className="ghost-button table-action-button"
+                            disabled={isSaving || archivingDocumentId !== null}
+                            type="button"
+                            onClick={() => void handleAdminSaveDocumentTitle(document)}
+                          >
+                            {isSaving ? (
+                              <Spinner label="Đang lưu" />
+                            ) : (
+                              <>
+                                <Save aria-hidden="true" size={16} />
+                                Lưu
+                              </>
+                            )}
+                          </button>
+                          <button
+                            className="ghost-button table-action-button"
+                            disabled={isSaving}
+                            type="button"
+                            onClick={() => cancelDocumentEdit(document)}
+                          >
+                            <X aria-hidden="true" size={16} />
+                            Hủy
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            aria-label={`Sửa ${document.title}`}
+                            className="ghost-button table-action-button icon-table-action"
+                            disabled={!document.is_active || savingDocumentTitleId !== null}
+                            title="Sửa"
+                            type="button"
+                            onClick={() => startDocumentEdit(document)}
+                          >
+                            <Edit3 aria-hidden="true" size={16} />
+                          </button>
+                          <button
+                            className="ghost-button table-action-button"
+                            disabled={!isSourceDocumentUsable(document) || isReindexing}
+                            type="button"
+                            onClick={() => void handleAdminReindexDocument(document)}
+                          >
+                            {isReindexing ? (
+                              <Spinner label="Đang chạy" />
+                            ) : (
+                              <>
+                                <RefreshCcw aria-hidden="true" size={16} />
+                                Re-index
+                              </>
+                            )}
+                          </button>
+                          <button
+                            aria-label={`Xóa khỏi active ${document.title}`}
+                            className="ghost-button table-action-button icon-table-action danger-action"
+                            disabled={!document.is_active || isArchiving}
+                            title="Xóa khỏi active"
+                            type="button"
+                            onClick={() => void handleAdminArchiveDocument(document)}
+                          >
+                            {isArchiving ? (
+                              <Spinner label="Đang xóa" />
+                            ) : (
+                              <Trash2 aria-hidden="true" size={16} />
+                            )}
+                          </button>
+                        </>
+                      )}
+                    </span>
+                  )
+                },
+              },
+            ]}
+            emptyState={<p className="muted">Chưa có tài liệu AI nào.</p>}
+            getRowKey={(document) => document.id}
+            rows={paginatedDocuments.items}
           />
-        ) : (
-          <p className="muted">{knowledgeStatusMessage}</p>
-        )}
+          <PaginationControls
+            state={paginatedDocuments}
+            onPageChange={setDocumentPage}
+          />
+
+          <section className="admin-add-panel" id="admin-knowledge-add">
+            <div className="panel-heading">
+              <div>
+                <p className="section-label">Thêm tài liệu</p>
+                <h3>Thêm PDF hoặc URL vào kho tri thức</h3>
+              </div>
+              <span className="status-pill neutral-pill">Soft governance</span>
+            </div>
+            <KnowledgeUploadPanel
+              idleMessage="Chưa chọn PDF cho library dài hạn."
+              pdfLabel="PDF library"
+              submitLabel="Upload vào library"
+              token={token}
+              urlLabel="URL library"
+              urlSubmitLabel="Ingest vào library"
+              onUploaded={handleAdminDocumentUploaded}
+            />
+          </section>
         </section>
       )}
 
       {activePage === 'admin-users' && (
         <>
           <section className="knowledge-panel admin-user-management-panel">
-            <div className="panel-heading">
+            <div className="management-header">
               <div>
                 <p className="section-label">Teacher & Student</p>
                 <h3>Quản lý người dùng trong organization</h3>
+                <p className="muted">
+                  Thêm, sửa hoặc xóa khỏi active mà không mất lịch sử học tập.
+                </p>
               </div>
-              <button
-                className="ghost-button"
-                disabled={busyManagedUserId !== null}
-                type="button"
-                onClick={() => void loadManagedUsers()}
-              >
-                <RefreshCcw aria-hidden="true" size={16} />
-                Tải lại
-              </button>
+              <div className="management-actions">
+                <button
+                  aria-label="Thêm Teacher"
+                  className="ghost-button icon-button management-icon-button"
+                  title="Thêm Teacher"
+                  type="button"
+                  onClick={() => startInvite('teacher')}
+                >
+                  <UsersRound aria-hidden="true" size={16} />
+                </button>
+                <button
+                  aria-label="Thêm Student"
+                  className="primary-button icon-button management-icon-button"
+                  title="Thêm Student"
+                  type="button"
+                  onClick={() => startInvite('student')}
+                >
+                  <UserCheck aria-hidden="true" size={16} />
+                </button>
+                <button
+                  className="ghost-button"
+                  disabled={busyManagedUserId !== null}
+                  type="button"
+                  onClick={() => void loadManagedUsers()}
+                >
+                  <RefreshCcw aria-hidden="true" size={16} />
+                  Tải lại
+                </button>
+              </div>
             </div>
 
             <div className="v4-metric-grid admin-user-summary-grid">
@@ -928,37 +1229,49 @@ export function AdminWorkspace({
                 {
                   header: 'Người dùng',
                   key: 'user',
-                  render: (user) => (
-                    <span className="admin-user-cell editable-user-cell">
-                      <input
-                        aria-label={`Tên ${user.name}`}
-                        className="table-inline-input"
-                        disabled={busyManagedUserId === user.id}
-                        value={managedUserDrafts[user.id]?.name ?? user.name}
-                        onChange={(event) =>
-                          handleManagedUserDraftChange(
-                            user,
-                            'name',
-                            event.target.value,
-                          )
-                        }
-                      />
-                      <input
-                        aria-label={`Email ${user.email}`}
-                        className="table-inline-input"
-                        disabled={busyManagedUserId === user.id}
-                        type="email"
-                        value={managedUserDrafts[user.id]?.email ?? user.email}
-                        onChange={(event) =>
-                          handleManagedUserDraftChange(
-                            user,
-                            'email',
-                            event.target.value,
-                          )
-                        }
-                      />
-                    </span>
-                  ),
+                  render: (user) => {
+                    const isEditing = editingManagedUserId === user.id
+                    return (
+                      <span className="admin-user-cell editable-user-cell">
+                        {isEditing ? (
+                          <>
+                            <input
+                              aria-label={`Tên ${user.name}`}
+                              className="table-inline-input"
+                              disabled={busyManagedUserId === user.id}
+                              value={managedUserDrafts[user.id]?.name ?? user.name}
+                              onChange={(event) =>
+                                handleManagedUserDraftChange(
+                                  user,
+                                  'name',
+                                  event.target.value,
+                                )
+                              }
+                            />
+                            <input
+                              aria-label={`Email ${user.email}`}
+                              className="table-inline-input"
+                              disabled={busyManagedUserId === user.id}
+                              type="email"
+                              value={managedUserDrafts[user.id]?.email ?? user.email}
+                              onChange={(event) =>
+                                handleManagedUserDraftChange(
+                                  user,
+                                  'email',
+                                  event.target.value,
+                                )
+                              }
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <strong>{user.name}</strong>
+                            <small>{user.email}</small>
+                          </>
+                        )}
+                      </span>
+                    )
+                  },
                 },
                 {
                   header: 'Vai trò',
@@ -981,10 +1294,7 @@ export function AdminWorkspace({
                 {
                   header: 'Cập nhật',
                   key: 'updated',
-                  render: (user) =>
-                    user.updated_at
-                      ? new Date(user.updated_at).toLocaleString('vi-VN')
-                      : 'Chưa có',
+                  render: (user) => formatDateTime(user.updated_at),
                 },
                 {
                   header: 'Hành động',
@@ -993,26 +1303,63 @@ export function AdminWorkspace({
                     const nextStatus =
                       user.status === 'active' ? 'disabled' : 'active'
                     const isBusy = busyManagedUserId === user.id
+                    const isEditing = editingManagedUserId === user.id
                     return (
                       <span className="table-action-group">
+                        {isEditing ? (
+                          <>
+                            <button
+                              className="ghost-button table-action-button"
+                              disabled={busyManagedUserId !== null}
+                              type="button"
+                              onClick={() => void handleManagedUserSave(user)}
+                            >
+                              {isBusy ? (
+                                <Spinner label="Đang lưu" />
+                              ) : (
+                                <>
+                                  <Save aria-hidden="true" size={16} />
+                                  Lưu
+                                </>
+                              )}
+                            </button>
+                            <button
+                              className="ghost-button table-action-button"
+                              disabled={isBusy}
+                              type="button"
+                              onClick={() => cancelManagedUserEdit(user)}
+                            >
+                              <X aria-hidden="true" size={16} />
+                              Hủy
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            aria-label={`Sửa ${user.name}`}
+                            className="ghost-button table-action-button icon-table-action"
+                            disabled={busyManagedUserId !== null}
+                            title="Sửa"
+                            type="button"
+                            onClick={() => startManagedUserEdit(user)}
+                          >
+                            <Edit3 aria-hidden="true" size={16} />
+                          </button>
+                        )}
                         <button
-                          className="ghost-button table-action-button"
+                          aria-label={
+                            nextStatus === 'disabled'
+                              ? `Xóa khỏi active ${user.name}`
+                              : `Mở lại ${user.name}`
+                          }
+                          className={`ghost-button table-action-button${
+                            nextStatus === 'disabled'
+                              ? ' icon-table-action danger-action'
+                              : ''
+                          }`}
                           disabled={busyManagedUserId !== null}
-                          type="button"
-                          onClick={() => void handleManagedUserSave(user)}
-                        >
-                          {isBusy ? (
-                            <Spinner label="Đang lưu" />
-                          ) : (
-                            <>
-                              <Save aria-hidden="true" size={16} />
-                              Lưu
-                            </>
-                          )}
-                        </button>
-                        <button
-                          className="ghost-button table-action-button"
-                          disabled={busyManagedUserId !== null}
+                          title={
+                            nextStatus === 'disabled' ? 'Xóa khỏi active' : 'Mở lại'
+                          }
                           type="button"
                           onClick={() =>
                             void handleManagedUserStatusChange(user, nextStatus)
@@ -1021,10 +1368,7 @@ export function AdminWorkspace({
                           {isBusy ? (
                             <Spinner label="Đang lưu" />
                           ) : nextStatus === 'disabled' ? (
-                            <>
-                              <UserX aria-hidden="true" size={16} />
-                              Tạm khóa
-                            </>
+                            <UserX aria-hidden="true" size={16} />
                           ) : (
                             <>
                               <UserCheck aria-hidden="true" size={16} />
@@ -1051,9 +1395,15 @@ export function AdminWorkspace({
             />
           </section>
 
-          <section className="knowledge-panel admin-invite-panel">
+          <section
+            className="knowledge-panel admin-invite-panel admin-add-panel"
+            id="admin-invite-panel"
+          >
         <div className="panel-heading">
-          <p className="section-label">Mời người dùng mới</p>
+          <div>
+            <p className="section-label">Thêm người dùng</p>
+            <h3>Tạo invite cho Teacher hoặc Student</h3>
+          </div>
           <span className="status-pill neutral-pill">Tạo tài khoản</span>
         </div>
         <form className="upload-panel invite-form" onSubmit={handleInviteSubmit}>

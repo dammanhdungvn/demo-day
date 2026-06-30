@@ -77,6 +77,17 @@ docs/version4/assets/v4-044-page-navigation-workspace-concept.png
 
 Concept nay la reference cho V4-044: moi role co sidebar/taskbar menu, moi chuc nang chinh la mot page doc lap, va workspace co alert/skeleton/spinner/switch/table/pagination/toast feedback thay vi don tat ca workflow vao mot trang.
 
+Concept V4-047 frontend redesign da duyet:
+
+```txt
+images/frontend-design-approval-v1.png
+images/login-design-approval-v1.png
+docs/version4/assets/v4-047-minimal-frontend-redesign-concept.png
+docs/version4/assets/v4-047-teachflow-reference-inspired-concept.png
+```
+
+Tu V4-047 tro di, UI surface/page/workflow chua co concept duyet phai tao anh concept trong `images/` va cho user duyet truoc khi code. Concept chi la visual spec; runtime UI phai duoc build bang React/CSS/components, khong dung thumbnail/screenshot lam UI.
+
 ## Release Gate V4
 
 Version 4 chi duoc coi la dat khi:
@@ -111,3 +122,4 @@ Version 4 chi duoc coi la dat khi:
 - V4-044 da sua loi IA/UX lon cua frontend: Teacher/Admin/Student/System Admin khong con nhin tat ca chuc nang trong mot page dai; workspace co page config theo role, sidebar/taskbar navigate page that, page heading rieng, feedback primitives local theo shadcn pattern, table/pagination cho list quan trong, toast khi doi trang, skeleton/alert/loading/empty state ro hon.
 - V4-045 da them Admin Teacher/Student user management: page `Nguoi dung` khong con chi tao invite code ma co danh sach member that trong organization, search/filter role/status, table/pagination, disable/enable Teacher/Student co feedback; backend enforce organization scope, khong cho Admin to chuc thao tac Admin/System Admin hay user khac organization.
 - V4-046 da them CRUD management expansion: Admin sua Teacher/Student name/email/status va rename/archive knowledge documents; Teacher sua/archive class va rename/archive lesson minh so huu. `Delete` trong UI la archive/disable an toan, giu audit/history va tranh mat du lieu production.
+- V4-047 da implement frontend redesign theo concept duyet va feedback cua user: login co hero minh hoa/3 role cards/input icon, bo tagline `Soan bai. Day tot.`, khong hien API URL/demo password; Teacher overview co action cards/recent list/AI Assistant panel; Admin Knowledge/Admin Users table-first va Them/Sua/Xoa icon-only khi ro nghia; SOP co UI approval gate cho cac UI surface moi.

@@ -6,21 +6,24 @@ import {
 } from 'react'
 import {
   BookOpen,
-  ChevronRight,
   ClipboardCheck,
   FileText,
   GraduationCap,
   LayoutDashboard,
+  LockKeyhole,
   Library,
   LogOut,
+  Mail,
   MonitorPlay,
   ShieldCheck,
+  Ticket,
   UserPlus,
   UserRound,
   UsersRound,
   X,
 } from 'lucide-react'
 import './App.css'
+import teachflowHeroImage from './assets/teachflow-education-hero.png'
 import {
   acceptInvite,
   createSystemAdminInvite,
@@ -94,6 +97,17 @@ const EMPTY_INVITE_FORM: InviteAcceptPayload = {
   name: '',
   password: '',
 }
+
+const LOGIN_FEATURES: Array<{
+  Icon: typeof FileText
+  label: string
+}> = [
+  { Icon: FileText, label: 'Giáo án' },
+  { Icon: MonitorPlay, label: 'Slide' },
+  { Icon: Library, label: 'Tài liệu' },
+  { Icon: ClipboardCheck, label: 'Luyện tập' },
+]
+
 function RoleIcon({ role }: { role: PublicDemoAccount['role'] }) {
   if (role === 'system_admin') {
     return <ShieldCheck aria-hidden="true" size={20} />
@@ -105,6 +119,19 @@ function RoleIcon({ role }: { role: PublicDemoAccount['role'] }) {
     return <GraduationCap aria-hidden="true" size={20} />
   }
   return <UserRound aria-hidden="true" size={20} />
+}
+
+function loginRoleLabel(role: PublicDemoAccount['role']): string {
+  if (role === 'admin') {
+    return 'Admin'
+  }
+  if (role === 'teacher') {
+    return 'Teacher'
+  }
+  if (role === 'student') {
+    return 'Student'
+  }
+  return roleLabel(role)
 }
 
 function workspacePrimaryActions(role: AuthSession['user']['role']) {
@@ -190,26 +217,35 @@ function LoginPanel({
   return (
     <section className="login-layout" aria-labelledby="login-title">
       <div className="product-panel">
-        <div className="brand-lockup">
-          <span className="brand-mark">
-            <GraduationCap aria-hidden="true" size={22} />
-          </span>
-          <strong>TeachFlow AI</strong>
+        <div className="product-panel-copy">
+          <div className="brand-lockup">
+            <span className="brand-mark">
+              <GraduationCap aria-hidden="true" size={22} />
+            </span>
+            <strong>TeachFlow AI</strong>
+          </div>
+          <h1 id="login-title">AI Teaching Assistant</h1>
+          <div className="login-feature-strip" aria-label="Điểm mạnh TeachFlow AI">
+            {LOGIN_FEATURES.map(({ Icon, label }) => (
+              <span className="login-feature-chip" key={label}>
+                <Icon aria-hidden="true" size={18} />
+                {label}
+              </span>
+            ))}
+          </div>
         </div>
-        <h1 id="login-title">Đăng nhập không gian làm việc</h1>
-        <p className="lead">
-          Chọn nhanh vai trò dùng thử hoặc đăng nhập bằng tài khoản được cấp để
-          kiểm thử luồng tạo bài giảng bằng AI.
-        </p>
+        <div className="product-hero-visual" aria-hidden="true">
+          <img src={teachflowHeroImage} alt="" />
+        </div>
       </div>
 
       <div className="auth-panel-stack">
         <form className="login-card" onSubmit={onSubmit}>
           <div>
-            <p className="section-label">Truy cập nhanh</p>
+            <p className="section-label">Chọn vai trò</p>
             <div className="account-list" aria-live="polite">
               {accountsState.status === 'loading' && (
-                <p className="muted">Đang tải quyền truy cập nhanh...</p>
+                <p className="muted">Đang tải...</p>
               )}
 
               {accountsState.status === 'error' && (
@@ -219,63 +255,72 @@ function LoginPanel({
               {accountsState.status === 'ready' &&
                 accountsState.accounts.length === 0 && (
                   <p className="muted">
-                    Truy cập nhanh chưa bật. Dùng tài khoản được cấp hoặc tham
-                    gia bằng mã mời.
+                    Chưa bật truy cập nhanh.
                   </p>
                 )}
 
               {accountsState.status === 'ready' &&
                 accountsState.accounts.map((account) => (
                   <button
+                    aria-label={`Mở ${loginRoleLabel(account.role)} (${account.email})`}
                     className={`account-button${
                       credentials.email === account.email ? ' selected' : ''
                     }`}
                     disabled={isSubmitting || isAcceptingInvite}
                     key={account.id}
+                    title={account.email}
                     type="button"
                     onClick={() => onSelectAccount(account)}
                   >
                     <RoleIcon role={account.role} />
                     <span>
-                      <strong>{roleLabel(account.role)}</strong>
-                      <small>{account.email}</small>
+                      <strong>{loginRoleLabel(account.role)}</strong>
                     </span>
-                    <ChevronRight aria-hidden="true" size={18} />
                   </button>
                 ))}
             </div>
           </div>
 
-          <label className="field">
+          <div className="login-divider" aria-hidden="true">
+            <span>hoặc</span>
+          </div>
+
+          <label className="field login-field">
             <span>Email</span>
-            <input
-              autoComplete="username"
-              name="email"
-              type="email"
-              value={credentials.email}
-              onChange={(event) =>
-                onChangeCredentials({
-                  ...credentials,
-                  email: event.target.value,
-                })
-              }
-            />
+            <span className="login-input-frame">
+              <Mail aria-hidden="true" size={18} />
+              <input
+                autoComplete="username"
+                name="email"
+                type="email"
+                value={credentials.email}
+                onChange={(event) =>
+                  onChangeCredentials({
+                    ...credentials,
+                    email: event.target.value,
+                  })
+                }
+              />
+            </span>
           </label>
 
-          <label className="field">
+          <label className="field login-field">
             <span>Mật khẩu</span>
-            <input
-              autoComplete="current-password"
-              name="password"
-              type="password"
-              value={credentials.password}
-              onChange={(event) =>
-                onChangeCredentials({
-                  ...credentials,
-                  password: event.target.value,
-                })
-              }
-            />
+            <span className="login-input-frame">
+              <LockKeyhole aria-hidden="true" size={18} />
+              <input
+                autoComplete="current-password"
+                name="password"
+                type="password"
+                value={credentials.password}
+                onChange={(event) =>
+                  onChangeCredentials({
+                    ...credentials,
+                    password: event.target.value,
+                  })
+                }
+              />
+            </span>
           </label>
 
           {loginError && <p className="error-text">{loginError}</p>}
@@ -290,15 +335,15 @@ function LoginPanel({
           </button>
 
           <div className="invite-entry">
-            <span>Được Admin mời vào workspace?</span>
             <button
+              aria-label="Có mã mời?"
               className="ghost-button invite-toggle-button"
               disabled={isSubmitting || isAcceptingInvite}
               type="button"
               onClick={onOpenInvitePanel}
             >
-              <UserPlus aria-hidden="true" size={17} />
-              Có mã mời?
+              <Ticket aria-hidden="true" size={17} />
+              Mã mời
             </button>
           </div>
         </form>
@@ -730,16 +775,6 @@ function DashboardShell({
   function selectWorkspacePage(pageId: WorkspacePageId) {
     setActivePage(pageId)
     window.history.replaceState(null, '', `${getRoleRoute(session.user.role)}#${pageId}`)
-    const page = getWorkspacePage(session.user.role, pageId)
-    setToasts((current) => [
-      {
-        id: `${pageId}-${Date.now()}`,
-        title: 'Đã chuyển trang',
-        message: page.label,
-        tone: 'success',
-      },
-      ...current.slice(0, 1),
-    ])
   }
 
   function selectWorkspaceAction(label: string) {
@@ -853,7 +888,6 @@ function DashboardShell({
               <div>
                 <p className="section-label">Trang đang mở</p>
                 <h2>{currentPage.label}</h2>
-                <p className="muted">{currentPage.description}</p>
               </div>
             </div>
 

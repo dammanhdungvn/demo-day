@@ -19,6 +19,7 @@ build/
 
 # OS
 .DS_Store
+*:Zone.Identifier
 
 # AI logs — tracked structure, ignored content
 .ai-log/*.jsonl

@@ -74,6 +74,17 @@ Version 1 da hoan thanh P0/P1 demo/polish. Khi user yeu cau version 2, uu tien p
 
 Truoc khi code feature version 2/3/4, agent phai tao/cap nhat backlog/exec plan cho feature do. Khong lay P2 version 1 lam yeu cau truc tiep neu `docs/version2/V1_P2_MIGRATION.md` da reclassify sang V2/V3/Future.
 
+## 3.0 UI Approval Gate
+
+Moi khi chuyen sang code giao dien cho mot page/surface/workflow chua co concept duoc duyet, agent phai:
+
+1. Tao image concept bang Image Gen hoac cong cu thiet ke phu hop.
+2. Luu concept vao `images/` va neu la source-of-truth version thi luu them vao `docs/version4/assets/`.
+3. Gui cho user duyet voi lua chon ngan gon, uu tien format `1. Duyet` / `2. Lam lai`.
+4. Chi bat dau code UI sau khi user duyet. Neu user duyet kem ghi chu, agent phai ap dung ghi chu do vao implementation va evidence.
+
+Neu page/surface da co concept duoc duyet trong repo thi duoc dung concept do lam visual spec. Khong dung screenshot/thumbnail lam UI runtime; concept chi la reference, UI phai duoc build bang React/CSS/components that.
+
 ## 3.1 Scope P0 Critical Version 1
 
 Ưu tiên flow demo:

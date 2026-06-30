@@ -26,7 +26,7 @@
     "blocked": "Dang bi chan, can user quyet dinh",
     "done": "Da hoan thanh va co evidence"
   },
-    "current_active_feature": null,
+  "current_active_feature": null,
   "global_rules": [
     "Version 1 P0/P1 da hoan thanh; khi lam version 2/3 phai tao/cap nhat backlog moi theo docs/version2 hoac docs/version3 truoc khi code.",
     "Moi task phai co test hoac test plan truoc khi code.",
@@ -3741,6 +3741,66 @@
         "`./init.sh` pass va docs/evidence cap nhat."
       ],
       "evidence": "2026-06-30: Hoan thanh V4-046 CRUD management expansion. Backend them `ManagedUserUpdateRequest` va `update_managed_user` de Admin sua name/email/status Teacher/Student trong organization, giu role immutable va reject duplicate email/cross-org/Admin-SystemAdmin target; them class `is_active`, `ClassUpdateRequest`, `PATCH/DELETE /api/v1/classes/{class_id}` cho Teacher owner voi delete la archive; them `DocumentMetadataUpdateRequest` va `PATCH /api/v1/documents/{document_id}` voi scope Admin library/owner contextual; them lesson `is_active`, `LessonSessionUpdateRequest`, `PATCH/DELETE /api/v1/lessons/{lesson_id}` de Teacher rename/archive lesson, active filters cho Teacher/Admin/Student/export/progress. Frontend them API clients va UI inline CRUD: Admin Knowledge rename/archive document, Admin Users edit name/email + disable/enable, Teacher class management panel edit/archive, Lesson Studio rename/archive lesson. UX fix: Teacher setup select/action khong bi khoa boi background loading keo dai. Tests/evidence: fail-first targeted tests fail do missing contracts; sau implementation backend targeted 6 pass, backend auth+learning+lesson+knowledge 115 pass, backend full 215 pass; frontend API targeted 41 pass, frontend full 18 files/93 tests pass, typecheck/lint/build pass; rendered QA pass voi screenshots `/tmp/v4-046-admin-users-crud.png` va `/tmp/v4-046-teacher-class-crud.png`; final `./init.sh` pass frontend 18 files/93 tests + build va backend 215 tests."
+    },
+    {
+      "id": "V4-047",
+      "name": "Minimal full frontend redesign",
+      "description": "Xay dung lai lop frontend hien tai theo concept da duyet: giao dien sang, icon-first, it chu, dashboard/list/AI panel ro rang va table-first cho quan tri; giu backend/API/logic product hien co.",
+      "priority": "V4-P0 Frontend Redesign",
+      "status": "done",
+      "dependencies": [
+        "V4-044",
+        "V4-045",
+        "V4-046"
+      ],
+      "user_stories": [
+        "As a user, I want the app to feel calm, simple and clearly separated by page, so that I understand where to work without reading technical explanations.",
+        "As an Admin, I want AI knowledge documents in a table with visible add/edit/delete actions, so that I can manage the library without guessing which icon does what.",
+        "As an Admin, I want Teacher/Student management to show Add/Edit/Delete-style buttons directly in the table, so that user management feels like a real product workflow.",
+        "As a Teacher or Student, I want the same minimal visual system across pages, so that the app feels consistent instead of stitched together."
+      ],
+      "business_goal": "Nang front-end tu giao dien day card/section roi thanh product workspace toi gian, ro information architecture va co CRUD management table dung mental model user.",
+      "vertical_slice": {
+        "backend": [
+          "Khong doi backend; dung API V4-046 da co."
+        ],
+        "frontend": [
+          "Tao design concept V4-047 va luu vao `docs/version4/assets/`/`images/` lam visual spec truoc khi implement.",
+          "Lam moi app shell/CSS tokens theo huong bright white/light-blue, blue-violet accent, shadow mem, icon-first va motion tiet che.",
+          "Login theo concept da duyet `images/login-design-approval-v1.png`, bo tagline `Soan bai. Day tot.` theo feedback user, giu 3 role cards Admin/Teacher/Student va khong lo API/password.",
+          "Teacher overview theo concept da duyet `images/frontend-design-approval-v1.png`: action cards Giao an/Slide/Tai lieu/Luyen tap, recent list va AI Assistant panel.",
+          "Giam clutter cua workspace header/taskbar/page heading va lam ro sidebar -> page -> content.",
+          "Admin Knowledge page dung DataTable cho documents voi cot ten, file, trang thai, nguon, cap nhat va hanh dong.",
+          "Admin Knowledge co CTA Them PDF/Them URL va row actions Them/Sua/Xoa dang icon-only co aria-label/title; Luu/Huy/Re-index giu chu khi can tranh nham lan.",
+          "Admin Users page co CTA Them Teacher/Them Student va row actions Them/Sua/Xoa dang icon-only co aria-label/title; Luu/Huy/Mo lai giu chu khi can.",
+          "Giu delete production-safe: document archive, user disabled; khong hard delete.",
+          "Giữ Teacher/Student workflows, nhung ap design system sang, gon, it chu qua CSS/component primitives."
+        ],
+        "tests": [
+          "Frontend raw/UI contract test cho Admin CRUD labels/table actions.",
+          "Frontend typecheck/lint/test/build.",
+          "Rendered QA desktop/mobile de xac minh layout toi gian va Admin pages co table/buttons visible."
+        ],
+        "manual_validation": [
+          "Login screen: thay hero AI Teaching Assistant, 4 feature icon, 3 role cards Admin/Teacher/Student, khong co tagline `Soan bai. Day tot.`.",
+          "Login Admin -> Kho tri thuc: thay table documents va nut Them PDF, Them URL, Sua, Xoa khoi active dang icon/tooltip.",
+          "Login Admin -> Nguoi dung: thay table Teacher/Student va nut Them Teacher, Them Student, Sua, Xoa khoi active/Mo lai.",
+          "Click Sua tren row -> hien input + Luu/Huy; click Xoa khoi active -> backend archive/disable, khong hard delete.",
+          "Login Teacher/Student va xac nhan layout moi sang, menu/page tach ro, dashboard first screen khong bi roi boi chu dai."
+        ]
+      },
+      "acceptance_criteria": [
+        "Frontend co visual system moi theo concept da duyet: mau sang, blue-violet accent, motion tiet che, icon-first va bo cuc ro navigation/page/content.",
+        "Nhung UI surface chua co concept duyet phai tao anh trong `images/` va cho user chon Yes/No truoc khi code.",
+        "Login theo concept da duyet, co 3 role cards test nhanh, khong lo API URL/demo password va khong con tagline `Soan bai. Day tot.`.",
+        "Teacher overview co dashboard action cards, recent list va AI Assistant panel code-native, khong dung screenshot lam UI.",
+        "Admin Knowledge khong con dung document card/list lam management UI chinh; documents nam trong DataTable.",
+        "Admin Knowledge co nut Them PDF/Them URL va row actions Them/Sua/Xoa dang icon-only co aria-label/title.",
+        "Admin Users co nut Them Teacher/Them Student va row actions Them/Sua/Xoa dang icon-only co aria-label/title.",
+        "Khong them hard delete backend hoac fake data.",
+        "`./init.sh` pass, rendered QA pass va docs/evidence cap nhat."
+      ],
+      "evidence": "2026-06-30: Hoan thanh V4-047 frontend redesign theo concept duyet. Assets/concepts: `images/frontend-design-approval-v1.png`, `images/login-design-approval-v1.png`, `docs/version4/assets/v4-047-minimal-frontend-redesign-concept.png`, `docs/version4/assets/v4-047-teachflow-reference-inspired-concept.png`, runtime illustration `frontend/src/assets/teachflow-education-hero.png`. Login implement theo concept da duyet va feedback bo tagline `Soan bai. Day tot.`: 3 role cards Admin/Teacher/Student, input icon, divider `hoac`, invite action gon, khong hien API URL/demo password. Teacher overview co dashboard action cards Giao an/Slide/Tai lieu/Luyen tap, recent list va AI Assistant panel code-native. Admin Knowledge/Admin Users dung DataTable/table-first, nut Them/Sua/Xoa chuyen icon-only co aria-label/title, Luu/Huy/Re-index/Mo lai giu chu khi can ro nghia. Them UI process rule: UI surface chua co design duyet phai tao image concept trong `images/` va cho user chon Yes/No truoc khi code. Tests/evidence: frontend typecheck pass, lint pass, full frontend 19 files/95 tests pass, frontend build pass; targeted loginSecurity test pass 2 tests sau khi giu visible label `Ma moi` ngan va them aria-label `Co ma moi?`; rendered QA Playwright pass login desktop/mobile va Teacher flow, no console/page issues, role buttons count 3, forbidden visible text/API/password empty; screenshots `/tmp/v4-047-login-approved-desktop.png`, `/tmp/v4-047-login-approved-mobile.png`, `/tmp/v4-047-teacher-approved-flow.png`; final `./init.sh` pass frontend 19 files/95 tests + build va backend 215 tests."
     }
   ]
 }

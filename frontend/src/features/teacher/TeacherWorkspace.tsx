@@ -1,7 +1,9 @@
 import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import {
   ArchiveX,
+  ChevronRight,
   CheckCircle2,
+  ClipboardCheck,
   FileText,
   Library,
   MonitorPlay,
@@ -114,6 +116,43 @@ const DEFAULT_CLASS: ClassCreatePayload = {
   teaching_style: 'Giải thích trực quan, nhiều ví dụ và hoạt động ngắn.',
 }
 const DEFAULT_RAG_TOPIC = 'Kiến trúc Transformer'
+
+const TEACHER_CREATION_ACTIONS: Array<{
+  Icon: typeof FileText
+  description: string
+  label: string
+  page: WorkspacePageId
+  tone: 'violet' | 'orange' | 'green' | 'blue'
+}> = [
+  {
+    Icon: FileText,
+    description: 'Tạo dàn ý và bài giảng từ nguồn đã chọn',
+    label: 'Giáo án',
+    page: 'teacher-outline',
+    tone: 'violet',
+  },
+  {
+    Icon: MonitorPlay,
+    description: 'Mở presentation và export slide',
+    label: 'Slide',
+    page: 'teacher-studio',
+    tone: 'orange',
+  },
+  {
+    Icon: Library,
+    description: 'Upload PDF hoặc URL làm nguồn cho AI',
+    label: 'Tài liệu',
+    page: 'teacher-documents',
+    tone: 'green',
+  },
+  {
+    Icon: ClipboardCheck,
+    description: 'Review quiz, self-check và hoạt động',
+    label: 'Luyện tập',
+    page: 'teacher-studio',
+    tone: 'blue',
+  },
+]
 
 function auditActionLabel(action: string): string {
   const labels: Record<string, string> = {
@@ -329,6 +368,10 @@ export function TeacherWorkspace({
       lessonCount: classProgress.length,
     }
   }, [classProgress])
+  const recentTeacherLessons = useMemo(
+    () => teacherLessons.slice(0, 5),
+    [teacherLessons],
+  )
   const showOverview = activePage === 'teacher-overview'
   const showSetup = activePage === 'teacher-setup'
   const showDocuments = activePage === 'teacher-documents'
@@ -1303,66 +1346,157 @@ export function TeacherWorkspace({
         <>
           <div className="v4-teacher-hero">
             <div>
-              <p className="section-label">Không gian soạn giảng</p>
-              <h2>{courses.find((course) => course.id === selectedCourseId)?.title ?? 'Chưa chọn khóa học'}</h2>
+              <p className="section-label">Dashboard</p>
+              <h2>Chào buổi sáng 👋</h2>
               <p className="muted">
-                {classes.find((classProfile) => classProfile.id === selectedClassId)?.name ??
-                  'Tạo hoặc chọn lớp để bắt đầu soạn bài từ tài liệu đến học viên.'}
+                {selectedClass?.name ??
+                  courses.find((course) => course.id === selectedCourseId)?.title ??
+                  'Chọn lớp'}
               </p>
             </div>
             <div className="v4-system-status">
               <span className="status-dot" aria-hidden="true" />
-              <strong>Backend: Hoạt động</strong>
+              <strong>Sẵn sàng</strong>
               <small>{statusMessage}</small>
             </div>
           </div>
 
-          <WorkflowTimeline
-            steps={workflowSteps}
-            onSelectStep={handleWorkflowStepSelect}
-          />
+          <section
+            className="teacher-dashboard-showcase"
+            aria-label="Teacher dashboard"
+          >
+            <div className="teacher-create-panel">
+              <div className="v4-panel-title">
+                <span>Tạo mới</span>
+                <strong>{selectedClass?.name ?? 'Chọn lớp'}</strong>
+              </div>
+              <div className="teacher-create-grid">
+                {TEACHER_CREATION_ACTIONS.map((action) => {
+                  const Icon = action.Icon
+                  return (
+                    <button
+                      aria-label={`${action.label}: ${action.description}`}
+                      className={`teacher-create-card tone-${action.tone}`}
+                      key={action.label}
+                      title={action.description}
+                      type="button"
+                      onClick={() => onPageChange?.(action.page)}
+                    >
+                      <span className="teacher-create-icon">
+                        <Icon aria-hidden="true" size={22} />
+                      </span>
+                      <strong>{action.label}</strong>
+                      <ChevronRight aria-hidden="true" size={18} />
+                    </button>
+                  )
+                })}
+              </div>
 
-          <div className="v4-first-lesson-guide">
-            <div>
-              <span>{firstLessonGuide.progressLabel}</span>
-              <h3>{firstLessonGuide.title}</h3>
-              <p>{firstLessonGuide.detail}</p>
+              <div className="teacher-recent-panel">
+                <div className="v4-panel-title">
+                  <span>Gần đây</span>
+                  <button
+                    aria-label="Xem tất cả bài giảng"
+                    className="ghost-button icon-button"
+                    title="Xem tất cả"
+                    type="button"
+                    onClick={() => onPageChange?.('teacher-studio')}
+                  >
+                    <ChevronRight aria-hidden="true" size={18} />
+                  </button>
+                </div>
+                {recentTeacherLessons.length > 0 ? (
+                  <div className="teacher-recent-list">
+                    {recentTeacherLessons.map((lesson) => (
+                      <button
+                        className="teacher-recent-row"
+                        key={lesson.id}
+                        type="button"
+                        onClick={() => {
+                          selectTeacherLesson(lesson)
+                          onPageChange?.('teacher-studio')
+                        }}
+                      >
+                        <span className="teacher-create-icon mini-icon">
+                          <FileText aria-hidden="true" size={16} />
+                        </span>
+                        <span>
+                          <strong>{lesson.title}</strong>
+                          <small>{lessonStatusLabel(lesson.status)}</small>
+                        </span>
+                        <ChevronRight aria-hidden="true" size={16} />
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="v4-empty-inline">Chưa có bài giảng.</p>
+                )}
+              </div>
             </div>
-            <button
-              className="primary-button"
-              type="button"
-              onClick={handleFirstLessonGuideSelect}
-            >
-              <Sparkles aria-hidden="true" size={17} />
-              {firstLessonGuide.actionLabel}
-            </button>
-          </div>
 
-          <div className="v4-metric-grid">
-            <MetricCard
-              detail="Mục tiêu tối thiểu 80%"
-              label="Độ tin cậy nguồn"
-              tone={teacherMetrics.citationCoveragePercent >= 80 ? 'success' : 'warning'}
-              value={`${teacherMetrics.citationCoveragePercent}%`}
+            <aside className="teacher-ai-panel" aria-label="AI assistant">
+              <div className="teacher-ai-header">
+                <span className="teacher-create-icon ai-icon">
+                  <Sparkles aria-hidden="true" size={22} />
+                </span>
+                <div>
+                  <strong>AI Assistant</strong>
+                  <small>Nguồn + citation</small>
+                </div>
+              </div>
+              <div className="teacher-ai-suggestions">
+                <button
+                  aria-label="Chọn nguồn cho AI"
+                  title="Chọn nguồn"
+                  type="button"
+                  onClick={() => onPageChange?.('teacher-documents')}
+                >
+                  <Library aria-hidden="true" size={18} />
+                  <span>Chọn nguồn</span>
+                </button>
+                <button
+                  aria-label="Tạo dàn ý AI"
+                  title="Tạo dàn ý"
+                  type="button"
+                  onClick={() => onPageChange?.('teacher-outline')}
+                >
+                  <Sparkles aria-hidden="true" size={18} />
+                  <span>Tạo dàn ý</span>
+                </button>
+                <button
+                  aria-label="Review citation"
+                  title="Review citation"
+                  type="button"
+                  onClick={() => onPageChange?.('teacher-studio')}
+                >
+                  <ShieldCheck aria-hidden="true" size={18} />
+                  <span>Review</span>
+                </button>
+              </div>
+            </aside>
+          </section>
+
+          <div className="teacher-compact-insights">
+            <WorkflowTimeline
+              steps={workflowSteps}
+              onSelectStep={handleWorkflowStepSelect}
             />
-            <MetricCard
-              detail="Khối đã review"
-              label="Tiến độ soạn"
-              tone={teacherMetrics.totalBlocks ? 'info' : 'default'}
-              value={`${teacherMetrics.reviewedBlocks} / ${teacherMetrics.totalBlocks}`}
-            />
-            <MetricCard
-              detail="Bài đang chờ duyệt"
-              label="Sẵn sàng gửi Admin"
-              tone={teacherMetrics.pendingAdminCount ? 'success' : 'default'}
-              value={`${teacherMetrics.pendingAdminCount}`}
-            />
-            <MetricCard
-              detail="Cần xử lý trước khi publish"
-              label="Cảnh báo"
-              tone={teacherMetrics.warningCount ? 'warning' : 'success'}
-              value={`${teacherMetrics.warningCount}`}
-            />
+            <div className="v4-first-lesson-guide">
+              <div>
+                <span>{firstLessonGuide.progressLabel}</span>
+                <h3>{firstLessonGuide.title}</h3>
+              </div>
+              <button
+                aria-label={firstLessonGuide.detail}
+                className="primary-button"
+                title={firstLessonGuide.detail}
+                type="button"
+                onClick={handleFirstLessonGuideSelect}
+              >
+                <Sparkles aria-hidden="true" size={17} />
+                {firstLessonGuide.actionLabel}
+              </button>
+            </div>
           </div>
         </>
       )}
@@ -1375,7 +1509,7 @@ export function TeacherWorkspace({
         </div>
         <div className="v2-progress-summary-grid">
           <MetricCard
-            detail="Trung bình trên bài đã xuất bản"
+            detail="Trung bình"
             label="Hoàn thành"
             tone={classProgressOverview.averageProgressPercent ? 'success' : 'default'}
             value={`${classProgressOverview.averageProgressPercent}%`}
