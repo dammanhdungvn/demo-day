@@ -58,6 +58,7 @@ import {
   DocumentStatusList,
   KnowledgeUploadPanel,
 } from '../knowledge/KnowledgeControls'
+import type { WorkspacePageId } from '../../workspacePages'
 
 function studyNoteKey(lessonId: string, blockId: string): string {
   return `${lessonId}:${blockId}`
@@ -93,7 +94,13 @@ function formatStudyUpdatedAt(value: string): string {
   }).format(updatedAt)
 }
 
-export function StudentWorkspace({ token }: { token: string }) {
+export function StudentWorkspace({
+  activePage,
+  token,
+}: {
+  activePage: WorkspacePageId
+  token: string
+}) {
   const [classes, setClasses] = useState<StudentClassSummary[]>([])
   const [lessons, setLessons] = useState<LessonSession[]>([])
   const [documents, setDocuments] = useState<SourceDocument[]>([])
@@ -156,6 +163,10 @@ export function StudentWorkspace({ token }: { token: string }) {
       ),
     [classes, lessonProgressById, lessons, selectedLesson],
   )
+  const showClassesPage = activePage === 'student-classes'
+  const showLessonsPage = activePage === 'student-lessons'
+  const showPracticePage = activePage === 'student-practice'
+  const showDocumentsPage = activePage === 'student-documents'
   const selectedLessonProgress = selectedLesson
     ? (lessonProgressById[selectedLesson.id] ?? null)
     : learningSummary.selectedLessonProgress
@@ -833,67 +844,72 @@ export function StudentWorkspace({ token }: { token: string }) {
       id={WORKSPACE_SECTION_IDS.studentClasses}
       tabIndex={-1}
     >
-      <div className="v4-student-hero">
-        <div>
-          <p className="section-label">Không gian học tập</p>
-          <h2>Học bài đã xuất bản, không lẫn công cụ của giảng viên</h2>
-          <p className="muted">
-            {learningSummary.classContext
-              ? `${learningSummary.classContext.class_name} - ${learningSummary.classContext.course_title}`
-              : statusMessage}
-          </p>
-        </div>
-        {learningSummary.continueLesson ? (
-          <button
-            className="primary-button"
-            disabled={isLoadingLesson}
-            type="button"
-            onClick={() => {
-              const lesson = learningSummary.continueLesson
-              if (lesson) {
-                void handleOpenLesson(lesson)
+      {showClassesPage && (
+        <>
+          <div className="v4-student-hero">
+            <div>
+              <p className="section-label">Không gian học tập</p>
+              <h2>Học bài đã xuất bản, không lẫn công cụ của giảng viên</h2>
+              <p className="muted">
+                {learningSummary.classContext
+                  ? `${learningSummary.classContext.class_name} - ${learningSummary.classContext.course_title}`
+                  : statusMessage}
+              </p>
+            </div>
+            {learningSummary.continueLesson ? (
+              <button
+                className="primary-button"
+                disabled={isLoadingLesson}
+                type="button"
+                onClick={() => {
+                  const lesson = learningSummary.continueLesson
+                  if (lesson) {
+                    void handleOpenLesson(lesson)
+                  }
+                }}
+              >
+                <BookOpen aria-hidden="true" size={17} />
+                Tiếp tục học
+              </button>
+            ) : (
+              <span className="status-pill neutral-pill">Chờ lesson published</span>
+            )}
+          </div>
+
+          <div className="v4-metric-grid v4-student-metrics">
+            <MetricCard
+              detail="Class membership từ API"
+              label="Lớp đang học"
+              value={String(learningSummary.classCount)}
+            />
+            <MetricCard
+              detail={lessonStatusMessage}
+              label="Lesson published"
+              tone="success"
+              value={String(learningSummary.publishedLessonCount)}
+            />
+            <MetricCard
+              detail={`${learningSummary.startedLessonCount}/${learningSummary.publishedLessonCount} lesson đã mở`}
+              label="Tiến độ học"
+              tone={learningSummary.averageProgressPercent ? 'info' : 'default'}
+              value={`${learningSummary.averageProgressPercent}%`}
+            />
+            <MetricCard
+              detail={
+                learningSummary.selectedLessonMetrics
+                  ? `${learningSummary.selectedLessonMetrics.citationCount} citation trong lesson tiếp tục`
+                  : 'Chưa mở lesson'
               }
-            }}
-          >
-            <BookOpen aria-hidden="true" size={17} />
-            Tiếp tục học
-          </button>
-        ) : (
-          <span className="status-pill neutral-pill">Chờ lesson published</span>
-        )}
-      </div>
+              label="Hoàn thành"
+              tone={learningSummary.completedLessonCount ? 'success' : 'default'}
+              value={`${learningSummary.completedLessonCount}/${learningSummary.publishedLessonCount}`}
+            />
+          </div>
+        </>
+      )}
 
-      <div className="v4-metric-grid v4-student-metrics">
-        <MetricCard
-          detail="Class membership từ API"
-          label="Lớp đang học"
-          value={String(learningSummary.classCount)}
-        />
-        <MetricCard
-          detail={lessonStatusMessage}
-          label="Lesson published"
-          tone="success"
-          value={String(learningSummary.publishedLessonCount)}
-        />
-        <MetricCard
-          detail={`${learningSummary.startedLessonCount}/${learningSummary.publishedLessonCount} lesson đã mở`}
-          label="Tiến độ học"
-          tone={learningSummary.averageProgressPercent ? 'info' : 'default'}
-          value={`${learningSummary.averageProgressPercent}%`}
-        />
-        <MetricCard
-          detail={
-            learningSummary.selectedLessonMetrics
-              ? `${learningSummary.selectedLessonMetrics.citationCount} citation trong lesson tiếp tục`
-              : 'Chưa mở lesson'
-          }
-          label="Hoàn thành"
-          tone={learningSummary.completedLessonCount ? 'success' : 'default'}
-          value={`${learningSummary.completedLessonCount}/${learningSummary.publishedLessonCount}`}
-        />
-      </div>
-
-      <section className="v4-student-review-hub" aria-labelledby="student-review-title">
+      {showClassesPage && (
+        <section className="v4-student-review-hub" aria-labelledby="student-review-title">
         <div className="panel-heading">
           <div>
             <p className="section-label">Ôn tập cá nhân</p>
@@ -937,9 +953,11 @@ export function StudentWorkspace({ token }: { token: string }) {
             Bookmark hoặc lưu ghi chú trong lesson để tạo danh sách ôn tập.
           </div>
         )}
-      </section>
+        </section>
+      )}
 
-      <section
+      {showPracticePage && (
+        <section
         className="v4-student-review-hub v4-student-practice-hub"
         aria-labelledby="student-practice-title"
         id={WORKSPACE_SECTION_IDS.studentPractice}
@@ -995,9 +1013,11 @@ export function StudentWorkspace({ token }: { token: string }) {
             Lesson đã xuất bản chưa có quiz hoặc bài tập để luyện tập.
           </div>
         )}
-      </section>
+        </section>
+      )}
 
-      <section
+      {showDocumentsPage && (
+        <section
         className="knowledge-panel student-context-panel"
         id={WORKSPACE_SECTION_IDS.studentKnowledge}
         tabIndex={-1}
@@ -1029,9 +1049,11 @@ export function StudentWorkspace({ token }: { token: string }) {
             Tài liệu này chỉ dùng làm ngữ cảnh cá nhân, không nhập vào library dài hạn.
           </p>
         )}
-      </section>
+        </section>
+      )}
 
-      <div className="v4-student-grid">
+      {showLessonsPage && (
+        <div className="v4-student-grid">
         <aside className="v4-student-sidebar">
           <div className="v4-panel-title">
             <span>Lớp của tôi</span>
@@ -1458,9 +1480,11 @@ export function StudentWorkspace({ token }: { token: string }) {
             </>
           )}
         </section>
-      </div>
+        </div>
+      )}
 
-      <div className="v4-future-slots" aria-label="Tinh nang hoc tap tuong lai">
+      {showClassesPage && (
+        <div className="v4-future-slots" aria-label="Tinh nang hoc tap tuong lai">
         {learningSummary.futureSlots.map((slot) => (
           <article className="v4-future-slot" key={slot.id}>
             <span>{slot.label}</span>
@@ -1468,7 +1492,8 @@ export function StudentWorkspace({ token }: { token: string }) {
             <small>{slot.description}</small>
           </article>
         ))}
-      </div>
+        </div>
+      )}
     </section>
   )
 }

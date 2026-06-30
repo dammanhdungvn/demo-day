@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
-Role = Literal["admin", "teacher", "student"]
+Role = Literal["system_admin", "admin", "teacher", "student"]
+OrganizationInviteRole = Literal["admin", "teacher", "student"]
+ManagedUserRole = Literal["teacher", "student"]
 ProfileStatus = Literal["active", "disabled"]
 
 
@@ -61,9 +63,49 @@ class AuthProfileRecord(UserProfile):
     updated_at: str | None = None
 
 
+class ManagedUserResponse(BaseModel):
+    id: str
+    email: str
+    name: str
+    role: ManagedUserRole
+    status: ProfileStatus
+    organization_id: str
+    created_at: str | None = None
+    updated_at: str | None = None
+
+
+class ManagedUserStatusUpdateRequest(BaseModel):
+    status: ProfileStatus
+
+
+class ManagedUserUpdateRequest(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=160)
+    email: str | None = Field(default=None, min_length=3, max_length=320)
+    status: ProfileStatus | None = None
+
+    @field_validator("name", "email")
+    @classmethod
+    def text_fields_must_not_be_blank(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("Field must not be blank")
+        return stripped
+
+
 class InviteCreateRequest(BaseModel):
     email: str = Field(min_length=3, max_length=320)
-    role: Role
+    role: OrganizationInviteRole
+
+
+class SystemOrganizationCreateRequest(BaseModel):
+    name: str = Field(min_length=2, max_length=160)
+    id: str | None = Field(default=None, min_length=2, max_length=80)
+
+
+class SystemAdminInviteCreateRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=320)
 
 
 class AcceptInviteRequest(BaseModel):
@@ -76,7 +118,7 @@ class AcceptInviteRequest(BaseModel):
 class OrganizationInviteResponse(BaseModel):
     id: str
     email: str
-    role: Role
+    role: OrganizationInviteRole
     status: Literal["pending", "accepted", "revoked"]
     organization_id: str
     invited_by: str

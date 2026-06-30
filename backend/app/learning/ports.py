@@ -6,6 +6,7 @@ from .schemas import (
     ClassCreateRequest,
     ClassProfileResponse,
     ClassStudentResponse,
+    ClassUpdateRequest,
     CourseCreateRequest,
     CourseResponse,
 )
@@ -46,6 +47,15 @@ class LearningRepository(Protocol):
         organization_id: str,
         payload: ClassCreateRequest,
     ) -> ClassProfileResponse: ...
+
+    def update_class_profile(
+        self,
+        *,
+        class_id: str,
+        payload: ClassUpdateRequest,
+    ) -> ClassProfileResponse: ...
+
+    def archive_class_profile(self, class_id: str) -> ClassProfileResponse: ...
 
     def get_class_student(
         self,

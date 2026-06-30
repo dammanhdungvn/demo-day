@@ -26,7 +26,7 @@
     "blocked": "Dang bi chan, can user quyet dinh",
     "done": "Da hoan thanh va co evidence"
   },
-  "current_active_feature": null,
+    "current_active_feature": null,
   "global_rules": [
     "Version 1 P0/P1 da hoan thanh; khi lam version 2/3 phai tao/cap nhat backlog moi theo docs/version2 hoac docs/version3 truoc khi code.",
     "Moi task phai co test hoac test plan truoc khi code.",
@@ -3490,6 +3490,257 @@
         "`./init.sh` pass va docs/evidence cap nhat."
       ],
       "evidence": "2026-06-30: Hoan thanh V5-001 Student grounded tutor for published lessons. Backend them `LessonTutorQuestionRequest`/`LessonTutorResponse`, service `ask_student_lesson_tutor`, route `POST /api/v1/student/lessons/{lesson_id}/tutor`; service enforce Student role, lesson `published`, class membership/org scope qua guard co san, optional block id thuoc lesson, citation/block context sanitize bang AI safety helper, ghi generation job `student_tutor_answer`, return citations/cited_block_ids/warning neu thieu grounding va khong goi AI khi lesson khong co citation. Frontend them API client `askStudentLessonTutor`, Student reader panel `AI Tutor co citation` voi question textarea, loading/error/answer/citation state, va xoa disabled future tutor slot. Docs them `docs/version5/README.md` va `docs/version5/PRODUCT_MARKET_REVIEW.md` de chot ngach small training centers/departments co private knowledge. Tests/evidence: baseline `./init.sh` pass truoc code frontend 15 files/71 tests + build va backend 196 tests; fail-first backend/frontend tests fail dung ky vong; sau fix backend tutor targeted 3 pass, backend student/progress/openapi/jobs regression 32 pass, frontend API/helper targeted 28 pass, frontend typecheck/lint/full tests 15 files/72 tests pass, Playwright fallback rendered QA desktop/mobile pass voi console issues empty va screenshots `/tmp/v5-001-student-tutor-desktop.png`, `/tmp/v5-001-student-tutor-mobile.png`; final `./init.sh` pass frontend 15 files/72 tests + build va backend 199 tests."
+    },
+    {
+      "id": "BUG-005",
+      "name": "Login invite activation UX cleanup",
+      "description": "An invite activation khoi first-screen login form, doi wording developer-style thanh user-friendly va chi mo khi user co ma moi.",
+      "priority": "P2 UX Polish",
+      "status": "done",
+      "dependencies": [
+        "V4-029",
+        "V4-034",
+        "V4-035"
+      ],
+      "user_stories": [
+        "As an invited Teacher/Student, I want a clear path to join by invite code without making the main login page feel confusing.",
+        "As a demo user, I want the login page to focus on quick role access and normal login first."
+      ],
+      "business_goal": "Giu production invite onboarding nhung giam cognitive load tren login, tranh wording ky thuat 'Kich hoat invite' lam user moi kho hieu.",
+      "vertical_slice": {
+        "backend": [
+          "Khong doi backend/API invite acceptance."
+        ],
+        "frontend": [
+          "Login first viewport chi hien quick role access va normal login.",
+          "Them secondary action `Co ma moi?` de mo panel `Tham gia bang ma moi`.",
+          "Invite panel co nut dong va giu loading/error state hien co.",
+          "Neu URL co `invite_code` hoac `code`, tu mo panel va prefill ma moi."
+        ],
+        "tests": [
+          "Frontend login UX test khoa wording moi va chan cum `Kich hoat invite` quay lai.",
+          "Frontend typecheck/lint/test/build va full init."
+        ],
+        "manual_validation": [
+          "Mo login thay quick role + login, khong thay form invite lon mac dinh.",
+          "Bam `Co ma moi?` thay panel `Tham gia bang ma moi`, nhap code/email/name/password va submit.",
+          "Reload `/ ?invite_code=abc` hoac `/?code=abc` tu mo panel va prefill ma moi."
+        ]
+      },
+      "acceptance_criteria": [
+        "Invite acceptance khong bi xoa va van goi API hien co.",
+        "Login page mac dinh khong render form invite lon ngang hang voi login chinh.",
+        "Visible copy dung ngon ngu user-friendly: `Co ma moi?`, `Tham gia bang ma moi`, `Tao tai khoan`.",
+        "Khong hardcode secret/backend URL.",
+        "`./init.sh` pass va docs/evidence cap nhat."
+      ],
+      "evidence": "2026-06-30: Hoan thanh BUG-005 Login invite activation UX cleanup. Frontend giu backend invite acceptance API nguyen ven nhung doi UX login: mac dinh chi hien quick role access + normal login, invite activation chuyen thanh secondary action `Co ma moi?`; khi click moi render panel `Tham gia bang ma moi` voi nut dong, error/loading state va button `Tao tai khoan`; URL query `invite_code` hoac `code` tu mo panel va prefill ma moi. Doi copy developer-style `Kich hoat invite`/`kich hoat invite` sang ngon ngu user-friendly, giup login first screen bot roi. Tests/evidence: baseline `./init.sh` pass truoc code frontend 15 files/72 tests + build va backend 199 tests; fail-first `pnpm --dir frontend exec vitest run src/loginSecurity.test.ts` fail dung ky vong vi source con `Kich hoat invite`; sau fix targeted login security 2 pass, frontend typecheck/lint pass, full frontend test pass 15 files/73 tests, frontend build pass. Playwright fallback rendered QA tren dev server local pass default desktop, invite-open desktop, query prefill va mobile, screenshots `/tmp/bug-005-login-default-desktop.png`, `/tmp/bug-005-login-invite-open-desktop.png`, `/tmp/bug-005-login-invite-mobile.png`; `python3 -m json.tool feature_list.json` pass; `git diff --check` pass; final `./init.sh` pass frontend 15 files/73 tests + build va backend 199 tests."
+    },
+    {
+      "id": "V4-043",
+      "name": "System admin production role foundation",
+      "description": "Them role owner he thong tach khoi Admin to chuc, bootstrap qua Supabase-authenticated account trong `.env`, va API van hanh tao organization/admin invite dau tien.",
+      "priority": "V4-P0 Production Trust",
+      "status": "done",
+      "dependencies": [
+        "V4-029",
+        "V4-030",
+        "BUG-005"
+      ],
+      "user_stories": [
+        "As a platform operator, I want one secure system owner role that is not a public demo account, so that production setup is controlled outside the normal org Admin workflow.",
+        "As an organization Admin, I should remain scoped to my organization and should not be able to create or become system owner from the invite UI."
+      ],
+      "business_goal": "Sua gap production ve root/system admin: Admin hien tai la admin theo organization, nen can role cao nhat cua he thong de bootstrap/van hanh tenant ma khong tron voi demo login hoac Admin workspace.",
+      "vertical_slice": {
+        "backend": [
+          "Mo rong auth role model voi `system_admin` tren `profiles`, giu invite thuong khong tao duoc `system_admin`.",
+          "Bootstrap system admin tu Supabase Auth user khop `SYSTEM_ADMIN_EMAILS` hoac `SYSTEM_ADMIN_USER_IDS` trong `.env`.",
+          "Them repository methods list/upsert organizations.",
+          "Them System Admin-only API list/create organization va tao invite Admin dau tien cho organization.",
+          "Them `/system/dashboard` de frontend/operator login khong bi vao nham org Admin dashboard."
+        ],
+        "frontend": [
+          "Them type/session/workspace support cho `system_admin`.",
+          "Them workspace van hanh gon cho system admin: list organization, tao organization, tao invite Admin tổ chức."
+        ],
+        "tests": [
+          "Backend tests cho role literal/schema, bootstrap Supabase system admin, reject normal invite role system_admin, System Admin tao organization/admin invite, org Admin bi chan system API.",
+          "Frontend auth/session/API tests cho `system_admin` route va system endpoints.",
+          "`./init.sh` pass."
+        ],
+        "manual_validation": [
+          "Set AUTH_PROVIDER=supabase, AUTH_REPOSITORY=postgres, SYSTEM_ADMIN_EMAILS=owner@example.edu.",
+          "Dang nhap bang Supabase user owner@example.edu, `/me` tra role `system_admin` va vao `/system`.",
+          "System Admin tao organization va tao invite Admin dau tien cho organization.",
+          "Org Admin thu goi `/system/organizations` bi 403; invite thuong khong chap nhan role `system_admin`."
+        ]
+      },
+      "acceptance_criteria": [
+        "`system_admin` khong nam trong public demo accounts.",
+        "System admin duoc bootstrap chi khi Supabase-authenticated user khop env allowlist.",
+        "Org Admin/Teacher/Student khong goi duoc System Admin API.",
+        "Normal Admin invite flow khong tao duoc `system_admin`.",
+        "Schema Postgres idempotent cap nhat check constraint role an toan.",
+        "Frontend khong crash khi current user role la `system_admin` va khong hien secret/backend URL.",
+        "`./init.sh` pass va docs/evidence cap nhat."
+      ],
+      "evidence": "2026-06-30: Hoan thanh V4-043 System admin production role foundation. Backend them role `system_admin` trong `profiles` va tach `OrganizationInviteRole` chi gom `admin/teacher/student`, nen invite thuong khong tao duoc owner he thong. `auth_schema_sql()` tao/update constraint `profiles_role_check` idempotent cho `system_admin` va giu `organization_invites_role_check` khong co `system_admin`; them `org-platform` mac dinh. Supabase login bootstrap owner khi Auth user da xac thuc va email/id khop `SYSTEM_ADMIN_EMAILS`/`SYSTEM_ADMIN_USER_IDS`, sau do upsert profile role `system_admin`; unconfigured user van bi reject neu chua provision profile. Them repository methods list/upsert organizations va System Admin-only API `/api/v1/system/dashboard`, `GET/POST /api/v1/system/organizations`, `POST /api/v1/system/organizations/{organization_id}/admin-invites`; Org Admin bi 403 voi system services. Frontend them role/session/router/workspace support cho `system_admin`, route `/system`, workspace Owner he thong de tao organization va tao invite Admin dau tien; public quick demo login van chi co Admin/Teacher/Student. Docs cap nhat `.env.example`, API inventory, V4 README/Product Review/Production Gap. Tests/evidence: baseline `./init.sh` pass truoc code frontend 15 files/73 tests + build va backend 199 tests; fail-first backend import/service va frontend session/API/workspace fail dung ky vong; sau fix backend auth boundary targeted 32 pass, auth/openapi targeted 36 pass, backend full 203 pass; frontend auth/session/workspace targeted 19 pass, frontend full 15 files/77 tests pass, typecheck/lint/build pass; `python3 -m json.tool feature_list.json` pass; `git diff --check` pass; final `./init.sh` pass frontend 15 files/77 tests + build va backend 203 tests."
+    },
+    {
+      "id": "V4-044",
+      "name": "Role workspace page navigation and UI feedback primitives",
+      "description": "Sua UX loi moi chuc nang bi don vao mot page: moi role co menu page that, content chi render page dang chon, va co primitives cho alert/spinner/skeleton/table/pagination/switch/toast theo pattern shadcn.",
+      "priority": "V4-P0 UX Architecture",
+      "status": "done",
+      "dependencies": [
+        "V4-034",
+        "V4-035",
+        "V4-043"
+      ],
+      "user_stories": [
+        "As a Teacher/Admin/Student, I want each major function in its own page reachable from a menu, so that I am not overwhelmed by every workflow on one screen.",
+        "As a user, I want loading, alert, table, pagination, switch and toast feedback, so that I understand what the app is doing and what action succeeded or failed."
+      ],
+      "business_goal": "Nang frontend tu dashboard mot trang dai thanh product workspace co information architecture dung: menu -> page -> task, giam cognitive load va tao nen tang UI co the mo rong nhu san pham production.",
+      "vertical_slice": {
+        "backend": [
+          "Khong doi backend; dung API hien co."
+        ],
+        "frontend": [
+          "Them role page config va navigation state trong AppShell.",
+          "Teacher/Admin/Student/System Admin workspace chi render page dang chon thay vi render tat ca section tren mot scroll page.",
+          "Them UI primitives local theo shadcn composition pattern: alert, spinner, skeleton, switch, data table, pagination, toast.",
+          "Them pagination/table states cho cac list chinh tren role workspace.",
+          "Cap nhat CSS responsive de sidebar/taskbar/menu khong gay chu tren desktop/mobile."
+        ],
+        "tests": [
+          "Frontend tests cho page config/action target va pagination helper.",
+          "Frontend typecheck/lint/test/build.",
+          "Rendered QA desktop/mobile cho Teacher/Admin/Student navigation: click menu chi thay page tuong ung, co alert/skeleton/table/pagination/spinner/switch/toast surface."
+        ],
+        "manual_validation": [
+          "Login Teacher, click menu Tong quan/Tai lieu/Dan y/Lesson Studio va xac nhan moi menu la page rieng.",
+          "Login Admin, click Hang doi duyet/Kho tri thuc/Nguoi dung va xac nhan khong bi tron tat ca workflow trong mot page.",
+          "Login Student, click Lop cua toi/Lesson/Luyen tap/Tai lieu ca nhan va xac nhan page active ro.",
+          "Xem table/pagination, alert, skeleton/spinner/switch/toast tren cac surface co state."
+        ]
+      },
+      "acceptance_criteria": [
+        "Sidebar/taskbar khong con chi scroll den section trong mot trang; click menu doi active page.",
+        "Moi role Teacher/Admin/Student co it nhat 3 page rieng va content cua page khac khong render dong thoi trong main viewport.",
+        "Co reusable UI primitives cho alert, spinner, skeleton, switch, data table, pagination va toast feedback.",
+        "Co pagination cho list dai/quan trong, khong chi list/card vo han.",
+        "Khong hardcode secret/backend URL va khong them fake business data.",
+        "`./init.sh` pass va docs/evidence cap nhat."
+      ],
+      "evidence": "2026-06-30: Hoan thanh V4-044 Role workspace page navigation and UI feedback primitives. Frontend them `frontend/src/workspacePages.ts` khai bao page config theo role va action -> page mapping; `DashboardShell` co active page state, sidebar/taskbar navigate page that qua hash, focus-mode switch va toast feedback thay vi scroll mot trang dai. Teacher/Admin/Student/System Admin workspace nhan `activePage` va conditional render page rieng: Teacher `Tong quan/Khoa hoc & lop/Tai lieu/Dan y/Lesson Studio/Hang doi xu ly`, Admin `Hang doi duyet/Kho tri thuc/Nguoi dung`, Student `Lop cua toi/Lesson/Luyen tap/Tai lieu ca nhan`, System Admin `To chuc/Moi Admin`. Them local shadcn-style primitives `Alert`, `Spinner`, `SkeletonRows`, `SwitchControl`, `DataTable`, `PaginationControls`, `ToastViewport` va pagination helper; Admin invites/System organizations dung table + pagination; loading/error/empty states ro hon. Da check `pnpm --dir frontend dlx shadcn@latest info --json`: project hien la Manual, chua co `components.json`/Tailwind config, nen khong migrate full shadcn CLI trong slice nay de tranh pha app; da dung local primitives theo composition pattern va ghi debt/next-slice trong exec plan. Concept asset `docs/version4/assets/v4-044-page-navigation-workspace-concept.png`; Playwright rendered QA fallback spawn backend/frontend va click 3 role pass, screenshots `/tmp/v4-044-teacher-pages.png`, `/tmp/v4-044-admin-pages.png`, `/tmp/v4-044-student-pages.png`. Tests/evidence: baseline `./init.sh` pass truoc code frontend 15 files/77 tests + build va backend 203 tests; test-first targeted fail dung ky vong; sau fix `pnpm --dir frontend typecheck` pass, `pnpm --dir frontend lint` pass, `pnpm --dir frontend test -- --run` pass 17 files/86 tests, `pnpm --dir frontend build` pass; `python3 -m json.tool feature_list.json` pass; `git diff --check` pass; final `./init.sh` pass frontend 17 files/86 tests + build va backend 203 tests."
+    },
+    {
+      "id": "V4-045",
+      "name": "Admin Teacher and Student user management",
+      "description": "Admin organization quan ly Teacher/Student that: xem danh sach profile trong organization, search/filter theo role/status, invite user moi, disable/enable Teacher/Student ma khong can truy cap ky thuat.",
+      "priority": "V4-P1 Admin UX Production",
+      "status": "done",
+      "dependencies": [
+        "V4-029",
+        "V4-035",
+        "V4-043",
+        "V4-044"
+      ],
+      "user_stories": [
+        "As an organization Admin, I want to see all Teachers and Students in my organization, so that I can manage real users instead of only pending invite codes.",
+        "As an organization Admin, I want to disable or reactivate Teacher/Student profiles, so that I can remove access without deleting historical learning data.",
+        "As an organization Admin, I want search/filter/table/pagination states, so that managing a growing training center stays usable."
+      ],
+      "business_goal": "Bien trang Admin Nguoi dung thanh user-management workspace thuc te cho trung tam/bo mon nho: Admin quan ly thanh vien dang active/disabled va invite moi, trong gioi han organization scope.",
+      "vertical_slice": {
+        "backend": [
+          "Them Admin-only API list Teacher/Student profiles trong organization hien tai.",
+          "Them Admin-only API cap nhat status active/disabled cho Teacher/Student trong cung organization.",
+          "Backend khong cho Admin quan ly Admin/System Admin, khong cross-organization, khong delete auth.users."
+        ],
+        "frontend": [
+          "Admin page `Nguoi dung` hien summary Teacher/Student, search/filter role/status, data table + pagination.",
+          "Giu form invite de tao user moi, nhung dat canh member list that.",
+          "Nut disable/enable co loading/error state va refresh list."
+        ],
+        "tests": [
+          "Backend service tests cho list organization members, role/status filter, disable/reactivate guard, wrong role/cross org/self/admin-system-admin rejection.",
+          "Frontend API tests cho fetch/update managed users.",
+          "Frontend helper/UI tests cho filter/pagination summary neu them helper.",
+          "Frontend typecheck/lint/test/build va final `./init.sh`."
+        ],
+        "manual_validation": [
+          "Login Admin, mo page `Nguoi dung`, thay Teacher/Student active trong organization.",
+          "Search/filter Teacher/Student/active/disabled, table pagination hoat dong.",
+          "Disable mot Teacher/Student, row doi status disabled; reactivate lai duoc.",
+          "Negative: Teacher/Student khong goi duoc API quan ly; Admin khong thay/khong disable Admin/System Admin hoac user organization khac."
+        ]
+      },
+      "acceptance_criteria": [
+        "Admin page `Nguoi dung` khong chi la invite; co danh sach Teacher/Student profile that.",
+        "List user scope theo organization va chi gom role teacher/student.",
+        "Admin co the disable/enable Teacher/Student; disabled profile bi current-user guard chan o request tiep theo.",
+        "Khong co delete user/auth destructive action trong slice nay.",
+        "UI co search/filter, table, pagination, loading/empty/error state.",
+        "`./init.sh` pass va docs/evidence cap nhat."
+      ],
+      "evidence": "2026-06-30: Hoan thanh V4-045 Admin Teacher/Student user management. Backend them `ManagedUserResponse`, `ManagedUserStatusUpdateRequest`, `GET /api/v1/auth/users` va `PATCH /api/v1/auth/users/{profile_id}` cho organization Admin; service chi list/update role `teacher/student` cung organization, reject Teacher/Student caller, reject Admin/System Admin target va cross-org target. Demo-login seed demo profiles vao repository persistence neu thieu de Admin page khong bi rong trong Postgres/Supabase mode, nhung khong reactivate profile da disabled; disabled demo profile bi chan khi login lai va khi dung session cu. Frontend Admin page `Nguoi dung` co summary cards, search/filter role/status, DataTable, PaginationControls, status/loading/error feedback, disable/enable actions va invite table rieng; menu copy cap nhat thanh quan ly/moi/tam khoa Teacher/Student. CSS responsive them toolbar/search/table action polish. Tests/evidence: baseline `./init.sh` pass truoc code frontend 17 files/86 tests + build va backend 203 tests; targeted backend `cd backend && UV_CACHE_DIR=.uv-cache uv run pytest tests/test_auth.py -q` pass 30; backend openapi/boundary targeted pass 39; frontend `pnpm --dir frontend typecheck` pass; frontend targeted `pnpm --dir frontend exec vitest run src/api/auth.test.ts src/features/admin/userManagement.test.ts src/workspacePages.test.ts` pass 3 files/19 tests; Playwright QA `pnpm --dir frontend exec node /tmp/v4-045-admin-user-management-qa.mjs` pass: Admin quick login, mo `Nguoi dung`, thay `Teacher Demo`/`Student Demo`, loc Teacher, tam khoa va mo lai `Teacher Demo`; screenshot `/tmp/v4-045-admin-user-management.png`; final `./init.sh` pass frontend 18 files/89 tests + build va backend 209 tests."
+    },
+    {
+      "id": "V4-046",
+      "name": "CRUD management expansion for knowledge, users, classes and lessons",
+      "description": "Mo rong cac workspace quan ly thanh CRUD thuc te: Admin sua/lưu tru knowledge library va Teacher/Student profile; Teacher sua/lưu tru lop hoc va bai giang, tach delete thanh archive/disable de khong mat audit/progress/citation.",
+      "priority": "V4-P1 Product CRUD Foundation",
+      "status": "done",
+      "dependencies": [
+        "V4-028",
+        "V4-029",
+        "V4-044",
+        "V4-045"
+      ],
+      "user_stories": [
+        "As an Admin, I want to rename/archive long-term AI knowledge sources, so that the AI library stays understandable as it grows.",
+        "As an Admin, I want to edit Teacher/Student profile display information and disable/reactivate accounts, so that organization member management feels complete.",
+        "As a Teacher, I want to edit/archive classes and lessons from clear lists, so that I can correct setup mistakes without losing learning history."
+      ],
+      "business_goal": "Hoan thien CRUD cot loi ma user ky vong trong san pham B2B giao duc nho: quan ly thu vien tri thuc, nguoi dung, lop hoc va bai giang theo workflow an toan, co audit, khong destructive hard delete.",
+      "vertical_slice": {
+        "backend": [
+          "Them PATCH document metadata cho document ma user co quyen thay, giu scope Admin library vs owner contextual.",
+          "Mo rong PATCH auth managed user de Admin sua name/email/status trong organization; khong doi role, khong thao tac Admin/System Admin.",
+          "Them PATCH/DELETE class profile cho Teacher owner; DELETE la archive is_active=false.",
+          "Them PATCH/DELETE lesson session cho Teacher owner; DELETE la archive is_active=false va list/review/student chi hien active lessons."
+        ],
+        "frontend": [
+          "Admin Knowledge page co edit title va archive feedback trong danh sach.",
+          "Admin Users page co edit name/email/status theo row, giu invite cho create.",
+          "Teacher Setup page co danh sach lop co action edit/archive va refresh chon lop.",
+          "Teacher Lesson Studio co edit lesson title va archive lesson trong list bai giang."
+        ],
+        "tests": [
+          "Backend service tests cho document metadata, managed user profile edit, class update/archive, lesson update/archive va role/org guards.",
+          "Frontend API tests cho update/archive endpoints.",
+          "Frontend targeted tests cho helper/list state neu them helper.",
+          "Frontend typecheck/lint/test/build va final `./init.sh`."
+        ],
+        "manual_validation": [
+          "Login Admin -> Kho tri thuc: upload/list document, sua ten document, archive document.",
+          "Login Admin -> Nguoi dung: sua name/email Teacher/Student, tam khoa/mo lai.",
+          "Login Teacher -> Khoa hoc & lop: tao lop, sua thong tin lop, archive lop va thay list cap nhat.",
+          "Login Teacher -> Lesson Studio: doi ten lesson, archive lesson va thay lesson khong con trong list active."
+        ]
+      },
+      "acceptance_criteria": [
+        "CRUD khong hard-delete du lieu hoc tap; delete user la disabled, delete document/class/lesson la archive/inactive.",
+        "Moi update/delete backend enforce role, owner va organization scope.",
+        "Admin library knowledge hidden voi Teacher/Student van giu dung scope.",
+        "Teacher chi quan ly lop/bai giang cua minh trong organization.",
+        "Frontend co list/action/edit/loading/error state cho CRUD chinh.",
+        "`./init.sh` pass va docs/evidence cap nhat."
+      ],
+      "evidence": "2026-06-30: Hoan thanh V4-046 CRUD management expansion. Backend them `ManagedUserUpdateRequest` va `update_managed_user` de Admin sua name/email/status Teacher/Student trong organization, giu role immutable va reject duplicate email/cross-org/Admin-SystemAdmin target; them class `is_active`, `ClassUpdateRequest`, `PATCH/DELETE /api/v1/classes/{class_id}` cho Teacher owner voi delete la archive; them `DocumentMetadataUpdateRequest` va `PATCH /api/v1/documents/{document_id}` voi scope Admin library/owner contextual; them lesson `is_active`, `LessonSessionUpdateRequest`, `PATCH/DELETE /api/v1/lessons/{lesson_id}` de Teacher rename/archive lesson, active filters cho Teacher/Admin/Student/export/progress. Frontend them API clients va UI inline CRUD: Admin Knowledge rename/archive document, Admin Users edit name/email + disable/enable, Teacher class management panel edit/archive, Lesson Studio rename/archive lesson. UX fix: Teacher setup select/action khong bi khoa boi background loading keo dai. Tests/evidence: fail-first targeted tests fail do missing contracts; sau implementation backend targeted 6 pass, backend auth+learning+lesson+knowledge 115 pass, backend full 215 pass; frontend API targeted 41 pass, frontend full 18 files/93 tests pass, typecheck/lint/build pass; rendered QA pass voi screenshots `/tmp/v4-046-admin-users-crud.png` va `/tmp/v4-046-teacher-class-crud.png`; final `./init.sh` pass frontend 18 files/93 tests + build va backend 215 tests."
     }
   ]
 }

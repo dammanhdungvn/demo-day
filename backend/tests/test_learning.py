@@ -6,11 +6,13 @@ from main import (
     AddStudentRequest,
     AuthProfileRecord,
     ClassCreateRequest,
+    ClassUpdateRequest,
     CourseCreateRequest,
     InMemoryAuthRepository,
     LoginRequest,
     UserProfile,
     add_student_to_class,
+    archive_class_profile,
     authenticate_demo_user,
     create_class_profile,
     create_course,
@@ -20,6 +22,7 @@ from main import (
     list_student_classes,
     reset_demo_sessions_for_tests,
     reset_learning_store_for_tests,
+    update_class_profile,
 )
 
 
@@ -98,6 +101,58 @@ def test_teacher_creates_class_profile_for_owned_course() -> None:
     assert class_profile.teacher_id == teacher.id
     assert class_profile.student_level == "average"
     assert class_profile.session_count == 12
+
+
+def test_teacher_updates_owned_class_profile() -> None:
+    teacher = teacher_user()
+    course = create_course(course_payload(), current_user=teacher)
+    class_profile = create_class_profile(
+        course_id=course.id,
+        payload=class_payload(),
+        current_user=teacher,
+    )
+
+    updated = update_class_profile(
+        class_id=class_profile.id,
+        payload=ClassUpdateRequest(
+            name="KTPM-K18 Advanced",
+            student_level="strong",
+            background_knowledge="Sinh vien da hoc OOP va database.",
+            session_count=10,
+            minutes_per_session=75,
+            teaching_style="Workshop thuc hanh theo nhom.",
+        ),
+        current_user=teacher,
+    )
+
+    assert updated.id == class_profile.id
+    assert updated.name == "KTPM-K18 Advanced"
+    assert updated.student_level == "strong"
+    assert updated.session_count == 10
+    assert updated.updated_at != class_profile.updated_at
+
+
+def test_teacher_archives_class_and_hides_it_from_teacher_and_student_lists() -> None:
+    teacher = teacher_user()
+    student = student_user()
+    course = create_course(course_payload(), current_user=teacher)
+    class_profile = create_class_profile(
+        course_id=course.id,
+        payload=class_payload(),
+        current_user=teacher,
+    )
+    add_student_to_class(
+        class_id=class_profile.id,
+        payload=AddStudentRequest(student_id=student.id),
+        current_user=teacher,
+    )
+
+    archived = archive_class_profile(class_profile.id, current_user=teacher)
+
+    assert archived.id == class_profile.id
+    assert archived.is_active is False
+    assert list_course_classes(course.id, current_user=teacher) == []
+    assert list_student_classes(current_user=student) == []
 
 
 def test_course_and_class_access_are_scoped_to_user_organization() -> None:

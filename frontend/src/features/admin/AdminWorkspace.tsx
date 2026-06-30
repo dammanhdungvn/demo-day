@@ -11,15 +11,26 @@ import {
   ClipboardCheck,
   FileText,
   RefreshCcw,
+  Save,
   Send,
+  Search,
+  UserCheck,
+  UserX,
   UsersRound,
   XCircle,
 } from 'lucide-react'
 import {
   createInvite,
   fetchInvites,
+  fetchManagedUsers,
+  updateManagedUser,
+  updateManagedUserStatus,
+  type ManagedUser,
+  type ManagedUserRole,
+  type ManagedUserStatus,
+  type ManagedUserUpdatePayload,
+  type OrganizationInviteRole,
   type OrganizationInvite,
-  type UserRole,
 } from '../../api/auth'
 import {
   archiveDocument,
@@ -29,6 +40,7 @@ import {
   reindexDocument,
   rejectLesson,
   requestLessonChanges,
+  updateDocumentMetadata,
   type DocumentUploadResponse,
   type LessonSession,
   type SourceDocument,
@@ -41,20 +53,57 @@ import {
   roleLabel,
 } from '../../labels'
 import { MetricCard } from '../../ui/teacherWorkspace'
+import {
+  DataTable,
+  PaginationControls,
+  Spinner,
+} from '../../ui/application'
+import { buildPaginationState } from '../../ui/pagination'
 import { documentUploadStatusMessage } from '../../uploadStatus'
 import { WORKSPACE_SECTION_IDS } from '../../workspaceActionTargets'
+import type { WorkspacePageId } from '../../workspacePages'
 import { buildAdminReviewSummary } from '../adminStudentWorkspace'
+import {
+  buildManagedUserSummary,
+  filterManagedUsers,
+  type ManagedUserFilterState,
+} from './userManagement'
 import {
   DocumentStatusList,
   KnowledgeUploadPanel,
 } from '../knowledge/KnowledgeControls'
 
-export function AdminWorkspace({ token }: { token: string }) {
+function managedUserStatusLabel(status: ManagedUserStatus): string {
+  return status === 'active' ? 'Đang hoạt động' : 'Đã tạm khóa'
+}
+
+export function AdminWorkspace({
+  activePage,
+  token,
+}: {
+  activePage: WorkspacePageId
+  token: string
+}) {
   const [reviewLessons, setReviewLessons] = useState<LessonSession[]>([])
   const [documents, setDocuments] = useState<SourceDocument[]>([])
   const [invites, setInvites] = useState<OrganizationInvite[]>([])
+  const [managedUsers, setManagedUsers] = useState<ManagedUser[]>([])
+  const [documentTitleDrafts, setDocumentTitleDrafts] = useState<Record<string, string>>(
+    {},
+  )
+  const [managedUserDrafts, setManagedUserDrafts] = useState<
+    Record<string, { name: string; email: string }>
+  >({})
   const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole, setInviteRole] = useState<UserRole>('teacher')
+  const [inviteRole, setInviteRole] = useState<OrganizationInviteRole>('teacher')
+  const [invitePage, setInvitePage] = useState(1)
+  const [managedUserPage, setManagedUserPage] = useState(1)
+  const [managedUserFilters, setManagedUserFilters] =
+    useState<ManagedUserFilterState>({
+      query: '',
+      role: 'all',
+      status: 'all',
+    })
   const [feedbackDrafts, setFeedbackDrafts] = useState<Record<string, string>>({})
   const [selectedReviewLessonId, setSelectedReviewLessonId] = useState<string | null>(
     null,
@@ -69,10 +118,17 @@ export function AdminWorkspace({ token }: { token: string }) {
   const [inviteStatusMessage, setInviteStatusMessage] = useState(
     'Đang tải invite...',
   )
+  const [managedUserStatusMessage, setManagedUserStatusMessage] = useState(
+    'Đang tải Teacher và Student...',
+  )
   const [busyLessonId, setBusyLessonId] = useState<string | null>(null)
   const [archivingDocumentId, setArchivingDocumentId] = useState<string | null>(null)
+  const [savingDocumentTitleId, setSavingDocumentTitleId] = useState<string | null>(
+    null,
+  )
   const [reindexingDocumentId, setReindexingDocumentId] = useState<string | null>(null)
   const [isInviteBusy, setIsInviteBusy] = useState(false)
+  const [busyManagedUserId, setBusyManagedUserId] = useState<string | null>(null)
   const adminSummary = useMemo(
     () => buildAdminReviewSummary(reviewLessons, selectedReviewLessonId),
     [reviewLessons, selectedReviewLessonId],
@@ -83,6 +139,30 @@ export function AdminWorkspace({ token }: { token: string }) {
     selectedReviewLesson?.blocks.find((block) => block.id === selectedAdminBlockId) ??
     selectedReviewLesson?.blocks[0] ??
     null
+  const paginatedInvites = useMemo(
+    () =>
+      buildPaginationState(invites, {
+        page: invitePage,
+        pageSize: 6,
+      }),
+    [invitePage, invites],
+  )
+  const managedUserSummary = useMemo(
+    () => buildManagedUserSummary(managedUsers),
+    [managedUsers],
+  )
+  const filteredManagedUsers = useMemo(
+    () => filterManagedUsers(managedUsers, managedUserFilters),
+    [managedUserFilters, managedUsers],
+  )
+  const paginatedManagedUsers = useMemo(
+    () =>
+      buildPaginationState(filteredManagedUsers, {
+        page: managedUserPage,
+        pageSize: 8,
+      }),
+    [filteredManagedUsers, managedUserPage],
+  )
 
   const loadReviewQueue = useCallback(async () => {
     setStatusMessage('Đang tải hàng đợi Admin...')
@@ -131,11 +211,33 @@ export function AdminWorkspace({ token }: { token: string }) {
     }
   }, [token])
 
+  const loadManagedUsers = useCallback(async () => {
+    setManagedUserStatusMessage('Đang tải Teacher và Student...')
+    try {
+      const users = await fetchManagedUsers(token)
+      setManagedUsers(users)
+      setManagedUserStatusMessage(
+        users.length
+          ? `Đã tải ${users.length} Teacher/Student trong organization.`
+          : 'Organization chưa có Teacher hoặc Student active/disabled.',
+      )
+    } catch (error: unknown) {
+      setManagedUserStatusMessage(
+        getErrorMessage(error, 'Không tải được Teacher/Student'),
+      )
+    }
+  }, [token])
+
   useEffect(() => {
     void loadReviewQueue()
     void loadKnowledgeDocuments()
     void loadInvites()
-  }, [loadInvites, loadKnowledgeDocuments, loadReviewQueue])
+    void loadManagedUsers()
+  }, [loadInvites, loadKnowledgeDocuments, loadManagedUsers, loadReviewQueue])
+
+  useEffect(() => {
+    setManagedUserPage(1)
+  }, [managedUserFilters])
 
   useEffect(() => {
     if (!reviewLessons.length) {
@@ -251,6 +353,49 @@ export function AdminWorkspace({ token }: { token: string }) {
     }
   }
 
+  function handleAdminDocumentTitleChange(
+    document: SourceDocument,
+    title: string,
+  ) {
+    setDocumentTitleDrafts((current) => ({
+      ...current,
+      [document.id]: title,
+    }))
+  }
+
+  async function handleAdminSaveDocumentTitle(document: SourceDocument) {
+    const title = (documentTitleDrafts[document.id] ?? document.title).trim()
+    if (!title) {
+      setKnowledgeStatusMessage('Tên tài liệu không được để trống.')
+      return
+    }
+
+    setSavingDocumentTitleId(document.id)
+    setKnowledgeStatusMessage(`Đang lưu tên ${document.title}...`)
+    try {
+      const updatedDocument = await updateDocumentMetadata(
+        document.id,
+        { title },
+        token,
+      )
+      setDocuments((current) =>
+        current.map((candidate) =>
+          candidate.id === updatedDocument.id ? updatedDocument : candidate,
+        ),
+      )
+      setDocumentTitleDrafts((current) => {
+        const next = { ...current }
+        delete next[updatedDocument.id]
+        return next
+      })
+      setKnowledgeStatusMessage(`Đã lưu tên tài liệu: ${updatedDocument.title}.`)
+    } catch (error: unknown) {
+      setKnowledgeStatusMessage(getErrorMessage(error, 'Không lưu được tên tài liệu'))
+    } finally {
+      setSavingDocumentTitleId(null)
+    }
+  }
+
   async function handleAdminReindexDocument(document: SourceDocument) {
     setReindexingDocumentId(document.id)
     setKnowledgeStatusMessage(`Đang re-index ${document.title}...`)
@@ -265,6 +410,59 @@ export function AdminWorkspace({ token }: { token: string }) {
       setKnowledgeStatusMessage(getErrorMessage(error, 'Không re-index được tài liệu'))
     } finally {
       setReindexingDocumentId(null)
+    }
+  }
+
+  function handleManagedUserDraftChange(
+    user: ManagedUser,
+    field: 'name' | 'email',
+    value: string,
+  ) {
+    setManagedUserDrafts((current) => ({
+      ...current,
+      [user.id]: {
+        name: current[user.id]?.name ?? user.name,
+        email: current[user.id]?.email ?? user.email,
+        [field]: value,
+      },
+    }))
+  }
+
+  async function handleManagedUserSave(user: ManagedUser) {
+    const draft = managedUserDrafts[user.id] ?? {
+      name: user.name,
+      email: user.email,
+    }
+    const payload: ManagedUserUpdatePayload = {
+      name: draft.name.trim(),
+      email: draft.email.trim().toLowerCase(),
+    }
+    if (!payload.name || !payload.email) {
+      setManagedUserStatusMessage('Tên và email không được để trống.')
+      return
+    }
+
+    setBusyManagedUserId(user.id)
+    setManagedUserStatusMessage(`Đang lưu ${user.name}...`)
+    try {
+      const updatedUser = await updateManagedUser(user.id, payload, token)
+      setManagedUsers((current) =>
+        current.map((candidate) =>
+          candidate.id === updatedUser.id ? updatedUser : candidate,
+        ),
+      )
+      setManagedUserDrafts((current) => {
+        const next = { ...current }
+        delete next[updatedUser.id]
+        return next
+      })
+      setManagedUserStatusMessage(`Đã lưu thông tin ${updatedUser.name}.`)
+    } catch (error: unknown) {
+      setManagedUserStatusMessage(
+        getErrorMessage(error, 'Không lưu được thông tin user'),
+      )
+    } finally {
+      setBusyManagedUserId(null)
     }
   }
 
@@ -295,6 +493,39 @@ export function AdminWorkspace({ token }: { token: string }) {
     }
   }
 
+  async function handleManagedUserStatusChange(
+    user: ManagedUser,
+    nextStatus: ManagedUserStatus,
+  ) {
+    setBusyManagedUserId(user.id)
+    setManagedUserStatusMessage(
+      nextStatus === 'disabled'
+        ? `Đang tạm khóa ${user.name}...`
+        : `Đang mở lại ${user.name}...`,
+    )
+    try {
+      const updatedUser = await updateManagedUserStatus(
+        user.id,
+        nextStatus,
+        token,
+      )
+      setManagedUsers((current) =>
+        current.map((candidate) =>
+          candidate.id === updatedUser.id ? updatedUser : candidate,
+        ),
+      )
+      setManagedUserStatusMessage(
+        `${updatedUser.name}: ${managedUserStatusLabel(updatedUser.status)}.`,
+      )
+    } catch (error: unknown) {
+      setManagedUserStatusMessage(
+        getErrorMessage(error, 'Không cập nhật được trạng thái user'),
+      )
+    } finally {
+      setBusyManagedUserId(null)
+    }
+  }
+
   const isSelectedReviewBusy = selectedReviewLesson
     ? busyLessonId === selectedReviewLesson.id
     : false
@@ -307,56 +538,58 @@ export function AdminWorkspace({ token }: { token: string }) {
       id={WORKSPACE_SECTION_IDS.adminReview}
       tabIndex={-1}
     >
-      <div className="v4-admin-hero">
-        <div>
-          <p className="section-label">Không gian duyệt bài học</p>
-          <h2>Kiểm duyệt bằng trạng thái, cảnh báo và citation trước khi publish</h2>
-          <p className="muted">
-            Admin không sửa trực tiếp nội dung; quyết định dựa trên evidence và
-            feedback rõ cho giảng viên.
-          </p>
-        </div>
-        <button
-          className="primary-button"
-          disabled={busyLessonId !== null}
-          type="button"
-          onClick={() => void loadReviewQueue()}
-        >
-          <RefreshCcw aria-hidden="true" size={17} />
-          Tải lại hàng đợi
-        </button>
-      </div>
+      {activePage === 'admin-review' && (
+        <>
+          <div className="v4-admin-hero">
+            <div>
+              <p className="section-label">Không gian duyệt bài học</p>
+              <h2>Kiểm duyệt bằng trạng thái, cảnh báo và citation trước khi publish</h2>
+              <p className="muted">
+                Admin không sửa trực tiếp nội dung; quyết định dựa trên evidence và
+                feedback rõ cho giảng viên.
+              </p>
+            </div>
+            <button
+              className="primary-button"
+              disabled={busyLessonId !== null}
+              type="button"
+              onClick={() => void loadReviewQueue()}
+            >
+              <RefreshCcw aria-hidden="true" size={17} />
+              {busyLessonId !== null ? <Spinner label="Đang xử lý" /> : 'Tải lại hàng đợi'}
+            </button>
+          </div>
 
-      <div className="v4-metric-grid v4-admin-metrics">
-        <MetricCard
-          detail={statusMessage}
-          label="Tổng trong queue"
-          value={String(adminSummary.totalLessons)}
-        />
-        <MetricCard
-          detail="Chờ quyết định Admin"
-          label="Chờ duyệt"
-          tone="info"
-          value={String(adminSummary.pendingLessons)}
-        />
-        <MetricCard
-          detail="Lesson có cảnh báo block"
-          label="Cảnh báo"
-          tone="warning"
-          value={String(adminSummary.lessonsWithWarnings)}
-        />
-        <MetricCard
-          detail="Trung bình theo block có citation"
-          label="Độ phủ citation"
-          tone="success"
-          value={`${adminSummary.averageCitationCoveragePercent}%`}
-        />
-      </div>
+          <div className="v4-metric-grid v4-admin-metrics">
+            <MetricCard
+              detail={statusMessage}
+              label="Tổng trong queue"
+              value={String(adminSummary.totalLessons)}
+            />
+            <MetricCard
+              detail="Chờ quyết định Admin"
+              label="Chờ duyệt"
+              tone="info"
+              value={String(adminSummary.pendingLessons)}
+            />
+            <MetricCard
+              detail="Lesson có cảnh báo block"
+              label="Cảnh báo"
+              tone="warning"
+              value={String(adminSummary.lessonsWithWarnings)}
+            />
+            <MetricCard
+              detail="Trung bình theo block có citation"
+              label="Độ phủ citation"
+              tone="success"
+              value={`${adminSummary.averageCitationCoveragePercent}%`}
+            />
+          </div>
 
-      <p className="state-panel compact-state">{statusMessage}</p>
+          <p className="state-panel compact-state">{statusMessage}</p>
 
-      {reviewLessons.length > 0 ? (
-        <div className="v4-admin-review-grid">
+          {reviewLessons.length > 0 ? (
+            <div className="v4-admin-review-grid">
           <aside className="v4-admin-queue" aria-label="Hàng đợi review">
             <div className="v4-panel-title">
               <span>Hàng đợi duyệt</span>
@@ -547,16 +780,19 @@ export function AdminWorkspace({ token }: { token: string }) {
               <div className="v4-empty-inline">Chọn lesson để duyệt.</div>
             )}
           </section>
-        </div>
-      ) : (
-        <div className="v4-empty-inline">{statusMessage}</div>
+            </div>
+          ) : (
+            <div className="v4-empty-inline">{statusMessage}</div>
+          )}
+        </>
       )}
 
-      <section
-        className="knowledge-panel admin-knowledge-panel"
-        id={WORKSPACE_SECTION_IDS.adminKnowledge}
-        tabIndex={-1}
-      >
+      {activePage === 'admin-knowledge' && (
+        <section
+          className="knowledge-panel admin-knowledge-panel"
+          id={WORKSPACE_SECTION_IDS.adminKnowledge}
+          tabIndex={-1}
+        >
         <div className="panel-heading">
           <p className="section-label">Kho tri thức dài hạn của AI</p>
           <span className="status-pill neutral-pill">Admin library</span>
@@ -574,20 +810,251 @@ export function AdminWorkspace({ token }: { token: string }) {
         {documents.length > 0 ? (
           <DocumentStatusList
             busyDocumentId={archivingDocumentId}
+            busyTitleDocumentId={savingDocumentTitleId}
             busyReindexDocumentId={reindexingDocumentId}
             documents={documents}
             onArchive={(document) => void handleAdminArchiveDocument(document)}
             onReindex={(document) => void handleAdminReindexDocument(document)}
+            onSaveTitle={(document) => void handleAdminSaveDocumentTitle(document)}
+            onTitleChange={handleAdminDocumentTitleChange}
+            titleDrafts={documentTitleDrafts}
           />
         ) : (
           <p className="muted">{knowledgeStatusMessage}</p>
         )}
-      </section>
+        </section>
+      )}
 
-      <section className="knowledge-panel admin-invite-panel">
+      {activePage === 'admin-users' && (
+        <>
+          <section className="knowledge-panel admin-user-management-panel">
+            <div className="panel-heading">
+              <div>
+                <p className="section-label">Teacher & Student</p>
+                <h3>Quản lý người dùng trong organization</h3>
+              </div>
+              <button
+                className="ghost-button"
+                disabled={busyManagedUserId !== null}
+                type="button"
+                onClick={() => void loadManagedUsers()}
+              >
+                <RefreshCcw aria-hidden="true" size={16} />
+                Tải lại
+              </button>
+            </div>
+
+            <div className="v4-metric-grid admin-user-summary-grid">
+              <MetricCard
+                detail="Teacher và Student"
+                label="Tổng user"
+                value={String(managedUserSummary.total)}
+              />
+              <MetricCard
+                detail="Có thể đăng nhập và dùng app"
+                label="Đang hoạt động"
+                tone="success"
+                value={String(managedUserSummary.active)}
+              />
+              <MetricCard
+                detail="Bị chặn ở request tiếp theo"
+                label="Đã tạm khóa"
+                tone={managedUserSummary.disabled ? 'warning' : 'default'}
+                value={String(managedUserSummary.disabled)}
+              />
+              <MetricCard
+                detail={`${managedUserSummary.teachers} Teacher / ${managedUserSummary.students} Student`}
+                label="Phân bổ role"
+                tone="info"
+                value={`${managedUserSummary.teachers}/${managedUserSummary.students}`}
+              />
+            </div>
+
+            <div className="admin-user-toolbar">
+              <label className="field">
+                <span>Tìm kiếm</span>
+                <span className="input-with-icon">
+                  <Search aria-hidden="true" size={16} />
+                  <input
+                    placeholder="Tên hoặc email"
+                    value={managedUserFilters.query}
+                    onChange={(event) =>
+                      setManagedUserFilters((current) => ({
+                        ...current,
+                        query: event.target.value,
+                      }))
+                    }
+                  />
+                </span>
+              </label>
+              <label className="field">
+                <span>Vai trò</span>
+                <select
+                  value={managedUserFilters.role}
+                  onChange={(event) =>
+                    setManagedUserFilters((current) => ({
+                      ...current,
+                      role: event.target.value as ManagedUserRole | 'all',
+                    }))
+                  }
+                >
+                  <option value="all">Tất cả</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="student">Student</option>
+                </select>
+              </label>
+              <label className="field">
+                <span>Trạng thái</span>
+                <select
+                  value={managedUserFilters.status}
+                  onChange={(event) =>
+                    setManagedUserFilters((current) => ({
+                      ...current,
+                      status: event.target.value as ManagedUserStatus | 'all',
+                    }))
+                  }
+                >
+                  <option value="all">Tất cả</option>
+                  <option value="active">Đang hoạt động</option>
+                  <option value="disabled">Đã tạm khóa</option>
+                </select>
+              </label>
+            </div>
+
+            <p className="state-panel compact-state">{managedUserStatusMessage}</p>
+
+            <DataTable
+              columns={[
+                {
+                  header: 'Người dùng',
+                  key: 'user',
+                  render: (user) => (
+                    <span className="admin-user-cell editable-user-cell">
+                      <input
+                        aria-label={`Tên ${user.name}`}
+                        className="table-inline-input"
+                        disabled={busyManagedUserId === user.id}
+                        value={managedUserDrafts[user.id]?.name ?? user.name}
+                        onChange={(event) =>
+                          handleManagedUserDraftChange(
+                            user,
+                            'name',
+                            event.target.value,
+                          )
+                        }
+                      />
+                      <input
+                        aria-label={`Email ${user.email}`}
+                        className="table-inline-input"
+                        disabled={busyManagedUserId === user.id}
+                        type="email"
+                        value={managedUserDrafts[user.id]?.email ?? user.email}
+                        onChange={(event) =>
+                          handleManagedUserDraftChange(
+                            user,
+                            'email',
+                            event.target.value,
+                          )
+                        }
+                      />
+                    </span>
+                  ),
+                },
+                {
+                  header: 'Vai trò',
+                  key: 'role',
+                  render: (user) => roleLabel(user.role),
+                },
+                {
+                  header: 'Trạng thái',
+                  key: 'status',
+                  render: (user) => (
+                    <span
+                      className={`status-pill ${
+                        user.status === 'active' ? '' : 'neutral-pill'
+                      }`}
+                    >
+                      {managedUserStatusLabel(user.status)}
+                    </span>
+                  ),
+                },
+                {
+                  header: 'Cập nhật',
+                  key: 'updated',
+                  render: (user) =>
+                    user.updated_at
+                      ? new Date(user.updated_at).toLocaleString('vi-VN')
+                      : 'Chưa có',
+                },
+                {
+                  header: 'Hành động',
+                  key: 'action',
+                  render: (user) => {
+                    const nextStatus =
+                      user.status === 'active' ? 'disabled' : 'active'
+                    const isBusy = busyManagedUserId === user.id
+                    return (
+                      <span className="table-action-group">
+                        <button
+                          className="ghost-button table-action-button"
+                          disabled={busyManagedUserId !== null}
+                          type="button"
+                          onClick={() => void handleManagedUserSave(user)}
+                        >
+                          {isBusy ? (
+                            <Spinner label="Đang lưu" />
+                          ) : (
+                            <>
+                              <Save aria-hidden="true" size={16} />
+                              Lưu
+                            </>
+                          )}
+                        </button>
+                        <button
+                          className="ghost-button table-action-button"
+                          disabled={busyManagedUserId !== null}
+                          type="button"
+                          onClick={() =>
+                            void handleManagedUserStatusChange(user, nextStatus)
+                          }
+                        >
+                          {isBusy ? (
+                            <Spinner label="Đang lưu" />
+                          ) : nextStatus === 'disabled' ? (
+                            <>
+                              <UserX aria-hidden="true" size={16} />
+                              Tạm khóa
+                            </>
+                          ) : (
+                            <>
+                              <UserCheck aria-hidden="true" size={16} />
+                              Mở lại
+                            </>
+                          )}
+                        </button>
+                      </span>
+                    )
+                  },
+                },
+              ]}
+              emptyState={
+                <p className="muted">
+                  Không có Teacher/Student khớp bộ lọc hiện tại.
+                </p>
+              }
+              getRowKey={(user) => user.id}
+              rows={paginatedManagedUsers.items}
+            />
+            <PaginationControls
+              state={paginatedManagedUsers}
+              onPageChange={setManagedUserPage}
+            />
+          </section>
+
+          <section className="knowledge-panel admin-invite-panel">
         <div className="panel-heading">
-          <p className="section-label">Tạo tài khoản bằng invite</p>
-          <span className="status-pill neutral-pill">Lưu database</span>
+          <p className="section-label">Mời người dùng mới</p>
+          <span className="status-pill neutral-pill">Tạo tài khoản</span>
         </div>
         <form className="upload-panel invite-form" onSubmit={handleInviteSubmit}>
           <label className="field">
@@ -605,7 +1072,9 @@ export function AdminWorkspace({ token }: { token: string }) {
             <select
               disabled={isInviteBusy}
               value={inviteRole}
-              onChange={(event) => setInviteRole(event.target.value as UserRole)}
+              onChange={(event) =>
+                setInviteRole(event.target.value as OrganizationInviteRole)
+              }
             >
               <option value="teacher">Teacher</option>
               <option value="student">Student</option>
@@ -613,31 +1082,58 @@ export function AdminWorkspace({ token }: { token: string }) {
           </label>
           <button className="primary-button" disabled={isInviteBusy} type="submit">
             <UsersRound aria-hidden="true" size={17} />
-            Tạo invite
+            {isInviteBusy ? <Spinner label="Đang tạo invite" /> : 'Tạo invite'}
           </button>
           <p className="state-panel compact-state">{inviteStatusMessage}</p>
         </form>
         {invites.length > 0 ? (
-          <div className="document-list invite-list">
-            {invites.map((invite) => (
-              <article className="document-row invite-row" key={invite.id}>
-                <UsersRound aria-hidden="true" size={18} />
-                <div>
-                  <strong>{invite.email}</strong>
-                  <span className="citation-meta">
-                    {roleLabel(invite.role)} - {invite.status} -{' '}
-                    {new Date(invite.created_at).toLocaleString('vi-VN')}
-                  </span>
-                  <code className="invite-code">{invite.invite_code}</code>
-                </div>
-                <span className="status-pill neutral-pill">{invite.status}</span>
-              </article>
-            ))}
-          </div>
+          <>
+            <DataTable
+              columns={[
+                {
+                  header: 'Email',
+                  key: 'email',
+                  render: (invite) => <strong>{invite.email}</strong>,
+                },
+                {
+                  header: 'Vai trò',
+                  key: 'role',
+                  render: (invite) => roleLabel(invite.role),
+                },
+                {
+                  header: 'Mã mời',
+                  key: 'code',
+                  render: (invite) => <code className="invite-code">{invite.invite_code}</code>,
+                },
+                {
+                  header: 'Trạng thái',
+                  key: 'status',
+                  render: (invite) => (
+                    <span className="status-pill neutral-pill">{invite.status}</span>
+                  ),
+                },
+                {
+                  header: 'Ngày tạo',
+                  key: 'created',
+                  render: (invite) =>
+                    new Date(invite.created_at).toLocaleString('vi-VN'),
+                },
+              ]}
+              emptyState={<p className="muted">{inviteStatusMessage}</p>}
+              getRowKey={(invite) => invite.id}
+              rows={paginatedInvites.items}
+            />
+            <PaginationControls
+              state={paginatedInvites}
+              onPageChange={setInvitePage}
+            />
+          </>
         ) : (
           <p className="muted">{inviteStatusMessage}</p>
         )}
-      </section>
+          </section>
+        </>
+      )}
     </section>
   )
 }

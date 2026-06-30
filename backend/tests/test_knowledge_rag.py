@@ -9,6 +9,7 @@ from pypdf.errors import DependencyError, WrongPasswordError
 
 import app.main as app_main_module
 from main import (
+    DocumentMetadataUpdateRequest,
     DocumentUploadResponse,
     EmbeddingMetadata,
     FetchedWebPage,
@@ -38,6 +39,7 @@ from main import (
     retrieve_relevant_chunks,
     upload_source_document,
     validate_web_ingestion_url,
+    update_source_document_metadata,
 )
 
 
@@ -228,6 +230,25 @@ class FakeKnowledgeRepository:
                 archived_document = document.model_copy(update={"is_active": False})
                 self.documents[index] = archived_document
                 return archived_document
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    def update_document_metadata(
+        self,
+        *,
+        document_id: str,
+        title: str,
+        updated_by: UserProfile,
+    ) -> DocumentRecord:
+        for index, document in enumerate(self.documents):
+            if document.id == document_id:
+                updated_document = document.model_copy(
+                    update={
+                        "title": title,
+                        "updated_at": "2026-06-30T00:00:00+00:00",
+                    }
+                )
+                self.documents[index] = updated_document
+                return updated_document
         raise HTTPException(status_code=404, detail="Document not found")
 
     def reindex_document_embeddings(
@@ -591,6 +612,28 @@ def test_archive_source_document_allows_admin_library_and_user_contextual_only()
     with pytest.raises(HTTPException) as exc:
         archive_source_document(
             "doc-failed",
+            teacher_user(),
+            repository,
+        )
+
+    assert exc.value.status_code == 404
+
+
+def test_update_source_document_metadata_keeps_admin_library_hidden_from_teacher() -> None:
+    repository = FakeKnowledgeRepository(sample_documents())
+
+    updated = update_source_document_metadata(
+        "doc-completed",
+        DocumentMetadataUpdateRequest(title="Library Knowledge Renamed"),
+        admin_user(),
+        repository,
+    )
+
+    assert updated.title == "Library Knowledge Renamed"
+    with pytest.raises(HTTPException) as exc:
+        update_source_document_metadata(
+            "doc-completed",
+            DocumentMetadataUpdateRequest(title="Teacher Rename Attempt"),
             teacher_user(),
             repository,
         )

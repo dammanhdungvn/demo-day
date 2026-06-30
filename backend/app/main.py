@@ -72,11 +72,17 @@ from .auth.schemas import (
     InviteCreateRequest,
     LoginRequest,
     LoginResponse,
+    ManagedUserResponse,
+    ManagedUserRole,
+    ManagedUserStatusUpdateRequest,
+    ManagedUserUpdateRequest,
     MessageResponse,
     OrganizationInviteResponse,
     PublicDemoAccount,
     RefreshSessionRequest,
     Role,
+    SystemAdminInviteCreateRequest,
+    SystemOrganizationCreateRequest,
     SupabaseAuthSession,
     SupabaseAuthUser,
     UserProfile,
@@ -87,18 +93,24 @@ from .auth.services import (
     authenticate_demo_user,
     authenticate_user,
     create_session_token,
+    create_system_admin_invite,
+    create_system_organization,
     create_user_invite,
     get_auth_provider_mode,
     get_auth_repository,
     get_current_user_from_authorization,
     get_supabase_auth_client,
     is_demo_login_enabled,
+    list_managed_users,
+    list_system_organizations,
     list_public_demo_accounts,
     list_user_invites,
     logout_user_from_authorization,
     refresh_auth_session,
     require_role,
     reset_demo_sessions_for_tests,
+    update_managed_user,
+    update_managed_user_status,
 )
 from .auth.supabase_client import SupabaseAuthRestClient
 from .ai_safety import SOURCE_UNTRUSTED_POLICY
@@ -144,18 +156,21 @@ from .learning.services import (
     _ensure_owned_course,
     _student_profiles,
     add_student_to_class,
+    archive_class_profile,
     create_class_profile,
     create_course,
     list_available_students,
     list_course_classes,
     list_courses,
     list_student_classes,
+    update_class_profile,
 )
 from .learning.schemas import (
     AddStudentRequest,
     ClassCreateRequest,
     ClassProfileResponse,
     ClassStudentResponse,
+    ClassUpdateRequest,
     CourseCreateRequest,
     CourseResponse,
     StudentClassSummary,
@@ -176,6 +191,7 @@ from .knowledge.schemas import (
     DocumentIngestionAction,
     DocumentIngestionPlan,
     DocumentKnowledgeScope,
+    DocumentMetadataUpdateRequest,
     DocumentRecord,
     DocumentReindexResponse,
     DocumentReindexResult,
@@ -382,6 +398,18 @@ class LessonGenerateRequest(BaseModel):
     top_k: int = Field(default=6, ge=1, le=10)
 
 
+class LessonSessionUpdateRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=300)
+
+    @field_validator("title")
+    @classmethod
+    def title_must_not_be_blank(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("Title must not be blank")
+        return stripped
+
+
 class LessonBlockUpdateRequest(BaseModel):
     title: str = Field(min_length=1)
     content: str = Field(min_length=1)
@@ -429,6 +457,7 @@ class LessonSessionResponse(BaseModel):
     status: LessonStatus
     admin_feedback: str | None = None
     blocks: list[LessonBlockResponse]
+    is_active: bool = True
     created_at: str
     updated_at: str
 
@@ -498,6 +527,14 @@ class KnowledgeRepository(Protocol):
         *,
         document_id: str,
         archived_by: UserProfile,
+    ) -> DocumentRecord: ...
+
+    def update_document_metadata(
+        self,
+        *,
+        document_id: str,
+        title: str,
+        updated_by: UserProfile,
     ) -> DocumentRecord: ...
 
     def reindex_document_embeddings(
@@ -571,6 +608,20 @@ STORE_COUNTERS = {
 }
 
 DASHBOARD_COPY: dict[Role, dict[str, list[str] | str]] = {
+    "system_admin": {
+        "title": "System Owner Dashboard",
+        "allowed_actions": [
+            "Tao organization",
+            "Moi Admin dau tien cho organization",
+            "Quan ly tenant setup",
+        ],
+        "hidden_actions": [
+            "Public demo role shortcuts",
+            "Teacher Lesson Studio controls",
+            "Student reading-only controls",
+        ],
+        "next_step": "Tao organization va moi Admin to chuc dau tien.",
+    },
     "admin": {
         "title": "Admin Dashboard",
         "allowed_actions": [
@@ -2621,6 +2672,35 @@ class SupabaseKnowledgeRepository:
                         raise _not_found("Document not found")
                     return document
 
+    def update_document_metadata(
+        self,
+        *,
+        document_id: str,
+        title: str,
+        updated_by: UserProfile,
+    ) -> DocumentRecord:
+        self._ensure_document_lifecycle_schema()
+        with self._connect() as conn:
+            with conn.transaction():
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        update documents
+                        set title = %s,
+                            updated_at = now()
+                        where id = %s::uuid
+                        """,
+                        (title, document_id),
+                    )
+                    document = self._load_document_by_field(
+                        cur,
+                        field_name="id",
+                        field_value=document_id,
+                    )
+                    if document is None:
+                        raise _not_found("Document not found")
+                    return document
+
     def reindex_document_embeddings(
         self,
         *,
@@ -3037,6 +3117,7 @@ def content_schema_sql() -> str:
         )
       ),
       admin_feedback text,
+      is_active boolean not null default true,
       created_at timestamptz not null default now(),
       updated_at timestamptz not null default now()
     );
@@ -3057,8 +3138,11 @@ def content_schema_sql() -> str:
 
     create index if not exists idx_course_outlines_class_teacher
       on course_outlines (class_id, teacher_id);
+    alter table lesson_sessions add column if not exists is_active boolean not null default true;
     create index if not exists idx_lesson_sessions_class_teacher
       on lesson_sessions (class_id, teacher_id);
+    create index if not exists idx_lesson_sessions_class_teacher_active
+      on lesson_sessions (class_id, teacher_id, is_active);
     create index if not exists idx_lesson_sessions_status
       on lesson_sessions (status);
     create index if not exists idx_lesson_blocks_lesson_id
@@ -3121,11 +3205,17 @@ class InMemoryContentRepository:
         return [
             lesson
             for lesson in self.lessons.values()
-            if lesson.class_id == class_id and lesson.teacher_id == teacher_id
+            if lesson.class_id == class_id
+            and lesson.teacher_id == teacher_id
+            and lesson.is_active
         ]
 
     def list_lessons_by_status(self, status: LessonStatus) -> list[LessonSessionResponse]:
-        return [lesson for lesson in self.lessons.values() if lesson.status == status]
+        return [
+            lesson
+            for lesson in self.lessons.values()
+            if lesson.status == status and lesson.is_active
+        ]
 
     def list_published_lessons_for_classes(
         self,
@@ -3134,7 +3224,9 @@ class InMemoryContentRepository:
         return [
             lesson
             for lesson in self.lessons.values()
-            if lesson.status == "published" and lesson.class_id in class_ids
+            if lesson.status == "published"
+            and lesson.class_id in class_ids
+            and lesson.is_active
         ]
 
     def find_lesson_by_block(self, block_id: str) -> LessonSessionResponse | None:
@@ -3359,6 +3451,7 @@ class PostgresContentRepository:
               title,
               status,
               admin_feedback,
+              is_active,
               created_at::text,
               updated_at::text
             from lesson_sessions
@@ -3414,6 +3507,7 @@ class PostgresContentRepository:
             status=lesson_row["status"],
             admin_feedback=lesson_row["admin_feedback"],
             blocks=blocks,
+            is_active=lesson_row["is_active"],
             created_at=lesson_row["created_at"],
             updated_at=lesson_row["updated_at"],
         )
@@ -3439,11 +3533,12 @@ class PostgresContentRepository:
                           title,
                           status,
                           admin_feedback,
+                          is_active,
                           created_at,
                           updated_at
                         )
                         values (
-                          %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                          %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                           %s::timestamptz, %s::timestamptz
                         )
                         on conflict (id) do update
@@ -3455,6 +3550,7 @@ class PostgresContentRepository:
                             title = excluded.title,
                             status = excluded.status,
                             admin_feedback = excluded.admin_feedback,
+                            is_active = excluded.is_active,
                             updated_at = excluded.updated_at
                         """,
                         (
@@ -3467,6 +3563,7 @@ class PostgresContentRepository:
                             lesson.title,
                             lesson.status,
                             lesson.admin_feedback,
+                            lesson.is_active,
                             lesson.created_at,
                             lesson.updated_at,
                         ),
@@ -3526,6 +3623,7 @@ class PostgresContentRepository:
                     from lesson_sessions
                     where class_id = %s
                       and teacher_id = %s
+                      and is_active = true
                     order by updated_at asc
                     """,
                     (class_id, teacher_id),
@@ -3545,6 +3643,7 @@ class PostgresContentRepository:
                     select id
                     from lesson_sessions
                     where status = %s
+                      and is_active = true
                     order by updated_at asc
                     """,
                     (status,),
@@ -3569,6 +3668,7 @@ class PostgresContentRepository:
                     select id
                     from lesson_sessions
                     where status = 'published'
+                      and is_active = true
                       and class_id = any(%s)
                     order by updated_at asc
                     """,
@@ -3649,7 +3749,7 @@ def get_student_published_lesson(
     student = require_role(current_user, {"student"})
     repository = content_repository or get_content_repository()
     lesson = repository.get_lesson(lesson_id)
-    if lesson is None or lesson.status != "published":
+    if lesson is None or lesson.status != "published" or not lesson.is_active:
         raise _not_found("Lesson not found")
     if lesson.class_id not in _class_ids_for_student(student):
         raise _not_found("Lesson not found")
@@ -3704,7 +3804,7 @@ def _ensure_student_progress_lesson(
     learning_repository: LearningRepository,
 ) -> LessonSessionResponse:
     lesson = content_repository.get_lesson(lesson_id)
-    if lesson is None or lesson.status != "published":
+    if lesson is None or lesson.status != "published" or not lesson.is_active:
         raise _not_found("Lesson not found")
     if lesson.class_id not in _class_ids_for_student(student, learning_repository):
         raise _not_found("Lesson not found")
@@ -4854,6 +4954,23 @@ def archive_source_document(
     return repository.archive_document(
         document_id=document_id,
         archived_by=user,
+    )
+
+
+def update_source_document_metadata(
+    document_id: str,
+    payload: DocumentMetadataUpdateRequest,
+    current_user: UserProfile,
+    repository: KnowledgeRepository,
+) -> DocumentRecord:
+    user = require_role(current_user, {"teacher", "admin", "student"})
+    documents = repository.get_documents_by_ids([document_id])
+    if not documents or documents[0] not in _filter_documents_for_user(documents, user):
+        raise _not_found("Document not found")
+    return repository.update_document_metadata(
+        document_id=document_id,
+        title=payload.title,
+        updated_by=user,
     )
 
 
@@ -6009,7 +6126,7 @@ def list_lesson_audit_events(
     content_repository = content_repository or get_content_repository()
     audit_repository = audit_repository or get_audit_repository()
     lesson = content_repository.get_lesson(lesson_id)
-    if lesson is None:
+    if lesson is None or not lesson.is_active:
         raise _not_found("Lesson not found")
 
     if current_user.role == "admin":
@@ -6051,7 +6168,7 @@ def _ensure_lesson_export_access(
     content_repository = content_repository or get_content_repository()
     learning_repository = learning_repository or get_learning_repository()
     lesson = content_repository.get_lesson(lesson_id)
-    if lesson is None:
+    if lesson is None or not lesson.is_active:
         raise _not_found("Lesson not found")
 
     if actor.role == "admin":
@@ -6180,6 +6297,64 @@ def _find_lesson_and_block(
             if block.id == block_id:
                 return lesson, block
     raise _not_found("Lesson block not found")
+
+
+def update_lesson_session(
+    lesson_id: str,
+    payload: LessonSessionUpdateRequest,
+    current_user: UserProfile,
+    content_repository: ContentRepository | None = None,
+) -> LessonSessionResponse:
+    teacher = require_role(current_user, {"teacher"})
+    content_repository = content_repository or get_content_repository()
+    lesson = content_repository.get_lesson(lesson_id)
+    if (
+        lesson is None
+        or lesson.teacher_id != teacher.id
+        or not lesson.is_active
+        or not _lesson_in_user_organization(lesson, teacher)
+    ):
+        raise _not_found("Lesson not found")
+    _ensure_teacher_can_mutate_lesson(lesson)
+    updated = lesson.model_copy(
+        update={"title": payload.title, "updated_at": _now_iso()}
+    )
+    saved = content_repository.save_lesson(updated)
+    _record_lesson_audit_event(
+        saved,
+        teacher,
+        "lesson_updated",
+        details=f"Updated lesson title to {payload.title}",
+    )
+    return saved
+
+
+def archive_lesson_session(
+    lesson_id: str,
+    current_user: UserProfile,
+    content_repository: ContentRepository | None = None,
+) -> LessonSessionResponse:
+    teacher = require_role(current_user, {"teacher"})
+    content_repository = content_repository or get_content_repository()
+    lesson = content_repository.get_lesson(lesson_id)
+    if (
+        lesson is None
+        or lesson.teacher_id != teacher.id
+        or not lesson.is_active
+        or not _lesson_in_user_organization(lesson, teacher)
+    ):
+        raise _not_found("Lesson not found")
+    archived = lesson.model_copy(
+        update={"is_active": False, "updated_at": _now_iso()}
+    )
+    saved = content_repository.save_lesson(archived)
+    _record_lesson_audit_event(
+        saved,
+        teacher,
+        "lesson_archived",
+        details="Archived lesson from active workspace",
+    )
+    return saved
 
 
 def _replace_lesson_block(
@@ -6401,6 +6576,7 @@ def submit_lesson_for_admin(
     if (
         lesson is None
         or lesson.teacher_id != teacher.id
+        or not lesson.is_active
         or not _lesson_in_user_organization(lesson, teacher)
     ):
         raise _not_found("Lesson not found")
@@ -6456,7 +6632,7 @@ def _ensure_submitted_lesson_for_admin(
     learning_repository: LearningRepository | None = None,
 ) -> LessonSessionResponse:
     lesson = content_repository.get_lesson(lesson_id)
-    if lesson is None:
+    if lesson is None or not lesson.is_active:
         raise _not_found("Lesson not found")
     _ensure_lesson_in_user_organization(lesson, admin, learning_repository)
     if lesson.status != "submitted_for_admin_review":
@@ -6843,6 +7019,27 @@ def archive_document_route(
     return archive_source_document(document_id, current_user, repository)
 
 
+@app.patch(
+    f"{API_BASE_PATH}/documents/{{document_id}}",
+    response_model=DocumentRecord,
+)
+def update_document_metadata_route(
+    document_id: str,
+    payload: DocumentMetadataUpdateRequest,
+    current_user: Annotated[
+        UserProfile,
+        Depends(require_roles("teacher", "admin", "student")),
+    ],
+    repository: Annotated[KnowledgeRepository, Depends(get_knowledge_repository)],
+) -> DocumentRecord:
+    return update_source_document_metadata(
+        document_id,
+        payload,
+        current_user,
+        repository,
+    )
+
+
 @app.post(
     f"{API_BASE_PATH}/documents/{{document_id}}/reindex",
     response_model=DocumentReindexResponse,
@@ -6991,6 +7188,23 @@ def regenerate_lesson_block_route(
     return regenerate_lesson_block(block_id, current_user, ai_provider)
 
 
+@app.patch(f"{API_BASE_PATH}/lessons/{{lesson_id}}", response_model=LessonSessionResponse)
+def update_lesson_session_route(
+    lesson_id: str,
+    payload: LessonSessionUpdateRequest,
+    current_user: Annotated[UserProfile, Depends(require_roles("teacher"))],
+) -> LessonSessionResponse:
+    return update_lesson_session(lesson_id, payload, current_user)
+
+
+@app.delete(f"{API_BASE_PATH}/lessons/{{lesson_id}}", response_model=LessonSessionResponse)
+def archive_lesson_session_route(
+    lesson_id: str,
+    current_user: Annotated[UserProfile, Depends(require_roles("teacher"))],
+) -> LessonSessionResponse:
+    return archive_lesson_session(lesson_id, current_user)
+
+
 @app.post(
     f"{API_BASE_PATH}/lessons/{{lesson_id}}/submit",
     response_model=LessonSessionResponse,
@@ -7052,6 +7266,13 @@ def admin_dashboard(
     current_user: Annotated[UserProfile, Depends(require_roles("admin"))],
 ) -> DashboardResponse:
     return build_dashboard_response("admin", current_user)
+
+
+@app.get(f"{API_BASE_PATH}/system/dashboard", response_model=DashboardResponse)
+def system_dashboard(
+    current_user: Annotated[UserProfile, Depends(require_roles("system_admin"))],
+) -> DashboardResponse:
+    return build_dashboard_response("system_admin", current_user)
 
 
 @app.get(f"{API_BASE_PATH}/teacher/dashboard", response_model=DashboardResponse)

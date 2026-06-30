@@ -28,6 +28,7 @@ def test_openapi_metadata_tags_and_docs_paths_are_configured() -> None:
     assert {
         "Health",
         "Auth",
+        "System",
         "Learning",
         "Knowledge",
         "AI Generation",
@@ -63,6 +64,10 @@ def test_openapi_bearer_auth_scheme_and_endpoint_security() -> None:
         ("/api/v1/auth/logout", "post"),
         ("/api/v1/auth/invites", "get"),
         ("/api/v1/auth/invites", "post"),
+        ("/api/v1/system/dashboard", "get"),
+        ("/api/v1/system/organizations", "get"),
+        ("/api/v1/system/organizations", "post"),
+        ("/api/v1/system/organizations/{organization_id}/admin-invites", "post"),
         ("/api/v1/courses", "get"),
         ("/api/v1/courses", "post"),
         ("/api/v1/documents", "get"),
@@ -84,6 +89,11 @@ def test_openapi_tags_key_paths_and_operation_ids_are_stable() -> None:
         ("/api/v1/health", "get"): "Health",
         ("/api/v1/auth/login", "post"): "Auth",
         ("/api/v1/auth/invites/accept", "post"): "Auth",
+        ("/api/v1/system/organizations", "post"): "System",
+        (
+            "/api/v1/system/organizations/{organization_id}/admin-invites",
+            "post",
+        ): "System",
         ("/api/v1/courses", "post"): "Learning",
         ("/api/v1/documents", "get"): "Knowledge",
         ("/api/v1/rag/retrieve", "post"): "Knowledge",
@@ -110,6 +120,11 @@ def test_openapi_primary_examples_and_error_responses_are_documented() -> None:
     spec = openapi_spec()
     login_request = operation(spec, "/api/v1/auth/login", "post")["requestBody"]
     create_course_request = operation(spec, "/api/v1/courses", "post")["requestBody"]
+    create_system_org_request = operation(
+        spec,
+        "/api/v1/system/organizations",
+        "post",
+    )["requestBody"]
     accept_invite_request = operation(
         spec,
         "/api/v1/auth/invites/accept",
@@ -132,6 +147,10 @@ def test_openapi_primary_examples_and_error_responses_are_documented() -> None:
     ]
     assert "learning_goals" in create_course_example
     assert "learning_objectives" not in create_course_example
+    assert create_system_org_request["content"]["application/json"]["example"] == {
+        "id": "org-training-center",
+        "name": "Training Center",
+    }
     assert {"401", "403", "422"} <= set(documents_get["responses"])
     assert (
         documents_get["responses"]["403"]["content"]["application/json"]["example"][

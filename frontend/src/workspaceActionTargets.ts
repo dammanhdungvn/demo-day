@@ -2,6 +2,7 @@ import type { UserRole } from './api/auth'
 
 export const WORKSPACE_SECTION_IDS = {
   overview: 'workspace-overview',
+  systemOrganizations: 'system-organizations',
   teacherSetup: 'teacher-setup',
   teacherKnowledge: 'teacher-knowledge',
   teacherOutline: 'teacher-outline',
@@ -15,6 +16,11 @@ export const WORKSPACE_SECTION_IDS = {
 } as const
 
 const ACTION_TARGETS: Record<UserRole, Record<string, string>> = {
+  system_admin: {
+    'Tạo tổ chức': WORKSPACE_SECTION_IDS.systemOrganizations,
+    'Mời Admin tổ chức': WORKSPACE_SECTION_IDS.systemOrganizations,
+    'Theo dõi tenant': WORKSPACE_SECTION_IDS.systemOrganizations,
+  },
   admin: {
     'Hàng đợi duyệt': WORKSPACE_SECTION_IDS.adminReview,
     'Cảnh báo citation': WORKSPACE_SECTION_IDS.adminReview,

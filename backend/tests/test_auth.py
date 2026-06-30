@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from pydantic import ValidationError
 import pytest
 
 from main import (
@@ -8,7 +9,11 @@ from main import (
     InMemoryAuthRepository,
     InviteCreateRequest,
     LoginRequest,
+    ManagedUserStatusUpdateRequest,
+    ManagedUserUpdateRequest,
     RefreshSessionRequest,
+    SystemAdminInviteCreateRequest,
+    SystemOrganizationCreateRequest,
     SupabaseAuthSession,
     SupabaseAuthUser,
     UserProfile,
@@ -17,13 +22,19 @@ from main import (
     authenticate_demo_user,
     authenticate_user,
     create_session_token,
+    create_system_admin_invite,
+    create_system_organization,
     create_user_invite,
     get_current_user_from_authorization,
+    list_managed_users,
+    list_system_organizations,
     list_user_invites,
     list_public_demo_accounts,
     refresh_auth_session,
     require_role,
     reset_demo_sessions_for_tests,
+    update_managed_user,
+    update_managed_user_status,
 )
 
 
@@ -66,6 +77,49 @@ def test_demo_quick_login_issues_session_without_frontend_password(
     assert response.access_token
     assert response.user.email == "teacher@teachflow.local"
     assert response.user.role == "teacher"
+
+
+def test_demo_quick_login_seeds_managed_profiles_for_empty_repository(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("AUTH_PROVIDER", "demo")
+    monkeypatch.setenv("ENABLE_DEMO_LOGIN", "true")
+    repository = InMemoryAuthRepository(demo_accounts=[])
+
+    response = authenticate_demo_account(
+        DemoLoginRequest(account_id="demo-admin"),
+        auth_repository=repository,
+    )
+    users = list_managed_users(response.user, repository)
+
+    assert {user.id for user in users} == {"demo-teacher", "demo-student"}
+    assert repository.get_profile("demo-admin") is not None
+
+
+def test_demo_profile_seed_does_not_reactivate_disabled_user(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("AUTH_PROVIDER", "demo")
+    monkeypatch.setenv("ENABLE_DEMO_LOGIN", "true")
+    repository = InMemoryAuthRepository(demo_accounts=[])
+    repository.upsert_profile(
+        AuthProfileRecord(
+            id="demo-teacher",
+            email="teacher@teachflow.local",
+            name="Teacher Demo",
+            role="teacher",
+            organization_id="org-demo",
+            auth_provider="demo",
+            status="disabled",
+        )
+    )
+
+    authenticate_demo_account(
+        DemoLoginRequest(account_id="demo-admin"),
+        auth_repository=repository,
+    )
+
+    assert repository.get_profile("demo-teacher").status == "disabled"
 
 
 def test_demo_quick_login_still_works_with_supabase_provider(
@@ -143,20 +197,17 @@ def test_role_guard_allows_matching_role_and_rejects_wrong_role() -> None:
 
 
 class FakeSupabaseAuthClient:
-    def __init__(self) -> None:
+    def __init__(self, auth_user: SupabaseAuthUser | None = None) -> None:
         self.signed_in: list[LoginRequest] = []
         self.refreshed: list[str] = []
+        user = auth_user or SupabaseAuthUser(
+            id="auth-teacher",
+            email="teacher@example.edu",
+            name="Teacher Real",
+        )
         self.users_by_token = {
-            "supabase-access-token": SupabaseAuthUser(
-                id="auth-teacher",
-                email="teacher@example.edu",
-                name="Teacher Real",
-            ),
-            "refreshed-access-token": SupabaseAuthUser(
-                id="auth-teacher",
-                email="teacher@example.edu",
-                name="Teacher Real",
-            ),
+            "supabase-access-token": user,
+            "refreshed-access-token": user,
         }
 
     def sign_in_with_password(self, credentials: LoginRequest) -> SupabaseAuthSession:
@@ -224,6 +275,8 @@ def test_supabase_login_requires_provisioned_profile(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("AUTH_PROVIDER", "supabase")
+    monkeypatch.delenv("SYSTEM_ADMIN_EMAILS", raising=False)
+    monkeypatch.delenv("SYSTEM_ADMIN_USER_IDS", raising=False)
 
     with pytest.raises(HTTPException) as exc_info:
         authenticate_user(
@@ -233,6 +286,34 @@ def test_supabase_login_requires_provisioned_profile(
         )
 
     assert exc_info.value.status_code == 403
+
+
+def test_supabase_login_bootstraps_configured_system_admin(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("AUTH_PROVIDER", "supabase")
+    monkeypatch.setenv("SYSTEM_ADMIN_EMAILS", "owner@example.edu")
+    repository = InMemoryAuthRepository()
+    client = FakeSupabaseAuthClient(
+        SupabaseAuthUser(
+            id="auth-owner",
+            email="owner@example.edu",
+            name="TeachFlow Owner",
+        )
+    )
+
+    response = authenticate_user(
+        LoginRequest(email="owner@example.edu", password="secret"),
+        auth_repository=repository,
+        supabase_client=client,
+    )
+
+    assert response.user.role == "system_admin"
+    assert response.user.organization_id == "org-platform"
+    saved_profile = repository.get_profile("auth-owner")
+    assert saved_profile is not None
+    assert saved_profile.role == "system_admin"
+    assert saved_profile.auth_provider == "supabase"
 
 
 def test_supabase_me_validates_token_with_auth_server(
@@ -289,6 +370,62 @@ def test_admin_creates_and_lists_idempotent_pending_invites() -> None:
     assert [invite.email for invite in invites] == ["new.teacher@example.edu"]
 
 
+def test_normal_invite_payload_cannot_request_system_admin_role() -> None:
+    with pytest.raises(ValidationError):
+        InviteCreateRequest(email="owner@example.edu", role="system_admin")
+
+
+def test_system_admin_creates_organization_and_first_admin_invite() -> None:
+    repository = InMemoryAuthRepository()
+    system_admin = UserProfile(
+        id="owner-1",
+        email="owner@example.edu",
+        name="TeachFlow Owner",
+        role="system_admin",
+        organization_id="org-platform",
+    )
+
+    organization = create_system_organization(
+        SystemOrganizationCreateRequest(
+            id="org-training-center",
+            name="Training Center",
+        ),
+        system_admin,
+        repository,
+    )
+    invite = create_system_admin_invite(
+        organization.id,
+        SystemAdminInviteCreateRequest(email="admin@training.edu"),
+        system_admin,
+        repository,
+    )
+
+    assert organization.id == "org-training-center"
+    assert organization.name == "Training Center"
+    assert invite.role == "admin"
+    assert invite.organization_id == organization.id
+    assert invite.invited_by == system_admin.id
+    assert [
+        organization.id
+        for organization in list_system_organizations(system_admin, repository)
+    ] == ["org-demo", "org-platform", "org-training-center"]
+
+
+def test_org_admin_cannot_call_system_admin_services() -> None:
+    repository = InMemoryAuthRepository()
+    admin = repository.get_profile("demo-admin")
+    assert admin is not None
+
+    with pytest.raises(HTTPException) as exc_info:
+        create_system_organization(
+            SystemOrganizationCreateRequest(name="Blocked Org"),
+            admin,
+            repository,
+        )
+
+    assert exc_info.value.status_code == 403
+
+
 def test_create_invite_upserts_current_admin_profile_for_persistence() -> None:
     repository = InMemoryAuthRepository(demo_accounts=[])
     admin = UserProfile(
@@ -309,6 +446,184 @@ def test_create_invite_upserts_current_admin_profile_for_persistence() -> None:
     assert saved_admin is not None
     assert saved_admin.auth_provider == "demo"
     assert invite.invited_by == "demo-admin"
+
+
+def test_admin_lists_managed_teacher_student_profiles_in_organization() -> None:
+    repository = InMemoryAuthRepository()
+    admin = repository.get_profile("demo-admin")
+    assert admin is not None
+    repository.upsert_profile(
+        AuthProfileRecord(
+            id="disabled-teacher",
+            email="disabled.teacher@example.edu",
+            name="Disabled Teacher",
+            role="teacher",
+            organization_id=admin.organization_id,
+            auth_provider="demo",
+            status="disabled",
+        )
+    )
+    repository.upsert_profile(
+        AuthProfileRecord(
+            id="other-student",
+            email="other.student@example.edu",
+            name="Other Student",
+            role="student",
+            organization_id="org-other",
+            auth_provider="demo",
+            status="active",
+        )
+    )
+
+    users = list_managed_users(admin, repository)
+    user_ids = {user.id for user in users}
+
+    assert "demo-teacher" in user_ids
+    assert "demo-student" in user_ids
+    assert "disabled-teacher" in user_ids
+    assert "demo-admin" not in user_ids
+    assert "other-student" not in user_ids
+    assert {user.role for user in users} == {"teacher", "student"}
+
+    disabled_users = list_managed_users(
+        admin,
+        repository,
+        status_filter="disabled",
+    )
+    assert [user.id for user in disabled_users] == ["disabled-teacher"]
+
+    teacher_users = list_managed_users(admin, repository, role_filter="teacher")
+    assert {user.id for user in teacher_users} == {"demo-teacher", "disabled-teacher"}
+
+
+def test_admin_disables_and_reactivates_managed_teacher_student() -> None:
+    repository = InMemoryAuthRepository()
+    admin = repository.get_profile("demo-admin")
+    assert admin is not None
+
+    disabled = update_managed_user_status(
+        "demo-teacher",
+        ManagedUserStatusUpdateRequest(status="disabled"),
+        admin,
+        repository,
+    )
+
+    assert disabled.status == "disabled"
+    assert repository.get_profile("demo-teacher").status == "disabled"
+
+    reactivated = update_managed_user_status(
+        "demo-teacher",
+        ManagedUserStatusUpdateRequest(status="active"),
+        admin,
+        repository,
+    )
+
+    assert reactivated.status == "active"
+    assert repository.get_profile("demo-teacher").status == "active"
+
+
+def test_admin_updates_managed_user_profile_fields_without_role_change() -> None:
+    repository = InMemoryAuthRepository()
+    admin = repository.get_profile("demo-admin")
+    assert admin is not None
+
+    updated = update_managed_user(
+        "demo-teacher",
+        ManagedUserUpdateRequest(
+            name="Lead Teacher",
+            email="lead.teacher@example.edu",
+            status="disabled",
+        ),
+        admin,
+        repository,
+    )
+
+    saved = repository.get_profile("demo-teacher")
+    assert updated.name == "Lead Teacher"
+    assert updated.email == "lead.teacher@example.edu"
+    assert updated.status == "disabled"
+    assert updated.role == "teacher"
+    assert saved is not None
+    assert saved.name == "Lead Teacher"
+    assert saved.email == "lead.teacher@example.edu"
+    assert saved.role == "teacher"
+    assert saved.organization_id == admin.organization_id
+
+
+def test_disabled_demo_profile_cannot_login_or_use_existing_session(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("AUTH_PROVIDER", "demo")
+    monkeypatch.setenv("ENABLE_DEMO_LOGIN", "true")
+    repository = InMemoryAuthRepository()
+    admin = repository.get_profile("demo-admin")
+    assert admin is not None
+
+    active_session = authenticate_demo_user(
+        LoginRequest(email="teacher@teachflow.local", password="teachflow-demo"),
+        auth_repository=repository,
+    )
+    update_managed_user_status(
+        "demo-teacher",
+        ManagedUserStatusUpdateRequest(status="disabled"),
+        admin,
+        repository,
+    )
+
+    with pytest.raises(HTTPException) as login_exc:
+        authenticate_demo_user(
+            LoginRequest(email="teacher@teachflow.local", password="teachflow-demo"),
+            auth_repository=repository,
+        )
+    assert login_exc.value.status_code == 403
+
+    with pytest.raises(HTTPException) as session_exc:
+        get_current_user_from_authorization(
+            f"Bearer {active_session.access_token}",
+            auth_repository=repository,
+        )
+    assert session_exc.value.status_code == 403
+
+
+def test_admin_user_management_rejects_wrong_role_admin_and_cross_org() -> None:
+    repository = InMemoryAuthRepository()
+    admin = repository.get_profile("demo-admin")
+    teacher = repository.get_profile("demo-teacher")
+    assert admin is not None
+    assert teacher is not None
+    repository.upsert_profile(
+        AuthProfileRecord(
+            id="other-student",
+            email="other.student@example.edu",
+            name="Other Student",
+            role="student",
+            organization_id="org-other",
+            auth_provider="demo",
+            status="active",
+        )
+    )
+
+    with pytest.raises(HTTPException) as wrong_role:
+        list_managed_users(teacher, repository)
+    assert wrong_role.value.status_code == 403
+
+    with pytest.raises(HTTPException) as admin_target:
+        update_managed_user_status(
+            "demo-admin",
+            ManagedUserStatusUpdateRequest(status="disabled"),
+            admin,
+            repository,
+        )
+    assert admin_target.value.status_code == 403
+
+    with pytest.raises(HTTPException) as cross_org:
+        update_managed_user_status(
+            "other-student",
+            ManagedUserStatusUpdateRequest(status="disabled"),
+            admin,
+            repository,
+        )
+    assert cross_org.value.status_code == 404
 
 
 def test_accept_invite_registers_user_and_marks_invite_accepted(

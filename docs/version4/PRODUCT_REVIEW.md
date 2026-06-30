@@ -769,3 +769,65 @@ Con lech:
 Ket luan:
 
 - V4-042 bien Student practice thanh workflow hoc co state, co persistence va co feedback tu nguoi hoc ma khong overpromise AI. Day la nen mong hop ly de sau nay them AI Tutor grounded, rubric scoring va spaced repetition tren du lieu that.
+
+## Review Sau V4-043
+
+Da cai thien:
+
+- He thong khong con coi `admin` la quyen cao nhat toan platform. `admin` duoc giu dung nghia la Admin cua mot organization; role moi `system_admin` la Owner he thong dung cho production setup.
+- `system_admin` khong nam trong public quick demo login. Owner that chi duoc bootstrap sau khi Supabase Auth xac thuc user va email/id cua user khop allowlist `SYSTEM_ADMIN_EMAILS` hoac `SYSTEM_ADMIN_USER_IDS` trong `.env`.
+- Database profile role model da mo rong tren `profiles.role`; normal organization invite van chi gioi han `admin/teacher/student`, nen Admin to chuc khong the tao owner he thong qua form invite.
+- System Admin co API/workspace rieng de tao organization va tao invite Admin dau tien cho organization: `/api/v1/system/organizations` va `/api/v1/system/organizations/{organization_id}/admin-invites`.
+- Frontend session/router/workspace da hieu role `system_admin` va dua owner vao `/system`, tranh roi vao workspace Admin to chuc hoac crash session.
+
+Con lech:
+
+- Chua co UI quan ly disable/delete organization, rotate owner, MFA/password reset bat buoc, impersonation co audit, hoac billing/plan management. Cac muc nay nen la future production ops feature rieng.
+- System Admin khong tu dong bypass cac Admin endpoint theo organization de tranh cross-tenant leak; neu can support/debug tenant thi nen them flow chon organization/impersonation co audit ro rang.
+
+Ket luan:
+
+- V4-043 sua gap production trust ma user chi ra: san pham can owner he thong that, tach khoi demo login va tach khoi Admin cua to chuc. Day la nen tang dung de van hanh multi-organization ma khong lam roi Teacher/Student/Admin workflow chinh.
+
+## Review Sau V4-044
+
+Da cai thien:
+
+- Frontend khong con don moi chuc nang Teacher/Admin/Student vao mot surface dai. Moi role co page menu rieng, page heading rieng va content chi render theo page dang chon.
+- Teacher co cac page `Tong quan`, `Khoa hoc & lop`, `Tai lieu`, `Dan y`, `Lesson Studio`, `Hang doi xu ly`; day la luong lam viec tu thiet lap lop den tao bai giang thay vi mot dashboard kho scan.
+- Admin co cac page `Hang doi duyet`, `Kho tri thuc`, `Nguoi dung`, tach moderation khoi upload knowledge va invite user.
+- Student co cac page `Lop cua toi`, `Lesson`, `Luyen tap`, `Tai lieu ca nhan`, giup hoc vien thay app nay giup hoc/hoc tiep/luyen tap thay vi nhin thay cong cu ky thuat.
+- App shell co feedback primitives local theo shadcn composition pattern: alert, spinner, skeleton, switch, table, pagination va toast. User biet khi dang tai, dang chuyen trang, list rong, list co nhieu trang, hoac tac vu dang xu ly.
+- Admin invite va System Admin organization list dung data table + pagination, giam cam giac card/list vo han khi du lieu tang.
+- QA bang Playwright click 3 role pass va screenshot xac nhan page jobs Teacher khong con blank sau khi bo opacity animation khoi content panel.
+
+Con lech:
+
+- Project chua initialize Tailwind/shadcn CLI (`components.json` va Tailwind config chua co), nen V4-044 dung local primitives theo pattern thay vi full shadcn upstream. Neu muon dung shadcn components chinh thuc, can mot slice migration rieng de khong pha CSS hien co.
+- Mot so page van chia lai component lon ben trong `TeacherWorkspace.tsx`, `AdminWorkspace.tsx`, `StudentWorkspace.tsx`; IA da dung hon nhung code-splitting theo page component nen tiep tuc lam sau.
+- Page-level URL/hash da co cho active page, nhung chua co full route nested (`/teacher/documents`, `/student/practice`). Neu can share link/deep-link production, nen lam router slice rieng.
+
+Ket luan:
+
+- V4-044 sua dung van de user-facing: user khong can hieu ky thuat, ho chi can menu ro rang de biet vao dau lam viec. Day la buoc quan trong de TeachFlow AI giong mot san pham co information architecture that thay vi demo gom tat ca workflow vao mot man hinh.
+
+## Review Sau V4-045
+
+Da cai thien:
+
+- Admin `Nguoi dung` khong con la trang invite-code don gian; Admin thay duoc Teacher/Student that trong organization, trang thai active/disabled, role va thoi diem cap nhat.
+- Admin co search/filter/table/pagination nen quan ly duoc organization lon hon demo 2-3 user.
+- Disable/enable profile la hanh dong an toan hon delete user: giu lich su course/lesson/audit, nhung chan login/session request tiep theo.
+- Backend enforce dung model tenant: Admin chi quan ly Teacher/Student cung organization, khong thao tac Admin/System Admin va khong cross-org.
+- Demo-login trong persistence mode tu seed demo profiles neu thieu, nen trang Admin user management khong bi rong khi chay voi Postgres/Supabase repository; seed nay khong mo lai user da disabled.
+- Rendered QA xac nhan Admin quick login -> `Nguoi dung` -> filter Teacher -> tam khoa/mo lai `Teacher Demo` chay duoc end-to-end.
+
+Con lech:
+
+- Chua co revoke refresh token/session server-side that cho Supabase sau khi disable; hien current-user guard chan request API tiep theo. Production nen them Supabase admin revoke/session policy neu yeu cau bao mat cao.
+- Chua co edit role/move organization/password reset/MFA; day nen la feature rieng de tranh Admin organization co qua nhieu quyen nguy hiem trong mot page.
+- Email invite delivery van chua co; Admin van can copy invite code cho user kich hoat.
+
+Ket luan:
+
+- V4-045 sua gap product logic ro: Admin cua trung tam/bo mon phai quan ly duoc con nguoi that, khong phai chi tao invite roi mat dau vet. Day la workflow can thiet cho san pham B2B education nho/trung binh va giu phan quyen tenant an toan.

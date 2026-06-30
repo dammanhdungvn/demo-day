@@ -9,6 +9,17 @@ export type WorkspaceConfig = {
 }
 
 const WORKSPACE_CONFIG: Record<UserRole, WorkspaceConfig> = {
+  system_admin: {
+    role: 'system_admin',
+    title: 'Không gian Owner',
+    eyebrow: 'Thiết lập hệ thống',
+    focus: 'Tạo tổ chức mới và mời Admin đầu tiên cho từng tổ chức.',
+    primaryActions: [
+      'Tạo tổ chức',
+      'Mời Admin tổ chức',
+      'Theo dõi tenant',
+    ],
+  },
   admin: {
     role: 'admin',
     title: 'Không gian Admin',

@@ -1,6 +1,6 @@
 # Production Gap Analysis - TeachFlow AI V4
 
-Ngay cap nhat: 2026-06-29
+Ngay cap nhat: 2026-06-30
 
 ## Muc Dich
 
@@ -24,11 +24,27 @@ Tai lieu nay ghi nhan nhung workflow va system capability con thieu so voi mot s
 - Client UI khong quyet dinh quyen. Backend service/repository phai enforce role, organization, ownership va scope.
 - API contract phai du de tich hop: OpenAPI/Swagger co tags, security scheme, request/response examples va error schema.
 - Observability phai bao phu ca app request, AI generation, RAG retrieval, ingestion, moderation va auth.
+- Phan quyen production phai tach `system_admin`/Owner he thong voi `admin` cua tung organization. Owner dung de bootstrap/van hanh tenant; Admin to chuc khong phai quyen cao nhat platform.
 
 ## Da Co Trong Project
 
 - FastAPI app da expose Swagger/OpenAPI tai `/api/v1/docs` va `/api/v1/openapi.json`.
 - Auth foundation da co demo provider va Supabase provider bridge (`AUTH_PROVIDER=demo|supabase`), refresh/logout/get-user, profile role/organization va Admin invite foundation.
+- V4-043 da them System Admin/Owner foundation:
+  - `profiles.role` co `system_admin`, khong co bang `admin` rieng.
+  - Owner duoc bootstrap bang Supabase-authenticated user khop `SYSTEM_ADMIN_EMAILS` hoac `SYSTEM_ADMIN_USER_IDS` trong `.env`.
+  - Public demo login van chi co Admin/Teacher/Student.
+  - Normal invite flow khong tao duoc `system_admin`; System Admin co API rieng de tao organization va tao invite Admin dau tien.
+- V4-045 da them organization Admin user management:
+  - Admin list/search/filter Teacher/Student profiles trong organization.
+  - Admin disable/enable Teacher/Student ma khong delete auth/user history.
+  - Backend reject Admin/System Admin target, cross-org target va non-admin caller.
+  - Demo-login seed demo profiles vao repository persistence neu thieu, nhung khong reactivate profile da disabled.
+- V4-046 da them CRUD management expansion production-safe:
+  - Admin sua name/email/status Teacher/Student trong organization; role immutable va Admin/System Admin khong bi Org Admin sua.
+  - Admin rename/archive knowledge library documents; Teacher/Student chi sua/luu tru contextual documents minh thay duoc.
+  - Teacher sua/archive class va rename/archive lesson minh so huu; class/lesson archived bi loai khoi active Teacher/Admin/Student/export/progress flows.
+  - Delete trong UI la soft archive/disable, khong hard delete du lieu hoc tap/audit.
 - Role/organization/class membership guards da co test cho cac flow chinh.
 - RAG, upload, ingestion, re-index, generation jobs, audit events va content persistence da co repository boundary va tests.
 - V4-028 da sua workflow knowledge:
@@ -65,12 +81,16 @@ Trang thai hien tai:
 - Co Admin invite foundation va V4-029 invite acceptance/register flow.
 - Co UI/API `POST /api/v1/auth/invites/accept` cho user nhan invite, set password, map profile role/org va login vao workspace.
 - Co profile `status=active|disabled` va current-user guard reject JWT cu khi profile bi disabled.
+- Co `system_admin` bootstrap foundation cho owner production, tach khoi Admin to chuc va khong nam trong quick demo login.
+- Co Admin UI/API quan ly Teacher/Student active/disabled trong organization, khong chi tao invite pending.
 - Con thieu password reset email, MFA, email verification UX tuy theo Supabase project config, revoke-all sessions va security matrix chi tiet cho refresh rotation/session revocation.
 
 Can lam:
 
 - V4-029 da xong foundation: Admin tao invite -> user nhap invite code/email/name/password -> profile mapped role/org -> session duoc luu, disabled profile bi reject.
-- Future auth enhancement neu can: password reset, MFA, email verification UX, revoke all sessions, refresh token rotation policy matrix.
+- V4-045 da xong foundation: Admin list/search/filter Teacher/Student va disable/enable profile cung organization; disabled demo/profile bi chan login/session API request tiep theo.
+- V4-046 da xong CRUD an toan cho Admin/Teacher: user editable name/email/status, document title/archive, class edit/archive, lesson rename/archive voi scope guard va active filters.
+- Future auth enhancement neu can: password reset, MFA, email verification UX, revoke all sessions, refresh token rotation policy matrix, owner rotation/break-glass process.
 - Tieu chuan tiep theo: khong trust role tu user-editable metadata, test role spoofing/wrong org/expired-used invite/disabled user tiep tuc la regression gate.
 
 ### 2. API Contract / Swagger Chat Luong Production
@@ -129,7 +149,7 @@ Can lam:
 ## Workflow Logic Rule Sau Audit
 
 - Admin:
-  - Quan ly library dai han, invite user, publish/moderate lesson, xem audit/system health.
+  - Quan ly library dai han, invite user, quan ly Teacher/Student active/disabled trong organization, publish/moderate lesson, xem audit/system health.
   - Khong can thay contextual docs rieng cua user tru khi co support/debug/audit permission ro.
 - Teacher:
   - Tao course/class, add student, upload contextual docs, RAG/generate/review lesson.
@@ -142,4 +162,4 @@ Can lam:
 
 V4-028 sua loi product logic lon nhat trong knowledge workflow; V4-029 them auth/register/JWT lifecycle foundation; V4-030 nang Swagger/API contract; V4-031 them structured logging/observability; V4-032 them AI safety/groundedness guardrail; V4-033 them storage governance foundation; V4-034 nang frontend professional hon; V4-035 sua taskbar/usability, `.env` runtime semantics, Admin invite persistence va upload PDF real repository. Version 4 backlog hien tai da co foundation/evidence cho cac gap production chinh; feature moi sau nay can mo backlog/exec plan rieng.
 
-V4-036 bo sung export records/history cho lesson export, dong tech debt TD-010 ma khong them server-side PDF renderer nang. V4-037 sua cac blocker review production ve invited student enrollment, URL redirect SSRF va upload job visibility. BUG-004 tiep tuc dong cac finding tenant/security/reliability moi ve duplicate document scope, DNS SSRF private resolution, Admin job org scope, queued upload embedding failure va OpenAPI example. Server-side PDF generation van la future enhancement rieng neu can output consistency tuyet doi giua trinh duyet.
+V4-036 bo sung export records/history cho lesson export, dong tech debt TD-010 ma khong them server-side PDF renderer nang. V4-037 sua cac blocker review production ve invited student enrollment, URL redirect SSRF va upload job visibility. BUG-004 tiep tuc dong cac finding tenant/security/reliability moi ve duplicate document scope, DNS SSRF private resolution, Admin job org scope, queued upload embedding failure va OpenAPI example. V4-045 dong gap Admin user management: Admin organization quan ly duoc Teacher/Student that thay vi chi co pending invites. V4-046 dong gap CRUD quan ly co ban cho knowledge/users/classes/lessons bang soft archive/disable de phu hop production. Server-side PDF generation van la future enhancement rieng neu can output consistency tuyet doi giua trinh duyet.

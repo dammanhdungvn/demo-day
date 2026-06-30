@@ -18,7 +18,9 @@ import {
 } from 'lucide-react'
 import {
   addStudentToClass,
+  archiveClassProfile,
   archiveDocument,
+  archiveLessonSession,
   createClassProfile,
   createCourse,
   fetchClassOutlines,
@@ -39,7 +41,9 @@ import {
   retrieveChunks,
   setLessonBlockStatus,
   submitLesson,
+  updateClassProfile,
   updateLessonBlock,
+  updateLessonSession,
   updateOutlineSession,
   type ClassCreatePayload,
   type ClassProfile,
@@ -89,6 +93,7 @@ import {
   SourceStrip,
   WorkflowTimeline,
 } from '../../ui/teacherWorkspace'
+import type { WorkspacePageId } from '../../workspacePages'
 import { buildLessonMarkdown, markdownFileName } from '../../lessonMarkdown'
 import { exportLessonPptx } from '../../lessonPptx'
 import { documentUploadStatusMessage } from '../../uploadStatus'
@@ -172,7 +177,15 @@ function emptyOutlineDraft(): OutlineSessionUpdatePayload {
   }
 }
 
-export function TeacherWorkspace({ token }: { token: string }) {
+export function TeacherWorkspace({
+  activePage,
+  onPageChange,
+  token,
+}: {
+  activePage: WorkspacePageId
+  onPageChange?: (page: WorkspacePageId) => void
+  token: string
+}) {
   const [courses, setCourses] = useState<Course[]>([])
   const [classes, setClasses] = useState<ClassProfile[]>([])
   const [students, setStudents] = useState<StudentProfile[]>([])
@@ -183,6 +196,9 @@ export function TeacherWorkspace({ token }: { token: string }) {
   const [selectedStudentId, setSelectedStudentId] = useState('')
   const [courseForm, setCourseForm] = useState<CourseCreatePayload>(DEFAULT_COURSE)
   const [classForm, setClassForm] = useState<ClassCreatePayload>(DEFAULT_CLASS)
+  const [classEditForm, setClassEditForm] =
+    useState<ClassCreatePayload>(DEFAULT_CLASS)
+  const [lessonTitleDraft, setLessonTitleDraft] = useState('')
   const [ragTopic, setRagTopic] = useState(DEFAULT_RAG_TOPIC)
   const [retrievalResult, setRetrievalResult] = useState<RetrievalResponse | null>(
     null,
@@ -238,9 +254,13 @@ export function TeacherWorkspace({ token }: { token: string }) {
   const [isRecordingExport, setIsRecordingExport] = useState(false)
   const [isLoadingTeacherData, setIsLoadingTeacherData] = useState(true)
   const [archivingDocumentId, setArchivingDocumentId] = useState<string | null>(null)
+  const [archivingClassId, setArchivingClassId] = useState<string | null>(null)
+  const [archivingLessonId, setArchivingLessonId] = useState<string | null>(null)
   const [reindexingDocumentId, setReindexingDocumentId] = useState<string | null>(null)
 
   const selectedOutline = outlines.find((outline) => outline.id === selectedOutlineId)
+  const selectedClass =
+    classes.find((classProfile) => classProfile.id === selectedClassId) ?? null
   const selectedSession = selectedOutline?.sessions.find(
     (session) => session.session_index === selectedSessionIndex,
   )
@@ -309,6 +329,12 @@ export function TeacherWorkspace({ token }: { token: string }) {
       lessonCount: classProgress.length,
     }
   }, [classProgress])
+  const showOverview = activePage === 'teacher-overview'
+  const showSetup = activePage === 'teacher-setup'
+  const showDocuments = activePage === 'teacher-documents'
+  const showOutlineOrStudio =
+    activePage === 'teacher-outline' || activePage === 'teacher-studio'
+  const showJobs = activePage === 'teacher-jobs'
 
   useEffect(() => {
     let cancelled = false
@@ -411,6 +437,21 @@ export function TeacherWorkspace({ token }: { token: string }) {
       cancelled = true
     }
   }, [token])
+
+  useEffect(() => {
+    if (!selectedClass) {
+      setClassEditForm(DEFAULT_CLASS)
+      return
+    }
+    setClassEditForm({
+      name: selectedClass.name,
+      student_level: selectedClass.student_level,
+      background_knowledge: selectedClass.background_knowledge,
+      session_count: selectedClass.session_count,
+      minutes_per_session: selectedClass.minutes_per_session,
+      teaching_style: selectedClass.teaching_style,
+    })
+  }, [selectedClass])
 
   async function refreshGenerationJobs() {
     try {
@@ -633,6 +674,69 @@ export function TeacherWorkspace({ token }: { token: string }) {
     }
   }
 
+  async function handleClassUpdate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!selectedClass) {
+      setStatusMessage('Chọn lớp trước khi lưu chỉnh sửa.')
+      return
+    }
+
+    setIsBusy(true)
+    setStatusMessage(`Đang lưu lớp ${selectedClass.name}...`)
+    try {
+      const updatedClass = await updateClassProfile(
+        selectedClass.id,
+        classEditForm,
+        token,
+      )
+      setClasses((current) =>
+        current.map((classProfile) =>
+          classProfile.id === updatedClass.id ? updatedClass : classProfile,
+        ),
+      )
+      setSelectedClassId(updatedClass.id)
+      setStatusMessage(`Đã lưu lớp ${updatedClass.name}.`)
+    } catch (error: unknown) {
+      setStatusMessage(getErrorMessage(error, 'Không lưu được lớp học'))
+    } finally {
+      setIsBusy(false)
+    }
+  }
+
+  async function handleArchiveSelectedClass() {
+    if (!selectedClass) {
+      setStatusMessage('Chọn lớp trước khi lưu trữ.')
+      return
+    }
+
+    setArchivingClassId(selectedClass.id)
+    setStatusMessage(`Đang lưu trữ lớp ${selectedClass.name}...`)
+    try {
+      const archivedClass = await archiveClassProfile(selectedClass.id, token)
+      const remainingClasses = classes.filter(
+        (classProfile) => classProfile.id !== archivedClass.id,
+      )
+      setClasses(remainingClasses)
+      const nextClassId = remainingClasses[0]?.id ?? ''
+      setSelectedClassId(nextClassId)
+      setOutlines([])
+      setTeacherLessons([])
+      setClassProgress([])
+      selectOutline(null)
+      selectTeacherLesson(null)
+      if (nextClassId) {
+        await handleClassSelect(nextClassId)
+      } else {
+        setProgressStatusMessage('Chọn lớp để xem tiến độ học tập.')
+      }
+      setStatusMessage(`Đã lưu trữ lớp ${archivedClass.name}.`)
+    } catch (error: unknown) {
+      setStatusMessage(getErrorMessage(error, 'Không lưu trữ được lớp học'))
+    } finally {
+      setArchivingClassId(null)
+    }
+  }
+
   async function handleMembershipSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!selectedClassId || !selectedStudentId) {
@@ -802,6 +906,7 @@ export function TeacherWorkspace({ token }: { token: string }) {
 
   function selectTeacherLesson(lesson: LessonSession | null) {
     setSelectedLessonId(lesson?.id ?? '')
+    setLessonTitleDraft(lesson?.title ?? '')
     setLessonWithDrafts(lesson)
     if (lesson?.admin_feedback) {
       setLessonStatusMessage(`Phản hồi từ Admin: ${lesson.admin_feedback}`)
@@ -815,10 +920,12 @@ export function TeacherWorkspace({ token }: { token: string }) {
     if (!lesson) {
       setBlockDrafts({})
       setSelectedBlockId('')
+      setLessonTitleDraft('')
       setPresentationLesson(null)
       return
     }
     setSelectedLessonId(lesson.id)
+    setLessonTitleDraft(lesson.title)
     setTeacherLessons((current) => {
       const exists = current.some((candidate) => candidate.id === lesson.id)
       if (!exists) {
@@ -847,21 +954,19 @@ export function TeacherWorkspace({ token }: { token: string }) {
   }
 
   function handleWorkflowStepSelect(step: TeacherWorkflowStep) {
-    const targetByStep: Partial<Record<TeacherWorkflowStep['id'], string>> = {
-      course: WORKSPACE_SECTION_IDS.teacherSetup,
-      sources: WORKSPACE_SECTION_IDS.teacherKnowledge,
-      outline: WORKSPACE_SECTION_IDS.teacherOutline,
-      'lesson-studio': WORKSPACE_SECTION_IDS.teacherLessonStudio,
-      'admin-review': WORKSPACE_SECTION_IDS.teacherLessonStudio,
-      'student-publish': WORKSPACE_SECTION_IDS.teacherLessonStudio,
+    const pageByStep: Partial<Record<TeacherWorkflowStep['id'], WorkspacePageId>> = {
+      course: 'teacher-setup',
+      sources: 'teacher-documents',
+      outline: 'teacher-outline',
+      'lesson-studio': 'teacher-studio',
+      'admin-review': 'teacher-studio',
+      'student-publish': 'teacher-studio',
     }
-    const targetId = targetByStep[step.id]
-    if (!targetId) {
+    const targetPage = pageByStep[step.id]
+    if (!targetPage) {
       return
     }
-    const section = document.getElementById(targetId)
-    section?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    section?.focus({ preventScroll: true })
+    onPageChange?.(targetPage)
   }
 
   function handleFirstLessonGuideSelect() {
@@ -1042,6 +1147,61 @@ export function TeacherWorkspace({ token }: { token: string }) {
     }
   }
 
+  async function handleSaveLessonTitle() {
+    if (!lessonResult) {
+      setLessonStatusMessage('Chọn bài giảng trước khi lưu tên.')
+      return
+    }
+    const title = lessonTitleDraft.trim()
+    if (!title) {
+      setLessonStatusMessage('Tên bài giảng không được để trống.')
+      return
+    }
+
+    setIsReviewingLesson(true)
+    setLessonStatusMessage('Đang lưu tên bài giảng...')
+    try {
+      const lesson = await updateLessonSession(
+        lessonResult.id,
+        { title },
+        token,
+      )
+      setLessonWithDrafts(lesson)
+      setLessonStatusMessage(`Đã lưu tên bài giảng: ${lesson.title}.`)
+    } catch (error: unknown) {
+      setLessonStatusMessage(getErrorMessage(error, 'Không lưu được tên bài giảng'))
+    } finally {
+      setIsReviewingLesson(false)
+    }
+  }
+
+  async function handleArchiveLesson() {
+    if (!lessonResult) {
+      setLessonStatusMessage('Chọn bài giảng trước khi lưu trữ.')
+      return
+    }
+
+    setArchivingLessonId(lessonResult.id)
+    setLessonStatusMessage(`Đang lưu trữ ${lessonResult.title}...`)
+    try {
+      const archivedLesson = await archiveLessonSession(lessonResult.id, token)
+      setTeacherLessons((current) =>
+        current.filter((lesson) => lesson.id !== archivedLesson.id),
+      )
+      setLessonWithDrafts(null)
+      const nextLesson =
+        teacherLessons.find((lesson) => lesson.id !== archivedLesson.id) ?? null
+      if (nextLesson) {
+        selectTeacherLesson(nextLesson)
+      }
+      setLessonStatusMessage(`Đã lưu trữ ${archivedLesson.title}.`)
+    } catch (error: unknown) {
+      setLessonStatusMessage(getErrorMessage(error, 'Không lưu trữ được bài giảng'))
+    } finally {
+      setArchivingLessonId(null)
+    }
+  }
+
   async function recordTeacherLessonExport(
     lesson: LessonSession,
     exportFormat: LessonExportFormat,
@@ -1139,71 +1299,76 @@ export function TeacherWorkspace({ token }: { token: string }) {
       id={WORKSPACE_SECTION_IDS.teacherSetup}
       tabIndex={-1}
     >
-      <div className="v4-teacher-hero">
-        <div>
-          <p className="section-label">Không gian soạn giảng</p>
-          <h2>{courses.find((course) => course.id === selectedCourseId)?.title ?? 'Chưa chọn khóa học'}</h2>
-          <p className="muted">
-            {classes.find((classProfile) => classProfile.id === selectedClassId)?.name ??
-              'Tạo hoặc chọn lớp để bắt đầu soạn bài từ tài liệu đến học viên.'}
-          </p>
-        </div>
-        <div className="v4-system-status">
-          <span className="status-dot" aria-hidden="true" />
-          <strong>Backend: Hoạt động</strong>
-          <small>{statusMessage}</small>
-        </div>
-      </div>
+      {showOverview && (
+        <>
+          <div className="v4-teacher-hero">
+            <div>
+              <p className="section-label">Không gian soạn giảng</p>
+              <h2>{courses.find((course) => course.id === selectedCourseId)?.title ?? 'Chưa chọn khóa học'}</h2>
+              <p className="muted">
+                {classes.find((classProfile) => classProfile.id === selectedClassId)?.name ??
+                  'Tạo hoặc chọn lớp để bắt đầu soạn bài từ tài liệu đến học viên.'}
+              </p>
+            </div>
+            <div className="v4-system-status">
+              <span className="status-dot" aria-hidden="true" />
+              <strong>Backend: Hoạt động</strong>
+              <small>{statusMessage}</small>
+            </div>
+          </div>
 
-      <WorkflowTimeline
-        steps={workflowSteps}
-        onSelectStep={handleWorkflowStepSelect}
-      />
+          <WorkflowTimeline
+            steps={workflowSteps}
+            onSelectStep={handleWorkflowStepSelect}
+          />
 
-      <div className="v4-first-lesson-guide">
-        <div>
-          <span>{firstLessonGuide.progressLabel}</span>
-          <h3>{firstLessonGuide.title}</h3>
-          <p>{firstLessonGuide.detail}</p>
-        </div>
-        <button
-          className="primary-button"
-          type="button"
-          onClick={handleFirstLessonGuideSelect}
-        >
-          <Sparkles aria-hidden="true" size={17} />
-          {firstLessonGuide.actionLabel}
-        </button>
-      </div>
+          <div className="v4-first-lesson-guide">
+            <div>
+              <span>{firstLessonGuide.progressLabel}</span>
+              <h3>{firstLessonGuide.title}</h3>
+              <p>{firstLessonGuide.detail}</p>
+            </div>
+            <button
+              className="primary-button"
+              type="button"
+              onClick={handleFirstLessonGuideSelect}
+            >
+              <Sparkles aria-hidden="true" size={17} />
+              {firstLessonGuide.actionLabel}
+            </button>
+          </div>
 
-      <div className="v4-metric-grid">
-        <MetricCard
-          detail="Mục tiêu tối thiểu 80%"
-          label="Độ tin cậy nguồn"
-          tone={teacherMetrics.citationCoveragePercent >= 80 ? 'success' : 'warning'}
-          value={`${teacherMetrics.citationCoveragePercent}%`}
-        />
-        <MetricCard
-          detail="Khối đã review"
-          label="Tiến độ soạn"
-          tone={teacherMetrics.totalBlocks ? 'info' : 'default'}
-          value={`${teacherMetrics.reviewedBlocks} / ${teacherMetrics.totalBlocks}`}
-        />
-        <MetricCard
-          detail="Bài đang chờ duyệt"
-          label="Sẵn sàng gửi Admin"
-          tone={teacherMetrics.pendingAdminCount ? 'success' : 'default'}
-          value={`${teacherMetrics.pendingAdminCount}`}
-        />
-        <MetricCard
-          detail="Cần xử lý trước khi publish"
-          label="Cảnh báo"
-          tone={teacherMetrics.warningCount ? 'warning' : 'success'}
-          value={`${teacherMetrics.warningCount}`}
-        />
-      </div>
+          <div className="v4-metric-grid">
+            <MetricCard
+              detail="Mục tiêu tối thiểu 80%"
+              label="Độ tin cậy nguồn"
+              tone={teacherMetrics.citationCoveragePercent >= 80 ? 'success' : 'warning'}
+              value={`${teacherMetrics.citationCoveragePercent}%`}
+            />
+            <MetricCard
+              detail="Khối đã review"
+              label="Tiến độ soạn"
+              tone={teacherMetrics.totalBlocks ? 'info' : 'default'}
+              value={`${teacherMetrics.reviewedBlocks} / ${teacherMetrics.totalBlocks}`}
+            />
+            <MetricCard
+              detail="Bài đang chờ duyệt"
+              label="Sẵn sàng gửi Admin"
+              tone={teacherMetrics.pendingAdminCount ? 'success' : 'default'}
+              value={`${teacherMetrics.pendingAdminCount}`}
+            />
+            <MetricCard
+              detail="Cần xử lý trước khi publish"
+              label="Cảnh báo"
+              tone={teacherMetrics.warningCount ? 'warning' : 'success'}
+              value={`${teacherMetrics.warningCount}`}
+            />
+          </div>
+        </>
+      )}
 
-      <section className="v2-progress-panel" aria-label="Tien do lop hoc">
+      {showOverview && (
+        <section className="v2-progress-panel" aria-label="Tien do lop hoc">
         <div className="v4-panel-title">
           <span>Tiến độ lớp</span>
           <strong>{progressStatusMessage}</strong>
@@ -1248,14 +1413,17 @@ export function TeacherWorkspace({ token }: { token: string }) {
             Chưa có bài đã xuất bản hoặc chưa có sinh viên bắt đầu học.
           </p>
         )}
-      </section>
+        </section>
+      )}
 
-      <div className="panel-heading">
-        <p className="section-label">Khóa học và lớp học</p>
-        <span className="status-pill neutral-pill">Thiết lập</span>
-      </div>
+      {showSetup && (
+        <>
+          <div className="panel-heading">
+            <p className="section-label">Khóa học và lớp học</p>
+            <span className="status-pill neutral-pill">Thiết lập</span>
+          </div>
 
-      <div className="learning-grid">
+          <div className="learning-grid">
         <form className="learning-form" onSubmit={handleCourseSubmit}>
           <h2>Tạo khóa học</h2>
           <label className="field">
@@ -1308,7 +1476,7 @@ export function TeacherWorkspace({ token }: { token: string }) {
           </label>
           <button
             className="primary-button"
-            disabled={isBusy || isLoadingTeacherData}
+            disabled={isBusy}
             type="submit"
           >
             <Plus aria-hidden="true" size={17} />
@@ -1321,7 +1489,7 @@ export function TeacherWorkspace({ token }: { token: string }) {
           <label className="field">
             <span>Khóa học</span>
             <select
-              disabled={isLoadingTeacherData}
+              disabled={isBusy}
               value={selectedCourseId}
               onChange={(event) => void handleCourseSelect(event.target.value)}
             >
@@ -1415,7 +1583,7 @@ export function TeacherWorkspace({ token }: { token: string }) {
           </label>
           <button
             className="primary-button"
-            disabled={isBusy || isLoadingTeacherData}
+            disabled={isBusy}
             type="submit"
           >
             <UsersRound aria-hidden="true" size={17} />
@@ -1428,7 +1596,7 @@ export function TeacherWorkspace({ token }: { token: string }) {
           <label className="field">
             <span>Lớp</span>
             <select
-              disabled={isLoadingTeacherData}
+              disabled={isBusy}
               value={selectedClassId}
               onChange={(event) => void handleClassSelect(event.target.value)}
             >
@@ -1443,7 +1611,7 @@ export function TeacherWorkspace({ token }: { token: string }) {
           <label className="field">
             <span>Sinh viên</span>
             <select
-              disabled={isLoadingTeacherData}
+              disabled={isBusy}
               value={selectedStudentId}
               onChange={(event) => setSelectedStudentId(event.target.value)}
             >
@@ -1457,18 +1625,162 @@ export function TeacherWorkspace({ token }: { token: string }) {
           </label>
           <button
             className="primary-button"
-            disabled={isBusy || isLoadingTeacherData}
+            disabled={isBusy}
             type="submit"
           >
             <UserRound aria-hidden="true" size={17} />
             Thêm sinh viên
           </button>
         </form>
-      </div>
+          </div>
 
-      <p className="state-panel compact-state">{statusMessage}</p>
+          <form
+            className="learning-form teacher-class-edit-panel"
+            onSubmit={handleClassUpdate}
+          >
+            <div className="v4-panel-title">
+              <span>Quản lý lớp đang chọn</span>
+              <strong>{selectedClass?.name ?? 'Chưa chọn lớp'}</strong>
+            </div>
+            {classes.length > 0 ? (
+              <div className="teacher-class-list" aria-label="Danh sách lớp">
+                {classes.map((classProfile) => (
+                  <button
+                    className={
+                      classProfile.id === selectedClassId ? 'selected' : ''
+                    }
+                    key={classProfile.id}
+                    type="button"
+                    onClick={() => void handleClassSelect(classProfile.id)}
+                  >
+                    <strong>{classProfile.name}</strong>
+                    <small>
+                      {studentLevelLabel(classProfile.student_level)} -{' '}
+                      {classProfile.session_count} buổi
+                    </small>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="muted">Chưa có lớp để quản lý.</p>
+            )}
 
-      <div className="v4-operations-strip">
+            {selectedClass && (
+              <>
+                <label className="field">
+                  <span>Tên lớp</span>
+                  <input
+                    value={classEditForm.name}
+                    onChange={(event) =>
+                      setClassEditForm((current) => ({
+                        ...current,
+                        name: event.target.value,
+                      }))
+                    }
+                  />
+                </label>
+                <label className="field">
+                  <span>Trình độ sinh viên</span>
+                  <select
+                    value={classEditForm.student_level}
+                    onChange={(event) =>
+                      setClassEditForm((current) => ({
+                        ...current,
+                        student_level: event.target
+                          .value as ClassCreatePayload['student_level'],
+                      }))
+                    }
+                  >
+                    <option value="weak">{studentLevelLabel('weak')}</option>
+                    <option value="average">{studentLevelLabel('average')}</option>
+                    <option value="strong">{studentLevelLabel('strong')}</option>
+                  </select>
+                </label>
+                <div className="class-edit-number-grid">
+                  <label className="field">
+                    <span>Số buổi</span>
+                    <input
+                      min="1"
+                      type="number"
+                      value={classEditForm.session_count}
+                      onChange={(event) =>
+                        setClassEditForm((current) => ({
+                          ...current,
+                          session_count: Number(event.target.value),
+                        }))
+                      }
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Phút mỗi buổi</span>
+                    <input
+                      min="1"
+                      type="number"
+                      value={classEditForm.minutes_per_session}
+                      onChange={(event) =>
+                        setClassEditForm((current) => ({
+                          ...current,
+                          minutes_per_session: Number(event.target.value),
+                        }))
+                      }
+                    />
+                  </label>
+                </div>
+                <label className="field">
+                  <span>Nền tảng kiến thức</span>
+                  <textarea
+                    value={classEditForm.background_knowledge}
+                    onChange={(event) =>
+                      setClassEditForm((current) => ({
+                        ...current,
+                        background_knowledge: event.target.value,
+                      }))
+                    }
+                  />
+                </label>
+                <label className="field">
+                  <span>Phong cách dạy</span>
+                  <textarea
+                    value={classEditForm.teaching_style}
+                    onChange={(event) =>
+                      setClassEditForm((current) => ({
+                        ...current,
+                        teaching_style: event.target.value,
+                      }))
+                    }
+                  />
+                </label>
+                <div className="block-actions">
+                  <button
+                    className="primary-button"
+                    disabled={isBusy}
+                    type="submit"
+                  >
+                    <Save aria-hidden="true" size={17} />
+                    Lưu lớp
+                  </button>
+                  <button
+                    className="ghost-button"
+                    disabled={archivingClassId !== null}
+                    type="button"
+                    onClick={() => void handleArchiveSelectedClass()}
+                  >
+                    <ArchiveX aria-hidden="true" size={17} />
+                    {archivingClassId === selectedClass.id
+                      ? 'Đang lưu trữ...'
+                      : 'Lưu trữ lớp'}
+                  </button>
+                </div>
+              </>
+            )}
+          </form>
+
+          <p className="state-panel compact-state">{statusMessage}</p>
+        </>
+      )}
+
+      {showJobs && (
+        <div className="v4-operations-strip">
         <section>
           <div className="v4-panel-title">
             <span>Tài liệu dùng để soạn bài</span>
@@ -1502,9 +1814,11 @@ export function TeacherWorkspace({ token }: { token: string }) {
             isReviewingLesson={isReviewingLesson}
           />
         </section>
-      </div>
+        </div>
+      )}
 
-      <section
+      {showDocuments && (
+        <section
         className="knowledge-panel"
         id={WORKSPACE_SECTION_IDS.teacherKnowledge}
         tabIndex={-1}
@@ -1626,9 +1940,11 @@ export function TeacherWorkspace({ token }: { token: string }) {
             </div>
           )}
         </form>
-      </section>
+        </section>
+      )}
 
-      <section
+      {showOutlineOrStudio && (
+        <section
         className="outline-panel"
         id={WORKSPACE_SECTION_IDS.teacherOutline}
         tabIndex={-1}
@@ -1880,7 +2196,37 @@ export function TeacherWorkspace({ token }: { token: string }) {
 
                       <section className="v4-block-editor" aria-label="Chỉnh sửa khối nội dung">
                         <div className="lesson-submit-row">
+                          <label className="field lesson-title-field">
+                            <span>Tên bài giảng</span>
+                            <input
+                              disabled={isReviewingLesson || !canReviewLesson}
+                              value={lessonTitleDraft}
+                              onChange={(event) =>
+                                setLessonTitleDraft(event.target.value)
+                              }
+                            />
+                          </label>
                           <span>{lessonStatusLabel(lessonResult.status)}</span>
+                          <button
+                            className="ghost-button"
+                            disabled={isReviewingLesson || !canReviewLesson}
+                            type="button"
+                            onClick={() => void handleSaveLessonTitle()}
+                          >
+                            <Save aria-hidden="true" size={17} />
+                            Lưu tên
+                          </button>
+                          <button
+                            className="ghost-button"
+                            disabled={archivingLessonId !== null}
+                            type="button"
+                            onClick={() => void handleArchiveLesson()}
+                          >
+                            <ArchiveX aria-hidden="true" size={17} />
+                            {archivingLessonId === lessonResult.id
+                              ? 'Đang lưu trữ...'
+                              : 'Lưu trữ bài'}
+                          </button>
                           <button
                             className="primary-button"
                             disabled={isReviewingLesson || !canReviewLesson}
@@ -2133,7 +2479,8 @@ export function TeacherWorkspace({ token }: { token: string }) {
             )}
           </div>
         )}
-      </section>
+        </section>
+      )}
     </section>
   )
 }

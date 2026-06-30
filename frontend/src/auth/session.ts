@@ -1,7 +1,12 @@
 import type { AuthSession, UserProfile, UserRole } from '../api/auth'
 
 const AUTH_SESSION_KEY = 'teachflow.auth:v1'
-const VALID_ROLES = new Set<UserRole>(['admin', 'teacher', 'student'])
+const VALID_ROLES = new Set<UserRole>([
+  'system_admin',
+  'admin',
+  'teacher',
+  'student',
+])
 
 type StoredAuthSession = {
   access_token: string

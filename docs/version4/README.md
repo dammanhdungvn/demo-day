@@ -69,6 +69,14 @@ docs/version4/assets/v4-035-material-product-polish-concept.png
 
 Concept nay la reference cho V4-035: taskbar/workspace navigation ro hon, topbar actions, Material/enterprise surfaces, va polish cho cac workflow Teacher/Admin/Student dang dung that.
 
+Concept role page navigation:
+
+```txt
+docs/version4/assets/v4-044-page-navigation-workspace-concept.png
+```
+
+Concept nay la reference cho V4-044: moi role co sidebar/taskbar menu, moi chuc nang chinh la mot page doc lap, va workspace co alert/skeleton/spinner/switch/table/pagination/toast feedback thay vi don tat ca workflow vao mot trang.
+
 ## Release Gate V4
 
 Version 4 chi duoc coi la dat khi:
@@ -99,3 +107,7 @@ Version 4 chi duoc coi la dat khi:
 - V4-041 da them Student practice deck from published lessons: panel `Luyen tap` gom quiz/assignment/common misconception blocks tu lesson da publish, click item mo dung lesson/block va navigation Student co shortcut `Luyen tap`; khong goi AI moi va khong fake practice data.
 - V4-042 da them Student self-check practice attempts: Student luu cau tra loi va trang thai tu danh gia `Chua lam/Can on lai/Da hieu` cho tung practice item, attempt state persistent qua memory/Postgres, practice deck hien status/attempt count va UI noi ro day la self-check khong phai AI cham diem.
 - BUG-004 da sua 5 finding review production: duplicate document lookup owner/scope, DNS SSRF private resolution, Admin generation job history organization scope, queued upload embedding failure stuck `processing`, va OpenAPI create-course example.
+- V4-043 da them production System Admin/Owner foundation: role `system_admin` nam trong `profiles`, bootstrap qua Supabase-authenticated user khop `SYSTEM_ADMIN_EMAILS`/`SYSTEM_ADMIN_USER_IDS`, khong xuat hien trong public demo login; Owner co workspace/API rieng de tao organization va moi Admin dau tien, con Admin hien tai van la Admin theo organization.
+- V4-044 da sua loi IA/UX lon cua frontend: Teacher/Admin/Student/System Admin khong con nhin tat ca chuc nang trong mot page dai; workspace co page config theo role, sidebar/taskbar navigate page that, page heading rieng, feedback primitives local theo shadcn pattern, table/pagination cho list quan trong, toast khi doi trang, skeleton/alert/loading/empty state ro hon.
+- V4-045 da them Admin Teacher/Student user management: page `Nguoi dung` khong con chi tao invite code ma co danh sach member that trong organization, search/filter role/status, table/pagination, disable/enable Teacher/Student co feedback; backend enforce organization scope, khong cho Admin to chuc thao tac Admin/System Admin hay user khac organization.
+- V4-046 da them CRUD management expansion: Admin sua Teacher/Student name/email/status va rename/archive knowledge documents; Teacher sua/archive class va rename/archive lesson minh so huu. `Delete` trong UI la archive/disable an toan, giu audit/history va tranh mat du lieu production.

@@ -26,6 +26,8 @@ import {
   generateLessonBlocks,
   generateOutline,
   archiveDocument,
+  archiveClassProfile,
+  archiveLessonSession,
   ingestUrlDocument,
   publishLesson,
   recordLessonExport,
@@ -36,6 +38,9 @@ import {
   retrieveChunks,
   setLessonBlockStatus,
   submitLesson,
+  updateClassProfile,
+  updateDocumentMetadata,
+  updateLessonSession,
   updateLessonBlock,
   updateStudentPracticeAttempt,
   updateStudentLessonProgress,
@@ -93,6 +98,43 @@ describe('learning API client', () => {
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify(payload),
+      }),
+    )
+  })
+
+  it('updates and archives a class profile', async () => {
+    const payload = {
+      name: 'KTPM-K18 Advanced',
+      student_level: 'strong' as const,
+      background_knowledge: 'OOP and database',
+      session_count: 10,
+      minutes_per_session: 75,
+      teaching_style: 'Workshop',
+    }
+    const archived = { id: 'class-1', is_active: false, ...payload }
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json({ id: 'class-1', is_active: true, ...payload }))
+      .mockResolvedValueOnce(Response.json(archived))
+
+    await updateClassProfile('class-1', payload, token, fetcher, backendUrl)
+    await expect(
+      archiveClassProfile('class-1', token, fetcher, backendUrl),
+    ).resolves.toEqual(archived)
+
+    expect(fetcher).toHaveBeenNthCalledWith(
+      1,
+      `${backendUrl}/classes/class-1`,
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      }),
+    )
+    expect(fetcher).toHaveBeenNthCalledWith(
+      2,
+      `${backendUrl}/classes/class-1`,
+      expect.objectContaining({
+        method: 'DELETE',
       }),
     )
   })
@@ -274,6 +316,55 @@ describe('learning API client', () => {
     )
   })
 
+  it('updates and archives a lesson session', async () => {
+    const lesson = {
+      id: 'lesson-1',
+      outline_id: 'outline-1',
+      outline_session_index: 1,
+      course_id: 'course-1',
+      class_id: 'class-1',
+      teacher_id: 'demo-teacher',
+      title: 'Renamed lesson',
+      status: 'teacher_reviewing' as const,
+      admin_feedback: null,
+      blocks: [],
+      is_active: true,
+      created_at: '2026-06-28T00:00:00+00:00',
+      updated_at: '2026-06-30T00:00:00+00:00',
+    }
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json(lesson))
+      .mockResolvedValueOnce(Response.json({ ...lesson, is_active: false }))
+
+    await updateLessonSession(
+      'lesson-1',
+      { title: 'Renamed lesson' },
+      token,
+      fetcher,
+      backendUrl,
+    )
+    await expect(
+      archiveLessonSession('lesson-1', token, fetcher, backendUrl),
+    ).resolves.toEqual({ ...lesson, is_active: false })
+
+    expect(fetcher).toHaveBeenNthCalledWith(
+      1,
+      `${backendUrl}/lessons/lesson-1`,
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ title: 'Renamed lesson' }),
+      }),
+    )
+    expect(fetcher).toHaveBeenNthCalledWith(
+      2,
+      `${backendUrl}/lessons/lesson-1`,
+      expect.objectContaining({
+        method: 'DELETE',
+      }),
+    )
+  })
+
   it('asks the student grounded tutor through a protected lesson endpoint', async () => {
     const payload = {
       question: 'Tai sao can citation?',
@@ -336,6 +427,46 @@ describe('learning API client', () => {
         Accept: 'application/json',
         Authorization: `Bearer ${token}`,
       },
+    })
+  })
+
+  it('updates source document metadata with bearer token', async () => {
+    const response = {
+      id: 'doc-1',
+      title: 'Renamed AI Library',
+      file_name: 'building applications with ai agents.pdf',
+      file_hash: 'hash-a',
+      source_type: 'pdf',
+      status: 'completed' as const,
+      knowledge_scope: 'library' as const,
+      owner_user_id: null,
+      chunk_count: 12,
+      last_ingested_at: '2026-06-28T00:00:00+00:00',
+      error_message: null,
+      is_active: true,
+      created_at: '2026-06-28T00:00:00+00:00',
+      updated_at: '2026-06-30T00:00:00+00:00',
+    }
+    const fetcher = vi.fn(async () => Response.json(response))
+
+    await expect(
+      updateDocumentMetadata(
+        'doc-1',
+        { title: 'Renamed AI Library' },
+        token,
+        fetcher,
+        backendUrl,
+      ),
+    ).resolves.toEqual(response)
+
+    expect(fetcher).toHaveBeenCalledWith(`${backendUrl}/documents/doc-1`, {
+      method: 'PATCH',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ title: 'Renamed AI Library' }),
     })
   })
 

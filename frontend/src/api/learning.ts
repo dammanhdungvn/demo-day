@@ -31,6 +31,7 @@ export type ClassProfile = ClassCreatePayload & {
   course_id: string
   teacher_id: string
   organization_id?: string | null
+  is_active?: boolean
   created_at: string
   updated_at: string
 }
@@ -116,6 +117,10 @@ export type DocumentUploadResponse = {
 
 export type UrlIngestionPayload = {
   url: string
+}
+
+export type DocumentMetadataUpdatePayload = {
+  title: string
 }
 
 export type GenerationJob = {
@@ -250,8 +255,13 @@ export type LessonSession = {
     | 'published'
   admin_feedback: string | null
   blocks: LessonBlock[]
+  is_active?: boolean
   created_at: string
   updated_at: string
+}
+
+export type LessonSessionUpdatePayload = {
+  title: string
 }
 
 export type LessonProgressUpdatePayload = {
@@ -516,6 +526,36 @@ export async function createClassProfile(
   })
 
   return readJson<ClassProfile>(response, 'Create class')
+}
+
+export async function updateClassProfile(
+  classId: string,
+  payload: ClassCreatePayload,
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<ClassProfile> {
+  const response = await fetcher(buildApiUrl(`/classes/${classId}`, backendUrl), {
+    method: 'PATCH',
+    headers: authJsonHeaders(token),
+    body: JSON.stringify(payload),
+  })
+
+  return readJson<ClassProfile>(response, 'Update class')
+}
+
+export async function archiveClassProfile(
+  classId: string,
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<ClassProfile> {
+  const response = await fetcher(buildApiUrl(`/classes/${classId}`, backendUrl), {
+    method: 'DELETE',
+    headers: authHeaders(token),
+  })
+
+  return readJson<ClassProfile>(response, 'Archive class')
 }
 
 export async function fetchStudents(
@@ -888,6 +928,22 @@ export async function ingestUrlDocument(
   return readJson<DocumentUploadResponse>(response, 'URL ingestion')
 }
 
+export async function updateDocumentMetadata(
+  documentId: string,
+  payload: DocumentMetadataUpdatePayload,
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<SourceDocument> {
+  const response = await fetcher(buildApiUrl(`/documents/${documentId}`, backendUrl), {
+    method: 'PATCH',
+    headers: authJsonHeaders(token),
+    body: JSON.stringify(payload),
+  })
+
+  return readJson<SourceDocument>(response, 'Update document metadata')
+}
+
 export async function archiveDocument(
   documentId: string,
   token: string,
@@ -998,6 +1054,36 @@ export async function generateLessonBlocks(
   })
 
   return readJson<LessonSession>(response, 'Generate lesson blocks')
+}
+
+export async function updateLessonSession(
+  lessonId: string,
+  payload: LessonSessionUpdatePayload,
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<LessonSession> {
+  const response = await fetcher(buildApiUrl(`/lessons/${lessonId}`, backendUrl), {
+    method: 'PATCH',
+    headers: authJsonHeaders(token),
+    body: JSON.stringify(payload),
+  })
+
+  return readJson<LessonSession>(response, 'Update lesson')
+}
+
+export async function archiveLessonSession(
+  lessonId: string,
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<LessonSession> {
+  const response = await fetcher(buildApiUrl(`/lessons/${lessonId}`, backendUrl), {
+    method: 'DELETE',
+    headers: authHeaders(token),
+  })
+
+  return readJson<LessonSession>(response, 'Archive lesson')
 }
 
 export async function updateLessonBlock(

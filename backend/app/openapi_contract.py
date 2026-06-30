@@ -15,6 +15,10 @@ OPENAPI_TAGS = [
         "description": "Login, session refresh, logout, invite, and current-user APIs.",
     },
     {
+        "name": "System",
+        "description": "Platform owner APIs for organization bootstrap and first organization Admin invite.",
+    },
+    {
         "name": "Learning",
         "description": "Teacher courses, class profiles, class membership, and roster APIs.",
     },
@@ -70,6 +74,13 @@ REQUEST_EXAMPLES: dict[tuple[str, str], dict[str, object]] = {
     ("POST", "/api/v1/auth/invites"): {
         "email": "teacher@example.edu",
         "role": "teacher",
+    },
+    ("POST", "/api/v1/system/organizations"): {
+        "id": "org-training-center",
+        "name": "Training Center",
+    },
+    ("POST", "/api/v1/system/organizations/{organization_id}/admin-invites"): {
+        "email": "admin@training-center.edu",
     },
     ("POST", "/api/v1/courses"): {
         "title": "Nhap mon Tri tue nhan tao",
@@ -146,6 +157,8 @@ def _tag_for_path(path: str) -> str:
         return "Health"
     if "/auth/" in path or path.endswith("/me"):
         return "Auth"
+    if path.startswith("/api/v1/system/"):
+        return "System"
     if path.endswith("/generation-jobs"):
         return "Jobs"
     if "/admin/" in path:

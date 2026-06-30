@@ -54,6 +54,24 @@ describe('auth session storage', () => {
     expect(loadAuthSession(storage)).toEqual(session)
   })
 
+  it('stores and loads a production system admin session', () => {
+    const storage = new MemoryStorage()
+    const systemSession: AuthSession = {
+      ...session,
+      user: {
+        id: 'auth-owner',
+        email: 'owner@example.edu',
+        name: 'TeachFlow Owner',
+        role: 'system_admin',
+        organization_id: 'org-platform',
+      },
+    }
+
+    saveAuthSession(systemSession, storage)
+
+    expect(loadAuthSession(storage)).toEqual(systemSession)
+  })
+
   it('ignores malformed stored sessions', () => {
     const storage = new MemoryStorage()
     storage.setItem('teachflow.auth:v1', JSON.stringify({ access_token: 'bad' }))

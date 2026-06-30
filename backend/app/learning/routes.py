@@ -12,18 +12,21 @@ from .schemas import (
     ClassCreateRequest,
     ClassProfileResponse,
     ClassStudentResponse,
+    ClassUpdateRequest,
     CourseCreateRequest,
     CourseResponse,
     StudentClassSummary,
 )
 from .services import (
     add_student_to_class,
+    archive_class_profile,
     create_class_profile,
     create_course,
     list_available_students,
     list_course_classes,
     list_courses,
     list_student_classes,
+    update_class_profile,
 )
 
 router = APIRouter(prefix=API_BASE_PATH)
@@ -72,6 +75,29 @@ def create_class_profile_route(
     current_user: Annotated[UserProfile, Depends(require_roles("teacher"))],
 ) -> ClassProfileResponse:
     return create_class_profile(course_id, payload, current_user)
+
+
+@router.patch(
+    "/classes/{class_id}",
+    response_model=ClassProfileResponse,
+)
+def update_class_profile_route(
+    class_id: str,
+    payload: ClassUpdateRequest,
+    current_user: Annotated[UserProfile, Depends(require_roles("teacher"))],
+) -> ClassProfileResponse:
+    return update_class_profile(class_id, payload, current_user)
+
+
+@router.delete(
+    "/classes/{class_id}",
+    response_model=ClassProfileResponse,
+)
+def archive_class_profile_route(
+    class_id: str,
+    current_user: Annotated[UserProfile, Depends(require_roles("teacher"))],
+) -> ClassProfileResponse:
+    return archive_class_profile(class_id, current_user)
 
 
 @router.post(

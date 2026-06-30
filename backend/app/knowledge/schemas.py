@@ -40,6 +40,18 @@ class DocumentRecord(BaseModel):
     updated_at: str
 
 
+class DocumentMetadataUpdateRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=300)
+
+    @field_validator("title")
+    @classmethod
+    def title_must_not_be_blank(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("Title must not be blank")
+        return stripped
+
+
 class DocumentUploadResponse(BaseModel):
     generation_job_id: str
     job_status: DocumentUploadJobStatus

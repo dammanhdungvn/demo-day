@@ -5,6 +5,7 @@ import { getWorkspaceConfig } from './workspaces'
 
 describe('role workspace config', () => {
   it.each([
+    ['system_admin', 'Không gian Owner'],
     ['admin', 'Không gian Admin'],
     ['teacher', 'Không gian Giảng viên'],
     ['student', 'Không gian Sinh viên'],

@@ -80,13 +80,13 @@ export function SourceStrip({
     return (
       <div className="v4-empty-inline">
         <FileText aria-hidden="true" size={18} />
-        Chua co tai lieu nguon trong kho tri thuc.
+        Chưa có tài liệu nguồn trong kho tri thức.
       </div>
     )
   }
 
   return (
-    <div className="v4-source-strip" aria-label="Nguon tri thuc">
+    <div className="v4-source-strip" aria-label="Nguồn tri thức">
       {documents.slice(0, 8).map((document) => {
         const selected = selectedDocumentIds.includes(document.id)
         const completed = document.status === 'completed' && document.is_active

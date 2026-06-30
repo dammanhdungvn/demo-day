@@ -31,11 +31,16 @@ class ClassCreateRequest(BaseModel):
     teaching_style: str = Field(min_length=1)
 
 
+class ClassUpdateRequest(ClassCreateRequest):
+    pass
+
+
 class ClassProfileResponse(ClassCreateRequest):
     id: str
     course_id: str
     teacher_id: str
     organization_id: str | None = None
+    is_active: bool = True
     created_at: str
     updated_at: str
 

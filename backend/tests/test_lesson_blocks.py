@@ -11,10 +11,12 @@ from main import (
     LessonBlockStatusRequest,
     LessonBlockUpdateRequest,
     LessonGenerateRequest,
+    LessonSessionUpdateRequest,
     LoginRequest,
     RetrievedChunkRecord,
     UserProfile,
     add_student_to_class,
+    archive_lesson_session,
     authenticate_demo_user,
     create_class_profile,
     create_course,
@@ -38,6 +40,7 @@ from main import (
     reset_outline_store_for_tests,
     submit_lesson_for_admin,
     update_lesson_block,
+    update_lesson_session,
 )
 
 
@@ -263,6 +266,52 @@ def test_generate_lesson_blocks_with_required_types_and_citations() -> None:
     assert jobs[0].job_type == "lesson_generation"
     assert jobs[0].status == "completed"
     assert jobs[0].output["lesson_id"] == lesson.id
+
+
+def test_teacher_updates_lesson_session_title() -> None:
+    teacher = teacher_user()
+    outline_id = create_outline(teacher)
+    lesson = generate_lesson_blocks(
+        payload=LessonGenerateRequest(outline_id=outline_id, session_index=1),
+        current_user=teacher,
+        repository=FakeKnowledgeRepository(),
+        ai_provider=FakeAIProvider(),
+    )
+
+    updated = update_lesson_session(
+        lesson.id,
+        LessonSessionUpdateRequest(title="Kien truc AI Agent da chinh sua"),
+        teacher,
+    )
+
+    assert updated.id == lesson.id
+    assert updated.title == "Kien truc AI Agent da chinh sua"
+    assert updated.updated_at != lesson.updated_at
+
+
+def test_teacher_archives_lesson_and_hides_it_from_active_flows() -> None:
+    teacher = teacher_user()
+    student = student_user()
+    admin = admin_user()
+    submitted = create_submitted_lesson_response(teacher)
+    add_student_to_class(
+        class_id=submitted.class_id,
+        payload=AddStudentRequest(student_id=student.id),
+        current_user=teacher,
+    )
+    published = publish_lesson_for_admin(submitted.id, admin)
+    assert list_student_published_lessons(student) == [published]
+
+    archived = archive_lesson_session(published.id, teacher)
+
+    assert archived.id == published.id
+    assert archived.is_active is False
+    assert list_teacher_lessons(published.class_id, teacher) == []
+    assert list_admin_review_queue(admin) == []
+    assert list_student_published_lessons(student) == []
+    with pytest.raises(HTTPException) as exc_info:
+        get_student_published_lesson(published.id, student)
+    assert exc_info.value.status_code == 404
 
 
 def test_generate_lesson_blocks_rejects_missing_required_type() -> None:

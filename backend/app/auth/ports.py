@@ -5,7 +5,9 @@ from typing import Protocol
 from .schemas import (
     AcceptInviteRequest,
     AuthProfileRecord,
+    AuthOrganizationResponse,
     LoginRequest,
+    OrganizationInviteRole,
     OrganizationInviteResponse,
     ProfileStatus,
     Role,
@@ -43,6 +45,13 @@ class AuthRepository(Protocol):
 
     def upsert_profile(self, profile: AuthProfileRecord) -> AuthProfileRecord: ...
 
+    def list_organizations(self) -> list[AuthOrganizationResponse]: ...
+
+    def upsert_organization(
+        self,
+        organization: AuthOrganizationResponse,
+    ) -> AuthOrganizationResponse: ...
+
     def get_invite_by_code(self, invite_code: str) -> OrganizationInviteResponse | None: ...
 
     def accept_invite(
@@ -57,7 +66,7 @@ class AuthRepository(Protocol):
         self,
         *,
         email: str,
-        role: Role,
+        role: OrganizationInviteRole,
         organization_id: str,
         invited_by: str,
     ) -> OrganizationInviteResponse: ...

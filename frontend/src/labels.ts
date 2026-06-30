@@ -7,6 +7,7 @@ import type {
 } from './api/learning'
 
 const ROLE_LABELS: Record<UserRole, string> = {
+  system_admin: 'Owner hệ thống',
   admin: 'Quản trị viên',
   teacher: 'Giảng viên',
   student: 'Sinh viên',

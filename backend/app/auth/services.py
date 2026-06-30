@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import re
 from secrets import token_urlsafe
 from typing import Literal
 
@@ -14,16 +15,24 @@ from .ports import AuthRepository, SupabaseAuthClient
 from .repositories import InMemoryAuthRepository, PostgresAuthRepository
 from .schemas import (
     AcceptInviteRequest,
+    AuthOrganizationResponse,
     AuthProfileRecord,
     DemoLoginRequest,
     InviteCreateRequest,
     LoginRequest,
     LoginResponse,
+    ManagedUserResponse,
+    ManagedUserRole,
+    ManagedUserStatusUpdateRequest,
+    ManagedUserUpdateRequest,
     MessageResponse,
     OrganizationInviteResponse,
+    ProfileStatus,
     PublicDemoAccount,
     RefreshSessionRequest,
     Role,
+    SystemAdminInviteCreateRequest,
+    SystemOrganizationCreateRequest,
     SupabaseAuthUser,
     UserProfile,
 )
@@ -32,6 +41,8 @@ from .supabase_client import SupabaseAuthRestClient
 ACTIVE_DEMO_SESSIONS: dict[str, UserProfile] = {}
 REGISTERED_DEMO_ACCOUNTS: dict[str, tuple[UserProfile, str]] = {}
 MEMORY_AUTH_REPOSITORY = InMemoryAuthRepository()
+SYSTEM_ADMIN_ORGANIZATION_ID = "org-platform"
+SYSTEM_ADMIN_ORGANIZATION_NAME = "TeachFlow Platform"
 
 
 def is_demo_login_enabled() -> bool:
@@ -100,7 +111,87 @@ def get_supabase_auth_client() -> SupabaseAuthClient:
     return SupabaseAuthRestClient(project_url=project_url, anon_key=anon_key)
 
 
-def authenticate_demo_user(credentials: LoginRequest) -> LoginResponse:
+def _env_csv(name: str) -> set[str]:
+    raw_value = _env_value(name) or ""
+    return {
+        item.strip().lower()
+        for item in raw_value.split(",")
+        if item.strip()
+    }
+
+
+def _configured_system_admin_organization() -> AuthOrganizationResponse:
+    organization_id = (
+        _env_value("SYSTEM_ADMIN_ORGANIZATION_ID")
+        or SYSTEM_ADMIN_ORGANIZATION_ID
+    ).strip()
+    organization_name = (
+        _env_value("SYSTEM_ADMIN_ORGANIZATION_NAME")
+        or SYSTEM_ADMIN_ORGANIZATION_NAME
+    ).strip()
+    return AuthOrganizationResponse(
+        id=organization_id or SYSTEM_ADMIN_ORGANIZATION_ID,
+        name=organization_name or SYSTEM_ADMIN_ORGANIZATION_NAME,
+    )
+
+
+def _is_configured_system_admin_user(auth_user: SupabaseAuthUser) -> bool:
+    allowed_user_ids = _env_csv("SYSTEM_ADMIN_USER_IDS")
+    allowed_emails = _env_csv("SYSTEM_ADMIN_EMAILS")
+    return auth_user.id.lower() in allowed_user_ids or (
+        auth_user.email.strip().lower() in allowed_emails
+    )
+
+
+def _bootstrap_system_admin_profile(
+    auth_user: SupabaseAuthUser,
+    auth_repository: AuthRepository,
+    existing_profile: AuthProfileRecord | None,
+) -> AuthProfileRecord:
+    organization = _configured_system_admin_organization()
+    auth_repository.upsert_organization(organization)
+    profile = AuthProfileRecord(
+        id=auth_user.id,
+        email=auth_user.email.strip().lower(),
+        name=auth_user.name or existing_profile.name if existing_profile else (
+            auth_user.name or auth_user.email.split("@")[0]
+        ),
+        role="system_admin",
+        organization_id=organization.id,
+        auth_provider="supabase",
+        status=existing_profile.status if existing_profile else "active",
+    )
+    saved_profile = auth_repository.upsert_profile(profile)
+    _ensure_active_profile(saved_profile)
+    return saved_profile
+
+
+def _ensure_demo_profiles_seeded(
+    auth_repository: AuthRepository | None = None,
+) -> AuthRepository:
+    repository = auth_repository or get_auth_repository()
+    for account in DEMO_ACCOUNTS:
+        existing_profile = repository.get_profile(account.public.id)
+        if existing_profile is not None:
+            continue
+        repository.upsert_profile(
+            AuthProfileRecord(
+                id=account.public.id,
+                email=account.public.email,
+                name=account.public.name,
+                role=account.public.role,
+                organization_id=account.public.organization_id or "org-demo",
+                auth_provider="demo",
+                status="active",
+            )
+        )
+    return repository
+
+
+def authenticate_demo_user(
+    credentials: LoginRequest,
+    auth_repository: AuthRepository | None = None,
+) -> LoginResponse:
     normalized_email = credentials.email.strip().lower()
     account = DEMO_ACCOUNTS_BY_EMAIL.get(normalized_email)
     if account is None or credentials.password != account.password:
@@ -114,13 +205,19 @@ def authenticate_demo_user(credentials: LoginRequest) -> LoginResponse:
                 detail="Invalid demo account credentials",
             )
         user = registered_account[0]
+        _ensure_login_profile_active(user, auth_repository)
         return LoginResponse(access_token=create_session_token(user), user=user)
 
+    repository = _ensure_demo_profiles_seeded(auth_repository)
     user = UserProfile(**account.public.model_dump(exclude={"label"}))
+    _ensure_login_profile_active(user, repository)
     return LoginResponse(access_token=create_session_token(user), user=user)
 
 
-def authenticate_demo_account(payload: DemoLoginRequest) -> LoginResponse:
+def authenticate_demo_account(
+    payload: DemoLoginRequest,
+    auth_repository: AuthRepository | None = None,
+) -> LoginResponse:
     if not is_demo_login_enabled():
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -141,7 +238,9 @@ def authenticate_demo_account(payload: DemoLoginRequest) -> LoginResponse:
             detail="Demo account not found",
         )
 
+    repository = _ensure_demo_profiles_seeded(auth_repository)
     user = UserProfile(**account.public.model_dump(exclude={"label"}))
+    _ensure_login_profile_active(user, repository)
     return LoginResponse(access_token=create_session_token(user), user=user)
 
 
@@ -155,12 +254,40 @@ def _public_profile(profile: AuthProfileRecord) -> UserProfile:
     )
 
 
+def _managed_user_response(profile: AuthProfileRecord) -> ManagedUserResponse:
+    if profile.role not in {"teacher", "student"}:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Managed user response can only include teachers or students",
+        )
+    return ManagedUserResponse(
+        id=profile.id,
+        email=profile.email,
+        name=profile.name,
+        role=profile.role,
+        status=profile.status,
+        organization_id=profile.organization_id,
+        created_at=profile.created_at,
+        updated_at=profile.updated_at,
+    )
+
+
 def _ensure_active_profile(profile: AuthProfileRecord) -> None:
     if profile.status != "active":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User profile is disabled",
         )
+
+
+def _ensure_login_profile_active(
+    user: UserProfile,
+    auth_repository: AuthRepository | None = None,
+) -> None:
+    repository = auth_repository or get_auth_repository()
+    profile = repository.get_profile(user.id)
+    if profile is not None:
+        _ensure_active_profile(profile)
 
 
 def _profile_for_supabase_user(
@@ -170,6 +297,13 @@ def _profile_for_supabase_user(
     profile = auth_repository.get_profile(auth_user.id)
     if profile is None and auth_user.email:
         profile = auth_repository.get_profile_by_email(auth_user.email)
+
+    if _is_configured_system_admin_user(auth_user):
+        return _bootstrap_system_admin_profile(
+            auth_user,
+            auth_repository,
+            profile,
+        )
 
     if profile is None:
         raise HTTPException(
@@ -201,7 +335,7 @@ def authenticate_user(
     supabase_client: SupabaseAuthClient | None = None,
 ) -> LoginResponse:
     if get_auth_provider_mode() == "demo":
-        return authenticate_demo_user(credentials)
+        return authenticate_demo_user(credentials, auth_repository)
 
     repository = auth_repository or get_auth_repository()
     client = supabase_client or get_supabase_auth_client()
@@ -247,6 +381,10 @@ def get_current_user_from_authorization(
     if is_demo_login_enabled():
         demo_user = ACTIVE_DEMO_SESSIONS.get(token)
         if demo_user is not None:
+            repository = auth_repository or get_auth_repository()
+            profile = repository.get_profile(demo_user.id)
+            if profile is not None:
+                _ensure_active_profile(profile)
             return demo_user
 
     if get_auth_provider_mode() == "supabase":
@@ -431,6 +569,203 @@ def list_user_invites(
     admin = _require_invite_admin(current_user)
     repository = auth_repository or get_auth_repository()
     return repository.list_invites(organization_id=admin.organization_id)
+
+
+def _require_user_management_admin(user: UserProfile) -> AuthProfileRecord:
+    if user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can manage organization users",
+        )
+    if not user.organization_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current user is not assigned to an organization",
+        )
+    return AuthProfileRecord(
+        id=user.id,
+        email=user.email,
+        name=user.name,
+        role=user.role,
+        organization_id=user.organization_id,
+        auth_provider=(
+            "demo"
+            if any(account.public.id == user.id for account in DEMO_ACCOUNTS)
+            else get_auth_provider_mode()
+        ),
+    )
+
+
+def list_managed_users(
+    current_user: UserProfile,
+    auth_repository: AuthRepository | None = None,
+    *,
+    role_filter: ManagedUserRole | None = None,
+    status_filter: ProfileStatus | None = None,
+) -> list[ManagedUserResponse]:
+    admin = _require_user_management_admin(current_user)
+    repository = auth_repository or get_auth_repository()
+    profiles = repository.list_profiles(
+        organization_id=admin.organization_id,
+        role=role_filter,
+        status=status_filter,
+    )
+    return [
+        _managed_user_response(profile)
+        for profile in profiles
+        if profile.role in {"teacher", "student"}
+    ]
+
+
+def update_managed_user_status(
+    profile_id: str,
+    payload: ManagedUserStatusUpdateRequest,
+    current_user: UserProfile,
+    auth_repository: AuthRepository | None = None,
+) -> ManagedUserResponse:
+    return update_managed_user(
+        profile_id,
+        ManagedUserUpdateRequest(status=payload.status),
+        current_user,
+        auth_repository,
+    )
+
+
+def update_managed_user(
+    profile_id: str,
+    payload: ManagedUserUpdateRequest,
+    current_user: UserProfile,
+    auth_repository: AuthRepository | None = None,
+) -> ManagedUserResponse:
+    admin = _require_user_management_admin(current_user)
+    repository = auth_repository or get_auth_repository()
+    profile = repository.get_profile(profile_id)
+    if profile is None or profile.organization_id != admin.organization_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Managed user was not found",
+        )
+    if profile.role not in {"teacher", "student"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admins can only manage Teacher or Student profiles",
+        )
+
+    updates: dict[str, str] = {}
+    if payload.name is not None:
+        updates["name"] = payload.name.strip()
+    if payload.email is not None:
+        normalized_email = _normalize_invite_email(payload.email)
+        existing = repository.get_profile_by_email(normalized_email)
+        if existing is not None and existing.id != profile.id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A profile already exists for this email",
+            )
+        updates["email"] = normalized_email
+    if payload.status is not None:
+        updates["status"] = payload.status
+    if not updates:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No managed user fields were provided",
+        )
+
+    updated_profile = profile.model_copy(
+        update={
+            **updates,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+    )
+    saved_profile = repository.upsert_profile(updated_profile)
+    return _managed_user_response(saved_profile)
+
+
+def _require_system_admin(user: UserProfile) -> AuthProfileRecord:
+    if user.role != "system_admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only system admins can manage platform organizations",
+        )
+    if not user.organization_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current system admin is not assigned to an organization",
+        )
+    return AuthProfileRecord(
+        id=user.id,
+        email=user.email,
+        name=user.name,
+        role=user.role,
+        organization_id=user.organization_id,
+        auth_provider=get_auth_provider_mode(),
+    )
+
+
+def _organization_id_from_name(name: str) -> str:
+    slug = re.sub(r"[^a-z0-9_-]+", "-", name.strip().lower()).strip("-_")
+    return f"org-{slug}" if slug and not slug.startswith("org-") else slug
+
+
+def _normalize_organization_id(organization_id: str | None, name: str) -> str:
+    candidate = (organization_id or _organization_id_from_name(name)).strip().lower()
+    candidate = re.sub(r"[^a-z0-9_-]+", "-", candidate).strip("-_")
+    if len(candidate) < 2:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Organization id must include at least 2 URL-safe characters",
+        )
+    return candidate[:80]
+
+
+def list_system_organizations(
+    current_user: UserProfile,
+    auth_repository: AuthRepository | None = None,
+) -> list[AuthOrganizationResponse]:
+    _require_system_admin(current_user)
+    repository = auth_repository or get_auth_repository()
+    return repository.list_organizations()
+
+
+def create_system_organization(
+    payload: SystemOrganizationCreateRequest,
+    current_user: UserProfile,
+    auth_repository: AuthRepository | None = None,
+) -> AuthOrganizationResponse:
+    system_admin = _require_system_admin(current_user)
+    repository = auth_repository or get_auth_repository()
+    repository.upsert_profile(system_admin)
+    organization = AuthOrganizationResponse(
+        id=_normalize_organization_id(payload.id, payload.name),
+        name=payload.name.strip(),
+    )
+    return repository.upsert_organization(organization)
+
+
+def create_system_admin_invite(
+    organization_id: str,
+    payload: SystemAdminInviteCreateRequest,
+    current_user: UserProfile,
+    auth_repository: AuthRepository | None = None,
+) -> OrganizationInviteResponse:
+    system_admin = _require_system_admin(current_user)
+    repository = auth_repository or get_auth_repository()
+    organizations = {
+        organization.id
+        for organization in repository.list_organizations()
+    }
+    if organization_id not in organizations:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Organization was not found",
+        )
+    repository.upsert_profile(system_admin)
+    return repository.create_invite(
+        email=_normalize_invite_email(payload.email),
+        role="admin",
+        organization_id=organization_id,
+        invited_by=system_admin.id,
+    )
 
 
 def require_role(user: UserProfile, allowed_roles: set[Role]) -> UserProfile:

@@ -17,6 +17,7 @@ from .schemas import (
     ClassCreateRequest,
     ClassProfileResponse,
     ClassStudentResponse,
+    ClassUpdateRequest,
     CourseCreateRequest,
     CourseResponse,
     StudentClassSummary,
@@ -99,6 +100,7 @@ def _ensure_owned_class(
     if (
         class_profile is None
         or class_profile.teacher_id != teacher.id
+        or not class_profile.is_active
         or not _same_organization(class_profile.organization_id, teacher)
     ):
         raise _not_found("Class not found")
@@ -162,6 +164,32 @@ def create_class_profile(
         organization_id=_user_organization_id(teacher),
         payload=payload,
     )
+
+
+def update_class_profile(
+    class_id: str,
+    payload: ClassUpdateRequest,
+    current_user: UserProfile,
+    repository: LearningRepository | None = None,
+) -> ClassProfileResponse:
+    teacher = require_role(current_user, {"teacher"})
+    learning_repository = repository or get_learning_repository()
+    _ensure_owned_class(class_id, teacher, learning_repository)
+    return learning_repository.update_class_profile(
+        class_id=class_id,
+        payload=payload,
+    )
+
+
+def archive_class_profile(
+    class_id: str,
+    current_user: UserProfile,
+    repository: LearningRepository | None = None,
+) -> ClassProfileResponse:
+    teacher = require_role(current_user, {"teacher"})
+    learning_repository = repository or get_learning_repository()
+    _ensure_owned_class(class_id, teacher, learning_repository)
+    return learning_repository.archive_class_profile(class_id)
 
 
 def list_available_students(

@@ -15,6 +15,7 @@ from .schemas import (
     ClassCreateRequest,
     ClassProfileResponse,
     ClassStudentResponse,
+    ClassUpdateRequest,
     CourseCreateRequest,
     CourseResponse,
 )
@@ -45,6 +46,7 @@ def learning_schema_sql() -> str:
       session_count integer not null check (session_count between 1 and 100),
       minutes_per_session integer not null check (minutes_per_session between 1 and 300),
       teaching_style text not null,
+      is_active boolean not null default true,
       created_at timestamptz not null default now(),
       updated_at timestamptz not null default now()
     );
@@ -77,11 +79,13 @@ def learning_schema_sql() -> str:
     where organization_id is null;
     alter table classes alter column organization_id set default 'org-demo';
     alter table classes alter column organization_id set not null;
+    alter table classes add column if not exists is_active boolean not null default true;
 
     create index if not exists idx_courses_teacher_id on courses (teacher_id);
     create index if not exists idx_courses_org_teacher on courses (organization_id, teacher_id);
     create index if not exists idx_classes_course_teacher on classes (course_id, teacher_id);
     create index if not exists idx_classes_org_course_teacher on classes (organization_id, course_id, teacher_id);
+    create index if not exists idx_classes_org_teacher_active on classes (organization_id, teacher_id, is_active);
     create index if not exists idx_class_students_student_id on class_students (student_id);
 
     alter table courses enable row level security;
@@ -175,6 +179,7 @@ class InMemoryLearningRepository:
             for class_profile in self.classes.values()
             if class_profile.course_id == course_id
             and class_profile.teacher_id == teacher_id
+            and class_profile.is_active
             and (
                 organization_id is None
                 or _entity_organization_id(class_profile.organization_id)
@@ -202,6 +207,37 @@ class InMemoryLearningRepository:
         )
         self.classes[class_profile.id] = class_profile
         return class_profile
+
+    def update_class_profile(
+        self,
+        *,
+        class_id: str,
+        payload: ClassUpdateRequest,
+    ) -> ClassProfileResponse:
+        class_profile = self.classes.get(class_id)
+        if class_profile is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Class not found",
+            )
+        updated = class_profile.model_copy(
+            update={**payload.model_dump(), "updated_at": _now_iso()}
+        )
+        self.classes[class_id] = updated
+        return updated
+
+    def archive_class_profile(self, class_id: str) -> ClassProfileResponse:
+        class_profile = self.classes.get(class_id)
+        if class_profile is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Class not found",
+            )
+        archived = class_profile.model_copy(
+            update={"is_active": False, "updated_at": _now_iso()}
+        )
+        self.classes[class_id] = archived
+        return archived
 
     def get_class_student(
         self,
@@ -254,6 +290,7 @@ class InMemoryLearningRepository:
                 or (
                     (class_profile := self.classes.get(membership.class_id))
                     is not None
+                    and class_profile.is_active
                     and _entity_organization_id(class_profile.organization_id)
                     == organization_id
                 )
@@ -404,6 +441,7 @@ class PostgresLearningRepository:
                       session_count,
                       minutes_per_session,
                       teaching_style,
+                      is_active,
                       created_at::text,
                       updated_at::text
                     from classes
@@ -436,11 +474,13 @@ class PostgresLearningRepository:
                       session_count,
                       minutes_per_session,
                       teaching_style,
+                      is_active,
                       created_at::text,
                       updated_at::text
                     from classes
                     where course_id = %s::uuid
                       and teacher_id = %s
+                      and is_active = true
                       and (%s::text is null or organization_id = %s)
                     order by created_at asc
                     """,
@@ -484,6 +524,7 @@ class PostgresLearningRepository:
                       session_count,
                       minutes_per_session,
                       teaching_style,
+                      is_active,
                       created_at::text,
                       updated_at::text
                     """,
@@ -504,6 +545,92 @@ class PostgresLearningRepository:
                     raise HTTPException(
                         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                         detail="Could not create class",
+                    )
+                return ClassProfileResponse(**row)
+
+    def update_class_profile(
+        self,
+        *,
+        class_id: str,
+        payload: ClassUpdateRequest,
+    ) -> ClassProfileResponse:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    update classes
+                    set name = %s,
+                        student_level = %s,
+                        background_knowledge = %s,
+                        session_count = %s,
+                        minutes_per_session = %s,
+                        teaching_style = %s,
+                        updated_at = now()
+                    where id = %s::uuid
+                    returning
+                      id::text,
+                      course_id::text,
+                      teacher_id,
+                      organization_id,
+                      name,
+                      student_level,
+                      background_knowledge,
+                      session_count,
+                      minutes_per_session,
+                      teaching_style,
+                      is_active,
+                      created_at::text,
+                      updated_at::text
+                    """,
+                    (
+                        payload.name,
+                        payload.student_level,
+                        payload.background_knowledge,
+                        payload.session_count,
+                        payload.minutes_per_session,
+                        payload.teaching_style,
+                        class_id,
+                    ),
+                )
+                row = cur.fetchone()
+                if row is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Class not found",
+                    )
+                return ClassProfileResponse(**row)
+
+    def archive_class_profile(self, class_id: str) -> ClassProfileResponse:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    update classes
+                    set is_active = false,
+                        updated_at = now()
+                    where id = %s::uuid
+                    returning
+                      id::text,
+                      course_id::text,
+                      teacher_id,
+                      organization_id,
+                      name,
+                      student_level,
+                      background_knowledge,
+                      session_count,
+                      minutes_per_session,
+                      teaching_style,
+                      is_active,
+                      created_at::text,
+                      updated_at::text
+                    """,
+                    (class_id,),
+                )
+                row = cur.fetchone()
+                if row is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Class not found",
                     )
                 return ClassProfileResponse(**row)
 
@@ -586,6 +713,7 @@ class PostgresLearningRepository:
                     from class_students cs
                     join classes c on c.id = cs.class_id
                     where cs.student_id = %s
+                      and c.is_active = true
                       and (%s::text is null or c.organization_id = %s)
                     order by cs.created_at asc
                     """,

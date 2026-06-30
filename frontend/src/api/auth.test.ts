@@ -2,14 +2,21 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   acceptInvite,
+  createSystemAdminInvite,
+  createSystemOrganization,
   demoLogin,
   fetchCurrentUser,
   fetchDemoAccounts,
   fetchInvites,
+  fetchManagedUsers,
   fetchRoleDashboard,
+  fetchSystemOrganizations,
+  getRoleRoute,
   createInvite,
   login,
   refreshSession,
+  updateManagedUser,
+  updateManagedUserStatus,
 } from './auth'
 
 const backendUrl = 'https://api.example.test/api/v1'
@@ -158,6 +165,36 @@ describe('auth API client', () => {
     ).rejects.toThrow('Teacher dashboard failed with status 403')
   })
 
+  it('routes system admin to the system workspace dashboard path', async () => {
+    const dashboard = {
+      workspace: 'system_admin' as const,
+      title: 'System Owner Dashboard',
+      current_user: {
+        id: 'auth-owner',
+        email: 'owner@example.edu',
+        name: 'TeachFlow Owner',
+        role: 'system_admin' as const,
+        organization_id: 'org-platform',
+      },
+      allowed_actions: ['Tạo tổ chức'],
+      hidden_actions: ['Demo role shortcuts'],
+      next_step: 'Tạo organization đầu tiên.',
+    }
+    const fetcher = vi.fn(async () => Response.json(dashboard))
+
+    await expect(
+      fetchRoleDashboard('system_admin', 'owner-token', fetcher, backendUrl),
+    ).resolves.toEqual(dashboard)
+
+    expect(getRoleRoute('system_admin')).toBe('/system')
+    expect(fetcher).toHaveBeenCalledWith(`${backendUrl}/system/dashboard`, {
+      headers: {
+        Accept: 'application/json',
+        Authorization: 'Bearer owner-token',
+      },
+    })
+  })
+
   it('creates and lists organization invites', async () => {
     const invite = {
       id: 'invite-1',
@@ -237,6 +274,187 @@ describe('auth API client', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
+    })
+  })
+
+  it('lets system admin manage organizations and create first admin invites', async () => {
+    const organization = {
+      id: 'org-training-center',
+      name: 'Training Center',
+      created_at: '2026-06-30T00:00:00+00:00',
+      updated_at: '2026-06-30T00:00:00+00:00',
+    }
+    const invite = {
+      id: 'invite-admin',
+      email: 'admin@training.edu',
+      role: 'admin' as const,
+      status: 'pending' as const,
+      organization_id: organization.id,
+      invited_by: 'auth-owner',
+      invite_code: 'invite-code',
+      created_at: '2026-06-30T00:00:00+00:00',
+      accepted_at: null,
+    }
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json([organization]))
+      .mockResolvedValueOnce(Response.json(organization))
+      .mockResolvedValueOnce(Response.json(invite))
+
+    await expect(fetchSystemOrganizations('owner-token', fetcher, backendUrl)).resolves.toEqual([
+      organization,
+    ])
+    await expect(
+      createSystemOrganization(
+        { id: organization.id, name: organization.name },
+        'owner-token',
+        fetcher,
+        backendUrl,
+      ),
+    ).resolves.toEqual(organization)
+    await expect(
+      createSystemAdminInvite(
+        organization.id,
+        { email: invite.email },
+        'owner-token',
+        fetcher,
+        backendUrl,
+      ),
+    ).resolves.toEqual(invite)
+
+    expect(fetcher).toHaveBeenNthCalledWith(1, `${backendUrl}/system/organizations`, {
+      headers: {
+        Accept: 'application/json',
+        Authorization: 'Bearer owner-token',
+      },
+    })
+    expect(fetcher).toHaveBeenNthCalledWith(2, `${backendUrl}/system/organizations`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        Authorization: 'Bearer owner-token',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id: organization.id, name: organization.name }),
+    })
+    expect(fetcher).toHaveBeenNthCalledWith(
+      3,
+      `${backendUrl}/system/organizations/${organization.id}/admin-invites`,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer owner-token',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: invite.email }),
+      },
+    )
+  })
+
+  it('lets admin list and update managed teacher/student users', async () => {
+    const teacher = {
+      id: 'demo-teacher',
+      email: 'teacher@teachflow.local',
+      name: 'Teacher Demo',
+      role: 'teacher' as const,
+      status: 'active' as const,
+      organization_id: 'org-demo',
+      created_at: '2026-06-30T00:00:00+00:00',
+      updated_at: '2026-06-30T00:00:00+00:00',
+    }
+    const disabledTeacher = {
+      ...teacher,
+      status: 'disabled' as const,
+      updated_at: '2026-06-30T01:00:00+00:00',
+    }
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json([teacher]))
+      .mockResolvedValueOnce(Response.json(disabledTeacher))
+
+    await expect(
+      fetchManagedUsers(
+        'admin-token',
+        { role: 'teacher', status: 'active' },
+        fetcher,
+        backendUrl,
+      ),
+    ).resolves.toEqual([teacher])
+    await expect(
+      updateManagedUserStatus(
+        teacher.id,
+        'disabled',
+        'admin-token',
+        fetcher,
+        backendUrl,
+      ),
+    ).resolves.toEqual(disabledTeacher)
+
+    expect(fetcher).toHaveBeenNthCalledWith(
+      1,
+      `${backendUrl}/auth/users?role=teacher&status=active`,
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer admin-token',
+        },
+      },
+    )
+    expect(fetcher).toHaveBeenNthCalledWith(
+      2,
+      `${backendUrl}/auth/users/${teacher.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer admin-token',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'disabled' }),
+      },
+    )
+  })
+
+  it('updates managed user profile fields through the same scoped endpoint', async () => {
+    const teacher = {
+      id: 'demo-teacher',
+      email: 'lead.teacher@example.edu',
+      name: 'Lead Teacher',
+      role: 'teacher' as const,
+      status: 'active' as const,
+      organization_id: 'org-demo',
+      created_at: '2026-06-30T00:00:00+00:00',
+      updated_at: '2026-06-30T02:00:00+00:00',
+    }
+    const fetcher = vi.fn().mockResolvedValueOnce(Response.json(teacher))
+
+    await expect(
+      updateManagedUser(
+        teacher.id,
+        {
+          name: 'Lead Teacher',
+          email: 'lead.teacher@example.edu',
+          status: 'active',
+        },
+        'admin-token',
+        fetcher,
+        backendUrl,
+      ),
+    ).resolves.toEqual(teacher)
+
+    expect(fetcher).toHaveBeenCalledWith(`${backendUrl}/auth/users/${teacher.id}`, {
+      method: 'PATCH',
+      headers: {
+        Accept: 'application/json',
+        Authorization: 'Bearer admin-token',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: 'Lead Teacher',
+        email: 'lead.teacher@example.edu',
+        status: 'active',
+      }),
     })
   })
 })

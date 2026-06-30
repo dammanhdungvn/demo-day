@@ -15,6 +15,7 @@ from .schemas import (
     AuthOrganizationResponse,
     AuthProfileRecord,
     DemoAccountRecord,
+    OrganizationInviteRole,
     OrganizationInviteResponse,
     Role,
 )
@@ -41,7 +42,8 @@ def auth_schema_sql() -> str:
       id text primary key,
       email text not null unique,
       name text not null,
-      role text not null check (role in ('admin', 'teacher', 'student')),
+      role text not null constraint profiles_role_check
+        check (role in ('system_admin', 'admin', 'teacher', 'student')),
       organization_id text not null references organizations(id) on delete restrict,
       auth_provider text not null default 'supabase',
       status text not null default 'active'
@@ -53,7 +55,8 @@ def auth_schema_sql() -> str:
     create table if not exists organization_invites (
       id text primary key default gen_random_uuid()::text,
       email text not null,
-      role text not null check (role in ('admin', 'teacher', 'student')),
+      role text not null constraint organization_invites_role_check
+        check (role in ('admin', 'teacher', 'student')),
       status text not null default 'pending'
         check (status in ('pending', 'accepted', 'revoked')),
       organization_id text not null references organizations(id) on delete cascade,
@@ -77,6 +80,22 @@ def auth_schema_sql() -> str:
       where expires_at is null;
     alter table organization_invites
       alter column expires_at set not null;
+
+    insert into organizations (id, name)
+    values ('org-platform', 'TeachFlow Platform')
+    on conflict (id) do nothing;
+
+    alter table profiles
+      drop constraint if exists profiles_role_check;
+    alter table profiles
+      add constraint profiles_role_check
+      check (role in ('system_admin', 'admin', 'teacher', 'student'));
+
+    alter table organization_invites
+      drop constraint if exists organization_invites_role_check;
+    alter table organization_invites
+      add constraint organization_invites_role_check
+      check (role in ('admin', 'teacher', 'student'));
 
     create index if not exists idx_profiles_organization_role
       on profiles (organization_id, role);
@@ -108,7 +127,13 @@ class InMemoryAuthRepository:
                 name="TeachFlow Demo Organization",
                 created_at=now,
                 updated_at=now,
-            )
+            ),
+            "org-platform": AuthOrganizationResponse(
+                id="org-platform",
+                name="TeachFlow Platform",
+                created_at=now,
+                updated_at=now,
+            ),
         }
         self.profiles: dict[str, AuthProfileRecord] = {
             account.public.id: AuthProfileRecord(
@@ -179,6 +204,27 @@ class InMemoryAuthRepository:
             )
         return profile
 
+    def list_organizations(self) -> list[AuthOrganizationResponse]:
+        return sorted(
+            self.organizations.values(),
+            key=lambda organization: organization.id,
+        )
+
+    def upsert_organization(
+        self,
+        organization: AuthOrganizationResponse,
+    ) -> AuthOrganizationResponse:
+        now = _now_iso()
+        existing = self.organizations.get(organization.id)
+        saved = AuthOrganizationResponse(
+            id=organization.id,
+            name=organization.name,
+            created_at=existing.created_at if existing else now,
+            updated_at=now,
+        )
+        self.organizations[organization.id] = saved
+        return saved
+
     def get_invite_by_code(
         self,
         invite_code: str,
@@ -223,7 +269,7 @@ class InMemoryAuthRepository:
         self,
         *,
         email: str,
-        role: Role,
+        role: OrganizationInviteRole,
         organization_id: str,
         invited_by: str,
     ) -> OrganizationInviteResponse:
@@ -289,6 +335,15 @@ class PostgresAuthRepository:
         with self._connect() as conn:
             with conn.cursor() as cur:
                 cur.execute(auth_schema_sql())
+
+    @staticmethod
+    def _row_to_organization(row: dict[str, Any]) -> AuthOrganizationResponse:
+        return AuthOrganizationResponse(
+            id=str(row["id"]),
+            name=row["name"],
+            created_at=str(row["created_at"]) if row.get("created_at") else None,
+            updated_at=str(row["updated_at"]) if row.get("updated_at") else None,
+        )
 
     @staticmethod
     def _row_to_profile(row: dict[str, Any]) -> AuthProfileRecord:
@@ -469,6 +524,54 @@ class PostgresAuthRepository:
                         )
                     return self._row_to_profile(row)
 
+    def list_organizations(self) -> list[AuthOrganizationResponse]:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    select
+                      id,
+                      name,
+                      created_at::text,
+                      updated_at::text
+                    from organizations
+                    order by lower(name), id
+                    """
+                )
+                return [
+                    self._row_to_organization(row)
+                    for row in cur.fetchall()
+                ]
+
+    def upsert_organization(
+        self,
+        organization: AuthOrganizationResponse,
+    ) -> AuthOrganizationResponse:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    insert into organizations (id, name, updated_at)
+                    values (%s, %s, now())
+                    on conflict (id) do update
+                    set name = excluded.name,
+                        updated_at = now()
+                    returning
+                      id,
+                      name,
+                      created_at::text,
+                      updated_at::text
+                    """,
+                    (organization.id, organization.name),
+                )
+                row = cur.fetchone()
+                if row is None:
+                    raise HTTPException(
+                        status_code=500,
+                        detail="Could not save organization",
+                    )
+                return self._row_to_organization(row)
+
     def get_invite_by_code(
         self,
         invite_code: str,
@@ -580,7 +683,7 @@ class PostgresAuthRepository:
         self,
         *,
         email: str,
-        role: Role,
+        role: OrganizationInviteRole,
         organization_id: str,
         invited_by: str,
     ) -> OrganizationInviteResponse:

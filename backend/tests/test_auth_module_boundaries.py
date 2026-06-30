@@ -46,7 +46,12 @@ from main import UserProfile as MainUserProfile
 
 
 def test_auth_schema_module_exports_role_and_user_models() -> None:
-    assert set(get_args(Role)) == {"admin", "teacher", "student"}
+    assert set(get_args(Role)) == {
+        "system_admin",
+        "admin",
+        "teacher",
+        "student",
+    }
 
     user = UserProfile(
         id="teacher-1",
@@ -119,6 +124,9 @@ def test_auth_repository_module_exports_adapters_and_schema_sql() -> None:
     assert [
         profile.email for profile in repository.list_profiles(role="student")
     ] == ["student@teachflow.local"]
+    assert "system_admin" in auth_schema_sql()
+    assert "profiles_role_check" in auth_schema_sql()
+    assert "organization_invites_role_check" in auth_schema_sql()
     assert "create table if not exists profiles" in auth_schema_sql()
     assert "create table if not exists organization_invites" in auth_schema_sql()
     assert MainInMemoryAuthRepository is InMemoryAuthRepository
@@ -191,6 +199,8 @@ def test_auth_routes_module_registers_expected_paths_on_main_app() -> None:
         "/api/v1/auth/refresh": {"POST"},
         "/api/v1/auth/logout": {"POST"},
         "/api/v1/auth/invites": {"GET", "POST"},
+        "/api/v1/system/organizations": {"GET", "POST"},
+        "/api/v1/system/organizations/{organization_id}/admin-invites": {"POST"},
         "/api/v1/me": {"GET"},
     }
     router_routes = [

@@ -4,6 +4,7 @@ import {
   FileText,
   Library,
   RefreshCcw,
+  Save,
   UploadCloud,
 } from 'lucide-react'
 import {
@@ -23,15 +24,23 @@ import {
 export function DocumentStatusList({
   documents,
   onArchive,
+  onTitleChange,
   onReindex,
+  onSaveTitle,
   busyDocumentId,
+  busyTitleDocumentId,
   busyReindexDocumentId,
+  titleDrafts,
 }: {
   documents: SourceDocument[]
   onArchive?: (document: SourceDocument) => void
+  onTitleChange?: (document: SourceDocument, title: string) => void
   onReindex?: (document: SourceDocument) => void
+  onSaveTitle?: (document: SourceDocument) => void
   busyDocumentId?: string | null
+  busyTitleDocumentId?: string | null
   busyReindexDocumentId?: string | null
+  titleDrafts?: Record<string, string>
 }) {
   return (
     <div className="document-list">
@@ -46,7 +55,17 @@ export function DocumentStatusList({
           >
             <FileText aria-hidden="true" size={18} />
             <span>
-              <strong>{document.title}</strong>
+              {onTitleChange && onSaveTitle ? (
+                <input
+                  aria-label={`Tên tài liệu ${document.title}`}
+                  className="document-title-input"
+                  disabled={!document.is_active || busyTitleDocumentId === document.id}
+                  value={titleDrafts?.[document.id] ?? document.title}
+                  onChange={(event) => onTitleChange(document, event.target.value)}
+                />
+              ) : (
+                <strong>{document.title}</strong>
+              )}
               <small>{document.file_name}</small>
               {governanceLabels.length ? (
                 <small className="document-governance">
@@ -55,6 +74,18 @@ export function DocumentStatusList({
               ) : null}
             </span>
             <em>{documentStatusLabel(document)}</em>
+            {onSaveTitle ? (
+              <button
+                aria-label={`Lưu tên ${document.title}`}
+                className="document-action-button"
+                disabled={!document.is_active || busyTitleDocumentId === document.id}
+                title="Lưu tên tài liệu"
+                type="button"
+                onClick={() => onSaveTitle(document)}
+              >
+                <Save aria-hidden="true" size={16} />
+              </button>
+            ) : null}
             {onReindex ? (
               <button
                 aria-label={`Re-index ${document.title}`}
