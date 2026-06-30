@@ -1,5 +1,6 @@
 import {
   type FormEvent,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -15,6 +16,7 @@ import {
   LogOut,
   Mail,
   MonitorPlay,
+  RefreshCcw,
   ShieldCheck,
   Ticket,
   UserPlus,
@@ -45,6 +47,7 @@ import {
   type RoleDashboard,
   type SystemOrganization,
 } from './api/auth'
+import { fetchHealth } from './api/health'
 import { clearAuthSession, loadAuthSession, saveAuthSession } from './auth/session'
 import { getWorkspaceConfig } from './auth/workspaces'
 import { getBackendUrl } from './config'
@@ -79,6 +82,11 @@ import {
 type DemoAccountsState =
   | { status: 'loading' }
   | { status: 'ready'; accounts: PublicDemoAccount[] }
+  | { status: 'error'; message: string }
+
+type BackendConnectionState =
+  | { status: 'checking'; message: string }
+  | { status: 'ready'; message: string }
   | { status: 'error'; message: string }
 
 type DashboardState =
@@ -140,7 +148,7 @@ function workspacePrimaryActions(role: AuthSession['user']['role']) {
   }
 
   if (role === 'admin') {
-    return ['Hàng đợi duyệt', 'Nguồn dẫn']
+    return ['Hàng đợi duyệt', 'Tác vụ']
   }
 
   if (role === 'student') {
@@ -153,6 +161,7 @@ function workspacePrimaryActions(role: AuthSession['user']['role']) {
 function pageIcon(pageId: WorkspacePageId) {
   const iconMap: Partial<Record<WorkspacePageId, typeof LayoutDashboard>> = {
     'admin-knowledge': Library,
+    'admin-jobs': MonitorPlay,
     'admin-review': ClipboardCheck,
     'admin-users': UserPlus,
     'student-classes': UsersRound,
@@ -183,6 +192,7 @@ function initialWorkspacePage(role: AuthSession['user']['role']): WorkspacePageI
 
 function LoginPanel({
   accountsState,
+  backendConnection,
   credentials,
   inviteForm,
   inviteError,
@@ -195,10 +205,12 @@ function LoginPanel({
   onAcceptInviteSubmit,
   onCloseInvitePanel,
   onOpenInvitePanel,
+  onRetryConnection,
   onSelectAccount,
   onSubmit,
 }: {
   accountsState: DemoAccountsState
+  backendConnection: BackendConnectionState
   credentials: LoginCredentials
   inviteForm: InviteAcceptPayload
   inviteError: string | null
@@ -211,9 +223,12 @@ function LoginPanel({
   onAcceptInviteSubmit: (event: FormEvent<HTMLFormElement>) => void
   onCloseInvitePanel: () => void
   onOpenInvitePanel: () => void
+  onRetryConnection: () => void
   onSelectAccount: (account: PublicDemoAccount) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }) {
+  const canUseAuth = backendConnection.status === 'ready'
+
   return (
     <section className="login-layout" aria-labelledby="login-title">
       <div className="product-panel">
@@ -241,6 +256,26 @@ function LoginPanel({
 
       <div className="auth-panel-stack">
         <form className="login-card" onSubmit={onSubmit}>
+          <div className={`login-system-status ${backendConnection.status}`}>
+            {backendConnection.status === 'checking' ? (
+              <Spinner label="Đang kết nối" />
+            ) : (
+              <ShieldCheck aria-hidden="true" size={17} />
+            )}
+            <span>{backendConnection.message}</span>
+            {backendConnection.status === 'error' && (
+              <button
+                aria-label="Thử lại kết nối"
+                className="ghost-button icon-button"
+                title="Thử lại"
+                type="button"
+                onClick={onRetryConnection}
+              >
+                <RefreshCcw aria-hidden="true" size={16} />
+              </button>
+            )}
+          </div>
+
           <div>
             <p className="section-label">Chọn vai trò</p>
             <div className="account-list" aria-live="polite">
@@ -266,7 +301,7 @@ function LoginPanel({
                     className={`account-button${
                       credentials.email === account.email ? ' selected' : ''
                     }`}
-                    disabled={isSubmitting || isAcceptingInvite}
+                    disabled={!canUseAuth || isSubmitting || isAcceptingInvite}
                     key={account.id}
                     title={account.email}
                     type="button"
@@ -291,6 +326,7 @@ function LoginPanel({
               <Mail aria-hidden="true" size={18} />
               <input
                 autoComplete="username"
+                disabled={!canUseAuth || isSubmitting || isAcceptingInvite}
                 name="email"
                 type="email"
                 value={credentials.email}
@@ -310,6 +346,7 @@ function LoginPanel({
               <LockKeyhole aria-hidden="true" size={18} />
               <input
                 autoComplete="current-password"
+                disabled={!canUseAuth || isSubmitting || isAcceptingInvite}
                 name="password"
                 type="password"
                 value={credentials.password}
@@ -327,7 +364,7 @@ function LoginPanel({
 
           <button
             className="primary-button"
-            disabled={isSubmitting || isAcceptingInvite}
+            disabled={!canUseAuth || isSubmitting || isAcceptingInvite}
             type="submit"
           >
             <ShieldCheck aria-hidden="true" size={18} />
@@ -338,7 +375,7 @@ function LoginPanel({
             <button
               aria-label="Có mã mời?"
               className="ghost-button invite-toggle-button"
-              disabled={isSubmitting || isAcceptingInvite}
+              disabled={!canUseAuth || isSubmitting || isAcceptingInvite}
               type="button"
               onClick={onOpenInvitePanel}
             >
@@ -376,6 +413,7 @@ function LoginPanel({
               <span>Mã mời</span>
               <input
                 autoComplete="one-time-code"
+                disabled={!canUseAuth || isAcceptingInvite}
                 name="invite_code"
                 type="text"
                 value={inviteForm.invite_code}
@@ -393,6 +431,7 @@ function LoginPanel({
                 <span>Email</span>
                 <input
                   autoComplete="email"
+                  disabled={!canUseAuth || isAcceptingInvite}
                   name="invite_email"
                   type="email"
                   value={inviteForm.email}
@@ -409,6 +448,7 @@ function LoginPanel({
                 <span>Họ tên</span>
                 <input
                   autoComplete="name"
+                  disabled={!canUseAuth || isAcceptingInvite}
                   name="invite_name"
                   type="text"
                   value={inviteForm.name}
@@ -426,6 +466,7 @@ function LoginPanel({
               <span>Mật khẩu mới</span>
               <input
                 autoComplete="new-password"
+                disabled={!canUseAuth || isAcceptingInvite}
                 name="invite_password"
                 type="password"
                 value={inviteForm.password}
@@ -442,7 +483,7 @@ function LoginPanel({
 
             <button
               className="primary-button invite-button"
-              disabled={isSubmitting || isAcceptingInvite}
+              disabled={!canUseAuth || isSubmitting || isAcceptingInvite}
               type="submit"
             >
               <UserPlus aria-hidden="true" size={18} />
@@ -954,6 +995,11 @@ function App() {
   const [accountsState, setAccountsState] = useState<DemoAccountsState>({
     status: 'loading',
   })
+  const [backendConnection, setBackendConnection] =
+    useState<BackendConnectionState>({
+      status: 'checking',
+      message: 'Đang kết nối hệ thống',
+    })
   const [credentials, setCredentials] =
     useState<LoginCredentials>(EMPTY_CREDENTIALS)
   const [inviteForm, setInviteForm] =
@@ -970,6 +1016,48 @@ function App() {
   const [session, setSession] = useState<AuthSession | null>(() =>
     loadAuthSession(),
   )
+
+  const refreshLoginConnection = useCallback(async () => {
+    if (!backendUrl) {
+      setBackendConnection({
+        status: 'error',
+        message: 'Chưa cấu hình hệ thống',
+      })
+      setAccountsState({
+        status: 'error',
+        message: 'Chưa thể tải truy cập nhanh.',
+      })
+      return
+    }
+
+    setBackendConnection({
+      status: 'checking',
+      message: 'Đang kết nối hệ thống',
+    })
+    setAccountsState({ status: 'loading' })
+
+    try {
+      const [, accounts] = await Promise.all([
+        fetchHealth(),
+        fetchDemoAccounts(),
+      ])
+      setAccountsState({ status: 'ready', accounts })
+      setBackendConnection({
+        status: 'ready',
+        message: 'Sẵn sàng',
+      })
+    } catch (error: unknown) {
+      const message = getErrorMessage(error, 'Không kết nối được hệ thống')
+      setBackendConnection({
+        status: 'error',
+        message,
+      })
+      setAccountsState({
+        status: 'error',
+        message: 'Không tải được truy cập nhanh.',
+      })
+    }
+  }, [backendUrl])
 
   useEffect(() => {
     if (session) {
@@ -990,35 +1078,10 @@ function App() {
   }, [session])
 
   useEffect(() => {
-    if (!backendUrl) {
-      setAccountsState({
-        status: 'error',
-        message: 'Chưa cấu hình địa chỉ backend',
-      })
-      return
+    if (!session) {
+      void refreshLoginConnection()
     }
-
-    let cancelled = false
-
-    fetchDemoAccounts()
-      .then((accounts) => {
-        if (!cancelled) {
-          setAccountsState({ status: 'ready', accounts })
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setAccountsState({
-            status: 'error',
-            message: getErrorMessage(error, 'Không tải được tài khoản demo'),
-          })
-        }
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [backendUrl])
+  }, [refreshLoginConnection, session])
 
   useEffect(() => {
     if (!session) {
@@ -1103,11 +1166,19 @@ function App() {
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (backendConnection.status !== 'ready') {
+      setLoginError('Hệ thống chưa sẵn sàng.')
+      return
+    }
     await authenticate(credentials)
   }
 
   async function handleAcceptInvite(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (backendConnection.status !== 'ready') {
+      setInviteError('Hệ thống chưa sẵn sàng.')
+      return
+    }
     setIsAcceptingInvite(true)
     setInviteError(null)
     setLoginError(null)
@@ -1128,6 +1199,10 @@ function App() {
   }
 
   function handleSelectAccount(account: PublicDemoAccount) {
+    if (backendConnection.status !== 'ready') {
+      setLoginError('Hệ thống chưa sẵn sàng.')
+      return
+    }
     setIsLoggingIn(true)
     setLoginError(null)
 
@@ -1180,6 +1255,7 @@ function App() {
       ) : (
         <LoginPanel
           accountsState={accountsState}
+          backendConnection={backendConnection}
           credentials={credentials}
           inviteError={inviteError}
           inviteForm={inviteForm}
@@ -1192,6 +1268,7 @@ function App() {
           onChangeInviteForm={setInviteForm}
           onCloseInvitePanel={() => setIsInvitePanelOpen(false)}
           onOpenInvitePanel={() => setIsInvitePanelOpen(true)}
+          onRetryConnection={() => void refreshLoginConnection()}
           onSelectAccount={handleSelectAccount}
           onSubmit={handleLogin}
         />

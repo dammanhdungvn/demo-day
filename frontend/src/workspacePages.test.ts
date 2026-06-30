@@ -10,7 +10,7 @@ import {
 describe('workspace page navigation', () => {
   it.each([
     ['teacher', ['Tổng quan', 'Khóa học & lớp', 'Tài liệu', 'Dàn ý', 'Lesson Studio', 'Hàng đợi xử lý']],
-    ['admin', ['Hàng đợi duyệt', 'Kho tri thức', 'Người dùng']],
+    ['admin', ['Hàng đợi duyệt', 'Kho tri thức', 'Người dùng', 'Tác vụ']],
     ['student', ['Lớp của tôi', 'Lesson', 'Luyện tập', 'Tài liệu cá nhân']],
     ['system_admin', ['Tổ chức', 'Mời Admin']],
   ] satisfies Array<[UserRole, string[]]>)(
@@ -30,6 +30,7 @@ describe('workspace page navigation', () => {
     expect(getWorkspacePageForAction('admin', 'Nguồn dẫn')).toBe(
       'admin-knowledge',
     )
+    expect(getWorkspacePageForAction('admin', 'Tác vụ')).toBe('admin-jobs')
     expect(getWorkspacePageForAction('student', 'Luyện tập')).toBe(
       'student-practice',
     )

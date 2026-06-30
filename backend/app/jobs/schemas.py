@@ -29,3 +29,8 @@ class GenerationJobResponse(BaseModel):
     error_message: str | None = None
     created_at: str
     updated_at: str
+
+
+class GenerationJobActionResponse(BaseModel):
+    generation_job: GenerationJobResponse
+    message: str

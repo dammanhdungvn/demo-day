@@ -106,6 +106,20 @@ describe('auth API client', () => {
     })
   })
 
+  it('surfaces backend auth error detail instead of a bare status code', async () => {
+    const fetcher = vi.fn(async () =>
+      Response.json({ detail: 'Invalid demo account credentials' }, { status: 401 }),
+    )
+
+    await expect(
+      login(
+        { email: 'teacher@teachflow.local', password: 'wrong-password' },
+        fetcher,
+        backendUrl,
+      ),
+    ).rejects.toThrow('Login failed: Invalid demo account credentials')
+  })
+
   it('refreshes a session with refresh token', async () => {
     const payload = {
       access_token: 'next-access-token',

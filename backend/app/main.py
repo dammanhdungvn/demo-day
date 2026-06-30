@@ -184,9 +184,18 @@ from .jobs.repositories import (
     generation_job_schema_sql,
     get_generation_job_repository,
 )
-from .jobs.schemas import GenerationJobResponse, GenerationJobStatus
-from .jobs.routes import generation_jobs_route, router as jobs_router
-from .jobs.services import list_generation_jobs
+from .jobs.schemas import (
+    GenerationJobActionResponse,
+    GenerationJobResponse,
+    GenerationJobStatus,
+)
+from .jobs.routes import (
+    cancel_generation_job_route,
+    generation_jobs_route,
+    retry_generation_job_route,
+    router as jobs_router,
+)
+from .jobs.services import cancel_generation_job, list_generation_jobs, retry_generation_job
 from .knowledge.schemas import (
     DocumentIngestionAction,
     DocumentIngestionPlan,

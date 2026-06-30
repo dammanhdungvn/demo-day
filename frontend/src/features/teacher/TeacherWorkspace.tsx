@@ -29,7 +29,6 @@ import {
   fetchCourseClasses,
   fetchCourses,
   fetchDocuments,
-  fetchGenerationJobs,
   fetchLessonAuditEvents,
   fetchLessonExportRecords,
   fetchStudents,
@@ -53,7 +52,6 @@ import {
   type CourseCreatePayload,
   type CourseOutline,
   type DocumentUploadResponse,
-  type GenerationJob,
   type LessonAuditEvent,
   type LessonBlock,
   type LessonExportFormat,
@@ -90,11 +88,10 @@ import {
 } from '../knowledge/knowledgeHelpers'
 import {
   CitationInspector,
-  JobQueue,
   MetricCard,
-  SourceStrip,
   WorkflowTimeline,
 } from '../../ui/teacherWorkspace'
+import { JobCenter } from '../jobs/JobCenter'
 import type { WorkspacePageId } from '../../workspacePages'
 import { buildLessonMarkdown, markdownFileName } from '../../lessonMarkdown'
 import { exportLessonPptx } from '../../lessonPptx'
@@ -252,7 +249,6 @@ export function TeacherWorkspace({
   const [lessonExportRecords, setLessonExportRecords] = useState<
     LessonExportRecord[]
   >([])
-  const [generationJobs, setGenerationJobs] = useState<GenerationJob[]>([])
   const [presentationLesson, setPresentationLesson] = useState<LessonSession | null>(
     null,
   )
@@ -282,8 +278,6 @@ export function TeacherWorkspace({
     useState('Chưa có bài giảng để tải lịch sử.')
   const [exportStatusMessage, setExportStatusMessage] =
     useState('Chưa có bài giảng để tải lịch sử export.')
-  const [jobQueueStatusMessage, setJobQueueStatusMessage] =
-    useState('Đang tải hàng đợi xử lý...')
   const [isBusy, setIsBusy] = useState(false)
   const [isRetrieving, setIsRetrieving] = useState(false)
   const [isGeneratingOutline, setIsGeneratingOutline] = useState(false)
@@ -343,9 +337,6 @@ export function TeacherWorkspace({
     lessonResult?.blocks.find((block) => block.id === selectedBlockId) ??
     lessonResult?.blocks[0] ??
     null
-  const hasRunningGenerationJob = generationJobs.some((job) =>
-    ['queued', 'processing', 'retrying'].includes(job.status),
-  )
   const classProgressOverview = useMemo(() => {
     const averageProgressPercent = classProgress.length
       ? Math.round(
@@ -397,16 +388,6 @@ export function TeacherWorkspace({
         setCourses(courseData)
         setStudents(studentData)
         setDocuments(documentData)
-        const jobData = await fetchGenerationJobs(token)
-        if (cancelled) {
-          return
-        }
-        setGenerationJobs(jobData)
-        setJobQueueStatusMessage(
-          jobData.length
-            ? `Đã tải ${jobData.length} tác vụ xử lý.`
-            : 'Chưa có tác vụ xử lý gần đây.',
-        )
         setSelectedDocumentIds(
           documentData
             .filter(isSourceDocumentUsable)
@@ -495,21 +476,6 @@ export function TeacherWorkspace({
       teaching_style: selectedClass.teaching_style,
     })
   }, [selectedClass])
-
-  async function refreshGenerationJobs() {
-    try {
-      const jobs = await fetchGenerationJobs(token)
-      setGenerationJobs(jobs)
-      setJobQueueStatusMessage(
-        jobs.length
-          ? `Đã tải ${jobs.length} tác vụ xử lý.`
-          : 'Chưa có tác vụ xử lý gần đây.',
-      )
-    } catch (error: unknown) {
-      setGenerationJobs([])
-      setJobQueueStatusMessage(getErrorMessage(error, 'Không tải được hàng đợi xử lý'))
-    }
-  }
 
   useEffect(() => {
     let cancelled = false
@@ -877,15 +843,10 @@ export function TeacherWorkspace({
 
     try {
       const response = await reindexDocument(document.id, token)
-      const [documentData, jobData] = await Promise.all([
-        fetchDocuments(token),
-        fetchGenerationJobs(token),
-      ])
+      const documentData = await fetchDocuments(token)
       setDocuments(documentData)
-      setGenerationJobs(jobData)
-      setJobQueueStatusMessage(`Đã làm mới ${response.chunk_count} đoạn nguồn.`)
       setRagStatusMessage(
-        `Đã làm mới nguồn tham khảo cho ${response.document.title}.`,
+        `Đã làm mới ${response.chunk_count} đoạn nguồn cho ${response.document.title}.`,
       )
     } catch (error: unknown) {
       setRagStatusMessage(getErrorMessage(error, 'Không làm mới được tài liệu'))
@@ -1049,7 +1010,6 @@ export function TeacherWorkspace({
       setOutlineStatusMessage(getErrorMessage(error, 'Không tạo được dàn ý'))
     } finally {
       setIsGeneratingOutline(false)
-      void refreshGenerationJobs()
     }
   }
 
@@ -1113,7 +1073,6 @@ export function TeacherWorkspace({
       setLessonStatusMessage(getErrorMessage(error, 'Không tạo được nội dung bài giảng'))
     } finally {
       setIsGeneratingLesson(false)
-      void refreshGenerationJobs()
     }
   }
 
@@ -1167,7 +1126,6 @@ export function TeacherWorkspace({
       setLessonStatusMessage(getErrorMessage(error, 'Không tạo lại được khối nội dung'))
     } finally {
       setIsReviewingLesson(false)
-      void refreshGenerationJobs()
     }
   }
 
@@ -1914,41 +1872,7 @@ export function TeacherWorkspace({
       )}
 
       {showJobs && (
-        <div className="v4-operations-strip">
-        <section>
-          <div className="v4-panel-title">
-            <span>Tài liệu dùng để soạn bài</span>
-            <strong>
-              {teacherMetrics.selectedSourceCount}/{teacherMetrics.completedSourceCount}
-            </strong>
-          </div>
-          <SourceStrip
-            documents={documents}
-            selectedDocumentIds={selectedDocumentIds}
-            onToggle={handleDocumentToggle}
-          />
-        </section>
-        <section>
-          <div className="v4-panel-title">
-            <span>Hàng đợi xử lý</span>
-            <strong>
-              {isRetrieving ||
-              isGeneratingOutline ||
-              isGeneratingLesson ||
-              hasRunningGenerationJob
-                ? 'Đang chạy'
-                : jobQueueStatusMessage}
-            </strong>
-          </div>
-          <JobQueue
-            jobs={generationJobs}
-            isGeneratingLesson={isGeneratingLesson}
-            isGeneratingOutline={isGeneratingOutline}
-            isRetrieving={isRetrieving}
-            isReviewingLesson={isReviewingLesson}
-          />
-        </section>
-        </div>
+        <JobCenter audience="teacher" token={token} />
       )}
 
       {showDocuments && (

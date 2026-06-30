@@ -12,6 +12,7 @@ export type WorkspacePageId =
   | 'admin-review'
   | 'admin-knowledge'
   | 'admin-users'
+  | 'admin-jobs'
   | 'student-classes'
   | 'student-lessons'
   | 'student-practice'
@@ -51,6 +52,11 @@ const WORKSPACE_PAGES: Record<UserRole, WorkspacePage[]> = {
       id: 'admin-users',
       label: 'Người dùng',
       description: 'Mời, lọc và tạm khóa Teacher/Student trong organization.',
+    },
+    {
+      id: 'admin-jobs',
+      label: 'Tác vụ',
+      description: 'Theo dõi và xử lý tác vụ lỗi trong organization.',
     },
   ],
   teacher: [
@@ -124,6 +130,8 @@ const ACTION_PAGE_TARGETS: Record<UserRole, Record<string, WorkspacePageId>> = {
     'Xuất bản': 'admin-review',
     'Tạo tài khoản': 'admin-users',
     'Người dùng': 'admin-users',
+    'Tác vụ': 'admin-jobs',
+    'Theo dõi tác vụ': 'admin-jobs',
   },
   teacher: {
     'Tổng quan': 'teacher-overview',

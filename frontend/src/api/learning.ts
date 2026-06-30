@@ -138,6 +138,11 @@ export type GenerationJob = {
   updated_at: string
 }
 
+export type GenerationJobActionResponse = {
+  generation_job: GenerationJob
+  message: string
+}
+
 export type EmbeddingMetadata = {
   provider: string
   model: string
@@ -685,6 +690,40 @@ export async function fetchGenerationJobs(
   })
 
   return readJson<GenerationJob[]>(response, 'Generation jobs')
+}
+
+export async function retryGenerationJob(
+  jobId: string,
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<GenerationJobActionResponse> {
+  const response = await fetcher(
+    buildApiUrl(`/generation-jobs/${jobId}/retry`, backendUrl),
+    {
+      method: 'POST',
+      headers: authHeaders(token),
+    },
+  )
+
+  return readJson<GenerationJobActionResponse>(response, 'Retry generation job')
+}
+
+export async function cancelGenerationJob(
+  jobId: string,
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<GenerationJobActionResponse> {
+  const response = await fetcher(
+    buildApiUrl(`/generation-jobs/${jobId}/cancel`, backendUrl),
+    {
+      method: 'POST',
+      headers: authHeaders(token),
+    },
+  )
+
+  return readJson<GenerationJobActionResponse>(response, 'Cancel generation job')
 }
 
 export async function addStudentToClass(

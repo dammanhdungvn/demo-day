@@ -60,3 +60,11 @@ Version 2 chi duoc coi la production-ready khi:
 7. Basic monitoring/error logging/backup runbook co tai lieu.
 8. Automated tests pass cho role, membership, status transition, RAG, AI schema.
 9. Manual production smoke pass voi Admin/Teacher/Student thật.
+
+## Trang Thai Job Reliability
+
+- V2-005 da co generation job lifecycle persistence co ban.
+- V2-007 da co async document ingestion toi thieu bang FastAPI `BackgroundTasks`.
+- V2-009 da co production embedding provider va re-index path.
+- Con debt production TD-013/TD-015/TD-016: retry/cancel/polling UI chua day du, worker chua durable, re-index/generation job dai con xu ly dong bo trong request o mot so path.
+- V2-014 da duoc mo de xu ly nhom debt nay. Concept UI Job Center da duoc user duyet tai `images/job-center-design-approval-v1.png`; backend retry/cancel da implement/test targeted, frontend Job Center dang paused theo yeu cau user de uu tien login/backend API readiness.

@@ -133,10 +133,30 @@ function roleDashboardPath(role: UserRole): string {
 
 async function readJson<T>(response: Response, label: string): Promise<T> {
   if (!response.ok) {
-    throw new Error(`${label} failed with status ${response.status}`)
+    throw new Error(await readErrorMessage(response, label))
   }
 
   return response.json() as Promise<T>
+}
+
+async function readErrorMessage(response: Response, label: string): Promise<string> {
+  try {
+    const body = (await response.json()) as unknown
+    const detail = isRecord(body) ? body.detail : null
+    if (typeof detail === 'string') {
+      return `${label} failed: ${detail}`
+    }
+    if (isRecord(detail) && typeof detail.message === 'string') {
+      return `${label} failed: ${detail.message}`
+    }
+  } catch {
+    // Fall back to status when the backend did not return JSON.
+  }
+  return `${label} failed with status ${response.status}`
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
 }
 
 export async function fetchDemoAccounts(

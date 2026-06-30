@@ -26,7 +26,7 @@
     "blocked": "Dang bi chan, can user quyet dinh",
     "done": "Da hoan thanh va co evidence"
   },
-  "current_active_feature": null,
+  "current_active_feature": "V2-014",
   "global_rules": [
     "Version 1 P0/P1 da hoan thanh; khi lam version 2/3 phai tao/cap nhat backlog moi theo docs/version2 hoac docs/version3 truoc khi code.",
     "Moi task phai co test hoac test plan truoc khi code.",
@@ -3801,6 +3801,108 @@
         "`./init.sh` pass, rendered QA pass va docs/evidence cap nhat."
       ],
       "evidence": "2026-06-30: Hoan thanh V4-047 frontend redesign theo concept duyet. Assets/concepts: `images/frontend-design-approval-v1.png`, `images/login-design-approval-v1.png`, `docs/version4/assets/v4-047-minimal-frontend-redesign-concept.png`, `docs/version4/assets/v4-047-teachflow-reference-inspired-concept.png`, runtime illustration `frontend/src/assets/teachflow-education-hero.png`. Login implement theo concept da duyet va feedback bo tagline `Soan bai. Day tot.`: 3 role cards Admin/Teacher/Student, input icon, divider `hoac`, invite action gon, khong hien API URL/demo password. Teacher overview co dashboard action cards Giao an/Slide/Tai lieu/Luyen tap, recent list va AI Assistant panel code-native. Admin Knowledge/Admin Users dung DataTable/table-first, nut Them/Sua/Xoa chuyen icon-only co aria-label/title, Luu/Huy/Re-index/Mo lai giu chu khi can ro nghia. Them UI process rule: UI surface chua co design duyet phai tao image concept trong `images/` va cho user chon Yes/No truoc khi code. Tests/evidence: frontend typecheck pass, lint pass, full frontend 19 files/95 tests pass, frontend build pass; targeted loginSecurity test pass 2 tests sau khi giu visible label `Ma moi` ngan va them aria-label `Co ma moi?`; rendered QA Playwright pass login desktop/mobile va Teacher flow, no console/page issues, role buttons count 3, forbidden visible text/API/password empty; screenshots `/tmp/v4-047-login-approved-desktop.png`, `/tmp/v4-047-login-approved-mobile.png`, `/tmp/v4-047-teacher-approved-flow.png`; final `./init.sh` pass frontend 19 files/95 tests + build va backend 215 tests."
+    },
+    {
+      "id": "V2-014",
+      "name": "Reliable job center with retry and cancel",
+      "description": "Dong production debt TD-013/TD-015/TD-016 bang job center cho AI/RAG/document jobs: status polling, retry failed jobs va cancel running jobs trong workflow Teacher/Admin, khong hardcode job data.",
+      "priority": "V2-P0 Production Reliability",
+      "status": "blocked",
+      "dependencies": [
+        "V2-005",
+        "V2-007",
+        "V2-009",
+        "V4-044",
+        "V4-047"
+      ],
+      "user_stories": [
+        "As a Teacher, I want failed document/AI jobs to be retryable from one clear page, so that I do not lose work when ingestion or generation fails.",
+        "As a Teacher, I want long-running jobs to be cancellable where practical, so that accidental expensive tasks do not keep running unnoticed.",
+        "As an Admin, I want organization-scoped job visibility and safe error messages, so that operational issues can be handled without exposing other tenants or secrets."
+      ],
+      "business_goal": "Bien job lifecycle hien co thanh workflow production that cho nhom dao tao nho: user thay tac vu nao dang chay, loi vi sao, can retry/cancel o dau, va Admin co operational visibility trong organization.",
+      "vertical_slice": {
+        "backend": [
+          "Mo rong generation job service/repository cho action retry/cancel co role/org/actor guard.",
+          "Retry failed document ingestion/re-index jobs khi job_input con du metadata can thiet; neu thieu raw file durable thi tra message ro rang va khong tao fake retry.",
+          "Cancel queued/running jobs theo best-effort: set status cancelled khi job chua hoan tat va worker/background task kiem tra status truoc cac phase dai.",
+          "Cap nhat failed/stale processing guidance de tranh job ket vinh vien sau backend restart."
+        ],
+        "frontend": [
+          "Concept da duoc user duyet: `images/job-center-design-approval-v1.png`.",
+          "Code page `Tac vu`/Job Center theo concept: table-first, status chips, filters, detail panel, icon-only retry/cancel co aria-label/title.",
+          "Teacher/Admin refresh/poll job status; Student khong thay job center production ops.",
+          "Khong them UI moi neu concept chua duoc user duyet."
+        ],
+        "tests": [
+          "Backend tests cho retry/cancel role guard, actor/org scope, invalid status transitions va safe error messages.",
+          "Repository tests memory/Postgres cho job action status update.",
+          "Frontend API tests cho retry/cancel endpoints va UI contract sau khi concept duoc duyet.",
+          "Rendered QA desktop/mobile sau khi implement concept duoc duyet.",
+          "Final `./init.sh`."
+        ],
+        "manual_validation": [
+          "Login Teacher/Admin -> Tac vu, thay jobs that tu API, retry failed job va status doi retrying/processing.",
+          "Cancel queued/processing job va row/detail panel doi cancelled.",
+          "Negative: Student khong goi duoc retry/cancel; Teacher khong thao tac job cua user/org khac."
+        ]
+      },
+      "acceptance_criteria": [
+        "User duyet concept Job Center truoc khi code UI.",
+        "Retry/cancel endpoints enforce role, actor va organization scope.",
+        "Failed job retry khong tao hallucinated data; neu raw input khong durable thi hien message retry guidance ro.",
+        "Cancel la best-effort va khong bien completed job thanh cancelled.",
+        "UI dung table/detail panel, icon-first, it chu, loading/empty/error state.",
+        "Khong lo secret/API URL trong job input/error UI.",
+        "`./init.sh` pass va docs/evidence cap nhat sau implementation."
+      ],
+      "evidence": "2026-06-30: Backlog/exec plan duoc mo sau V4-047 de dong debt TD-013/TD-015/TD-016. Da tao concept `images/job-center-design-approval-v1.png` theo UI approval gate; user da duyet concept. Backend retry/cancel service/repository/routes va OpenAPI tests da implement, initial frontend Job Center scaffold da bat dau, nhung frontend Job Center tam dung theo yeu cau user de quay lai uu tien login/backend API connection. Tests da chay cho phan backend/job API: `cd backend && UV_CACHE_DIR=.uv-cache uv run pytest tests/test_generation_jobs.py tests/test_jobs_module_boundaries.py tests/test_openapi_contract.py -q` pass 17. Feature chua done vi Job Center UI/rendered QA/final init chua hoan tat."
+    },
+    {
+      "id": "BUG-006",
+      "name": "Login backend API readiness and connection UX",
+      "description": "Sua login de ket noi backend API ro rang qua `.env`/Vite proxy, kiem tra health + demo accounts truoc khi cho dang nhap, va hien loi ket noi than thien khong lo URL/password.",
+      "priority": "V4-P0 Login/API usability hotfix",
+      "status": "done",
+      "dependencies": [
+        "V4-047"
+      ],
+      "user_stories": [
+        "As a user testing the product, I want the login screen to tell me whether the system is ready, so I do not click buttons against a dead backend.",
+        "As a Teacher/Admin/Student tester, I want quick role access to connect to the real backend API without seeing demo passwords or backend URLs."
+      ],
+      "business_goal": "Lam login thanh diem vao san pham dang tin cay: backend API connection duoc verify truoc, loi ket noi ro rang, va user vao workspace bang API that.",
+      "vertical_slice": {
+        "backend": [
+          "Khong doi backend behavior; dung san `/api/v1/health`, `/api/v1/auth/demo-accounts`, `/api/v1/auth/demo-login`, `/api/v1/me` va dashboard APIs."
+        ],
+        "frontend": [
+          "Login goi `fetchHealth` + `fetchDemoAccounts` truoc khi enable auth controls.",
+          "Them status chip ngan `Dang ket noi/San sang/Khong ket noi duoc he thong` tren login card.",
+          "Quick role buttons, credential login va invite form bi khoa khi backend chua ready.",
+          "Auth API client doc JSON error detail tu backend; `getErrorMessage` map network/auth errors sang copy than thien."
+        ],
+        "tests": [
+          "Frontend auth API detail parsing test.",
+          "Frontend error helper tests cho network/invalid credentials.",
+          "Login security test giu rule khong lo URL/password.",
+          "Rendered QA Playwright desktop/mobile login ready, Teacher quick login, va backend-error state."
+        ],
+        "manual_validation": [
+          "Chay backend port 3000 va frontend port 5173.",
+          "Mo `http://127.0.0.1:5173/`: status login hien `San sang`, co 3 role cards.",
+          "Click Teacher: vao `/teacher`, workspace hien `Giang vien Demo`, khong co API 4xx/5xx.",
+          "Neu backend tat: login hien `Khong ket noi duoc he thong` va khong hien role cards."
+        ]
+      },
+      "acceptance_criteria": [
+        "Login dung `.env` `URL_BACKEND=/api/v1` va Vite proxy, khong hardcode backend host trong source.",
+        "Login khong hien API URL/demo password.",
+        "Backend health/demo accounts pass qua Vite proxy.",
+        "Click role Teacher goi backend demo-login + me/dashboard va vao workspace.",
+        "Frontend typecheck/lint/test/build pass."
+      ],
+      "evidence": "2026-06-30: Hoan thanh login backend API readiness hotfix. Frontend `App.tsx` them backend connection state dung `fetchHealth` + `fetchDemoAccounts`, disable auth controls khi backend chua ready, nut retry connection; `api/auth.ts` parse backend JSON detail; `errors.ts` map network/auth errors sang user-facing copy. `.env` that dang dung `URL_BACKEND=/api/v1`, Vite proxy `/api` -> `127.0.0.1:3000`. Smoke: `curl http://127.0.0.1:3000/api/v1/health`, `curl http://127.0.0.1:3000/api/v1/auth/demo-accounts`, `curl http://127.0.0.1:5173/api/v1/health`, `curl http://127.0.0.1:5173/api/v1/auth/demo-accounts` deu 200. Tests/evidence: targeted `pnpm --dir frontend exec vitest run src/api/auth.test.ts src/errors.test.ts src/loginSecurity.test.ts src/config.test.ts` pass 21; frontend typecheck pass; lint pass; full frontend tests pass 20 files/100 tests; build pass; `git diff --check` pass; final `./init.sh` pass frontend 20 files/100 tests + build va backend 219 tests. Rendered QA Playwright fallback vi Browser plugin absent: desktop login status `San sang`, 3 role buttons, click Teacher vao `/teacher` co `Giang vien Demo`, no console issues/no API bad responses, screenshots `/tmp/login-api-ready.png`, `/tmp/login-teacher-connected.png`; mobile login ready screenshot `/tmp/login-api-ready-mobile.png`; backend-error route mock hien `Khong ket noi duoc he thong`, screenshot `/tmp/login-api-error-state.png`."
     }
   ]
 }

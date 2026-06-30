@@ -79,6 +79,7 @@ import {
   documentStatusLabel,
   isSourceDocumentUsable,
 } from '../knowledge/knowledgeHelpers'
+import { JobCenter } from '../jobs/JobCenter'
 
 function managedUserStatusLabel(status: ManagedUserStatus): string {
   return status === 'active' ? 'Đang hoạt động' : 'Đã tạm khóa'
@@ -1483,6 +1484,10 @@ export function AdminWorkspace({
         )}
           </section>
         </>
+      )}
+
+      {activePage === 'admin-jobs' && (
+        <JobCenter audience="admin" token={token} />
       )}
     </section>
   )

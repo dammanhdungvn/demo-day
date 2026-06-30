@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   addStudentToClass,
+  cancelGenerationJob,
   createClassProfile,
   createCourse,
   fetchAdminReviewQueue,
@@ -35,6 +36,7 @@ import {
   regenerateLessonBlock,
   rejectLesson,
   requestLessonChanges,
+  retryGenerationJob,
   retrieveChunks,
   setLessonBlockStatus,
   submitLesson,
@@ -225,6 +227,67 @@ describe('learning API client', () => {
         Authorization: `Bearer ${token}`,
       },
     })
+  })
+
+  it('retries and cancels generation jobs through protected action endpoints', async () => {
+    const retryPayload = {
+      generation_job: {
+        id: 'job-1',
+        job_type: 'outline_generation',
+        status: 'retrying',
+        actor_id: 'demo-teacher',
+        actor_role: 'teacher' as const,
+        input: { course_id: 'course-1' },
+        retrieved_context: [],
+        output: { retry_requested_by: 'demo-teacher' },
+        error_message: null,
+        created_at: '2026-06-28T00:00:00+00:00',
+        updated_at: '2026-06-28T00:01:00+00:00',
+      },
+      message: 'Da dua tac vu vao hang cho thu lai.',
+    }
+    const cancelPayload = {
+      generation_job: {
+        ...retryPayload.generation_job,
+        status: 'cancelled' as const,
+        output: { cancelled_by: 'demo-teacher' },
+      },
+      message: 'Da huy tac vu.',
+    }
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json(retryPayload))
+      .mockResolvedValueOnce(Response.json(cancelPayload))
+
+    await expect(
+      retryGenerationJob('job-1', token, fetcher, backendUrl),
+    ).resolves.toEqual(retryPayload)
+    await expect(
+      cancelGenerationJob('job-1', token, fetcher, backendUrl),
+    ).resolves.toEqual(cancelPayload)
+
+    expect(fetcher).toHaveBeenNthCalledWith(
+      1,
+      `${backendUrl}/generation-jobs/job-1/retry`,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    )
+    expect(fetcher).toHaveBeenNthCalledWith(
+      2,
+      `${backendUrl}/generation-jobs/job-1/cancel`,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    )
   })
 
   it('loads lesson audit events through a protected endpoint', async () => {

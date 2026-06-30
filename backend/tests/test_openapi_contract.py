@@ -78,6 +78,8 @@ def test_openapi_bearer_auth_scheme_and_endpoint_security() -> None:
         ("/api/v1/lessons/{lesson_id}/exports", "post"),
         ("/api/v1/student/lessons", "get"),
         ("/api/v1/generation-jobs", "get"),
+        ("/api/v1/generation-jobs/{job_id}/retry", "post"),
+        ("/api/v1/generation-jobs/{job_id}/cancel", "post"),
     ]
     for path, method in protected_operations:
         assert operation(spec, path, method)["security"] == [{"BearerAuth": []}]
@@ -104,6 +106,8 @@ def test_openapi_tags_key_paths_and_operation_ids_are_stable() -> None:
         ("/api/v1/admin/review-queue", "get"): "Admin",
         ("/api/v1/student/lessons", "get"): "Student",
         ("/api/v1/generation-jobs", "get"): "Jobs",
+        ("/api/v1/generation-jobs/{job_id}/retry", "post"): "Jobs",
+        ("/api/v1/generation-jobs/{job_id}/cancel", "post"): "Jobs",
     }
     for (path, method), tag in expected_tags.items():
         assert operation(spec, path, method)["tags"] == [tag]

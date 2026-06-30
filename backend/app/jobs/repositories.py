@@ -18,6 +18,13 @@ from .ports import GenerationJobRepository
 from .schemas import GenerationJobResponse, GenerationJobStatus
 
 
+_CANCELLED_PRESERVED_STATUSES: set[GenerationJobStatus] = {
+    "completed",
+    "failed",
+    "skipped",
+}
+
+
 def generation_job_schema_sql() -> str:
     return """
     create table if not exists generation_jobs (
@@ -110,6 +117,8 @@ class InMemoryGenerationJobRepository:
         job = self.jobs.get(job_id)
         if job is None:
             raise _not_found("Generation job not found")
+        if job.status == "cancelled" and status in _CANCELLED_PRESERVED_STATUSES:
+            return job
         updated = job.model_copy(
             update={
                 "status": status,
@@ -120,6 +129,12 @@ class InMemoryGenerationJobRepository:
         )
         self.jobs[job_id] = updated
         return updated
+
+    def get_job(self, job_id: str) -> GenerationJobResponse:
+        job = self.jobs.get(job_id)
+        if job is None:
+            raise _not_found("Generation job not found")
+        return job
 
     def list_jobs_for_actor(
         self,
@@ -234,6 +249,9 @@ class PostgresGenerationJobRepository:
         output: dict[str, Any] | None = None,
         error_message: str | None = None,
     ) -> GenerationJobResponse:
+        existing = self.get_job(job_id)
+        if existing.status == "cancelled" and status in _CANCELLED_PRESERVED_STATUSES:
+            return existing
         with self._connect() as conn:
             with conn.cursor() as cur:
                 cur.execute(
@@ -264,6 +282,35 @@ class PostgresGenerationJobRepository:
                         error_message,
                         job_id,
                     ),
+                )
+                row = cur.fetchone()
+                if row is None:
+                    raise _not_found("Generation job not found")
+                return self._row_to_job(row)
+
+    def get_job(self, job_id: str) -> GenerationJobResponse:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    select
+                      id::text,
+                      job_type,
+                      status,
+                      organization_id,
+                      actor_id,
+                      actor_role,
+                      input,
+                      retrieved_context,
+                      output,
+                      error_message,
+                      created_at::text,
+                      updated_at::text
+                    from generation_jobs
+                    where id::text = %s
+                    limit 1
+                    """,
+                    (job_id,),
                 )
                 row = cur.fetchone()
                 if row is None:

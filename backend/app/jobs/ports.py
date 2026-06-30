@@ -26,6 +26,8 @@ class GenerationJobRepository(Protocol):
         error_message: str | None = None,
     ) -> GenerationJobResponse: ...
 
+    def get_job(self, job_id: str) -> GenerationJobResponse: ...
+
     def list_jobs_for_actor(
         self,
         actor: UserProfile,

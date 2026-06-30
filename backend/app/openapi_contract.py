@@ -159,7 +159,7 @@ def _tag_for_path(path: str) -> str:
         return "Auth"
     if path.startswith("/api/v1/system/"):
         return "System"
-    if path.endswith("/generation-jobs"):
+    if "/generation-jobs" in path:
         return "Jobs"
     if "/admin/" in path:
         return "Admin"

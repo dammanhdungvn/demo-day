@@ -7,9 +7,22 @@ from app.jobs.repositories import (
     generation_job_schema_sql,
     get_generation_job_repository,
 )
-from app.jobs.routes import generation_jobs_route, router as jobs_router
-from app.jobs.schemas import GenerationJobResponse, GenerationJobStatus
-from app.jobs.services import list_generation_jobs
+from app.jobs.routes import (
+    cancel_generation_job_route,
+    generation_jobs_route,
+    retry_generation_job_route,
+    router as jobs_router,
+)
+from app.jobs.schemas import (
+    GenerationJobActionResponse,
+    GenerationJobResponse,
+    GenerationJobStatus,
+)
+from app.jobs.services import (
+    cancel_generation_job,
+    list_generation_jobs,
+    retry_generation_job,
+)
 from fastapi import HTTPException
 import pytest
 from main import app as main_app
@@ -17,9 +30,14 @@ from main import GenerationJobRepository as MainGenerationJobRepository
 from main import GenerationJobResponse as MainGenerationJobResponse
 from main import GenerationJobStatus as MainGenerationJobStatus
 from main import InMemoryGenerationJobRepository as MainInMemoryGenerationJobRepository
+from main import GenerationJobActionResponse as MainGenerationJobActionResponse
+from main import cancel_generation_job as main_cancel_generation_job
+from main import cancel_generation_job_route as main_cancel_generation_job_route
 from main import generation_jobs_route as main_generation_jobs_route
 from main import list_generation_jobs as main_list_generation_jobs
 from main import PostgresGenerationJobRepository as MainPostgresGenerationJobRepository
+from main import retry_generation_job as main_retry_generation_job
+from main import retry_generation_job_route as main_retry_generation_job_route
 from main import UserProfile
 from main import generation_job_schema_sql as main_generation_job_schema_sql
 from main import get_generation_job_repository as main_get_generation_job_repository
@@ -88,10 +106,15 @@ def test_jobs_schema_module_exports_generation_job_status_and_response() -> None
     assert job.output == {"outline_id": "outline-1"}
     assert MainGenerationJobResponse is GenerationJobResponse
 
+    action = GenerationJobActionResponse(generation_job=job, message="Done")
+    assert action.generation_job.id == "job-1"
+    assert MainGenerationJobActionResponse is GenerationJobActionResponse
+
 
 def test_jobs_ports_module_keeps_main_compatibility_export() -> None:
     assert hasattr(GenerationJobRepository, "ensure_schema")
     assert hasattr(GenerationJobRepository, "create_job")
+    assert hasattr(GenerationJobRepository, "get_job")
     assert hasattr(GenerationJobRepository, "update_job")
     assert hasattr(GenerationJobRepository, "list_jobs_for_actor")
     assert MainGenerationJobRepository is GenerationJobRepository
@@ -128,6 +151,7 @@ def test_jobs_repositories_module_keeps_main_compatibility_export(monkeypatch) -
         status="completed",
         output={"outline_id": "outline-1"},
     )
+    assert repository.get_job(job.id) == updated
     assert repository.list_jobs_for_actor(teacher) == [updated]
     repository.reset()
     assert repository.list_jobs_for_actor(teacher) == []
@@ -186,6 +210,8 @@ def test_jobs_services_module_keeps_main_compatibility_export() -> None:
     assert list_generation_jobs(teacher, repository=repository) == [job]
     assert list_generation_jobs(admin, repository=repository) == [job]
     assert main_list_generation_jobs is list_generation_jobs
+    assert main_retry_generation_job is retry_generation_job
+    assert main_cancel_generation_job is cancel_generation_job
 
     with pytest.raises(HTTPException) as exc_info:
         list_generation_jobs(student, repository=repository)
@@ -194,16 +220,37 @@ def test_jobs_services_module_keeps_main_compatibility_export() -> None:
 
 
 def test_jobs_routes_module_keeps_main_registration_and_compatibility_export() -> None:
-    module_routes = [
-        route for route in jobs_router.routes if getattr(route, "path", "") == "/api/v1/generation-jobs"
-    ]
+    module_routes = {
+        (getattr(route, "path", ""), tuple(getattr(route, "methods", []))): route
+        for route in jobs_router.routes
+    }
     app_routes = [
         route
         for route in main_app.routes
         if getattr(route, "original_router", None) is jobs_router
     ]
 
-    assert len(module_routes) == 1
+    list_route = next(
+        route
+        for route in jobs_router.routes
+        if getattr(route, "path", "") == "/api/v1/generation-jobs"
+    )
+    retry_route = next(
+        route
+        for route in jobs_router.routes
+        if getattr(route, "path", "") == "/api/v1/generation-jobs/{job_id}/retry"
+    )
+    cancel_route = next(
+        route
+        for route in jobs_router.routes
+        if getattr(route, "path", "") == "/api/v1/generation-jobs/{job_id}/cancel"
+    )
+
+    assert module_routes
     assert len(app_routes) == 1
-    assert module_routes[0].endpoint is generation_jobs_route
+    assert list_route.endpoint is generation_jobs_route
+    assert retry_route.endpoint is retry_generation_job_route
+    assert cancel_route.endpoint is cancel_generation_job_route
     assert main_generation_jobs_route is generation_jobs_route
+    assert main_retry_generation_job_route is retry_generation_job_route
+    assert main_cancel_generation_job_route is cancel_generation_job_route
