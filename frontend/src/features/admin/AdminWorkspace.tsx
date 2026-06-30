@@ -647,12 +647,9 @@ export function AdminWorkspace({
         <>
           <div className="v4-admin-hero">
             <div>
-              <p className="section-label">Không gian duyệt bài học</p>
-              <h2>Kiểm duyệt bằng trạng thái, cảnh báo và citation trước khi publish</h2>
-              <p className="muted">
-                Admin không sửa trực tiếp nội dung; quyết định dựa trên evidence và
-                feedback rõ cho giảng viên.
-              </p>
+              <p className="section-label">Hàng đợi duyệt</p>
+              <h2>Duyệt bài học</h2>
+              <p className="muted">Kiểm tra nguồn trước khi publish.</p>
             </div>
             <button
               className="primary-button"

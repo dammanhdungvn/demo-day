@@ -8,11 +8,14 @@ import {
 import {
   BookOpen,
   ClipboardCheck,
+  Eye,
+  EyeOff,
   FileText,
   GraduationCap,
   LayoutDashboard,
   LockKeyhole,
   Library,
+  LogIn,
   LogOut,
   Mail,
   MonitorPlay,
@@ -110,10 +113,10 @@ const LOGIN_FEATURES: Array<{
   Icon: typeof FileText
   label: string
 }> = [
-  { Icon: FileText, label: 'Giáo án' },
-  { Icon: MonitorPlay, label: 'Slide' },
-  { Icon: Library, label: 'Tài liệu' },
-  { Icon: ClipboardCheck, label: 'Luyện tập' },
+  { Icon: FileText, label: 'Soạn giáo án' },
+  { Icon: MonitorPlay, label: 'Tạo slide' },
+  { Icon: Library, label: 'Tài liệu thông minh' },
+  { Icon: ClipboardCheck, label: 'Đánh giá dễ dàng' },
 ]
 
 function RoleIcon({ role }: { role: PublicDemoAccount['role'] }) {
@@ -228,6 +231,7 @@ function LoginPanel({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }) {
   const canUseAuth = backendConnection.status === 'ready'
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
 
   return (
     <section className="login-layout" aria-labelledby="login-title">
@@ -235,11 +239,12 @@ function LoginPanel({
         <div className="product-panel-copy">
           <div className="brand-lockup">
             <span className="brand-mark">
-              <GraduationCap aria-hidden="true" size={22} />
+              <BookOpen aria-hidden="true" size={34} />
             </span>
             <strong>TeachFlow AI</strong>
           </div>
           <h1 id="login-title">AI Teaching Assistant</h1>
+          <p className="lead login-tagline">Soạn bài. Dạy tốt.</p>
           <div className="login-feature-strip" aria-label="Điểm mạnh TeachFlow AI">
             {LOGIN_FEATURES.map(({ Icon, label }) => (
               <span className="login-feature-chip" key={label}>
@@ -256,28 +261,30 @@ function LoginPanel({
 
       <div className="auth-panel-stack">
         <form className="login-card" onSubmit={onSubmit}>
-          <div className={`login-system-status ${backendConnection.status}`}>
-            {backendConnection.status === 'checking' ? (
-              <Spinner label="Đang kết nối" />
-            ) : (
-              <ShieldCheck aria-hidden="true" size={17} />
-            )}
-            <span>{backendConnection.message}</span>
-            {backendConnection.status === 'error' && (
-              <button
-                aria-label="Thử lại kết nối"
-                className="ghost-button icon-button"
-                title="Thử lại"
-                type="button"
-                onClick={onRetryConnection}
-              >
-                <RefreshCcw aria-hidden="true" size={16} />
-              </button>
-            )}
+          <div className="login-card-heading">
+            <h2>Chọn vai trò</h2>
+            <div className={`login-system-status ${backendConnection.status}`}>
+              {backendConnection.status === 'checking' ? (
+                <Spinner label="Đang kết nối" />
+              ) : (
+                <ShieldCheck aria-hidden="true" size={17} />
+              )}
+              <span>{backendConnection.message}</span>
+              {backendConnection.status === 'error' && (
+                <button
+                  aria-label="Thử lại kết nối"
+                  className="ghost-button icon-button"
+                  title="Thử lại"
+                  type="button"
+                  onClick={onRetryConnection}
+                >
+                  <RefreshCcw aria-hidden="true" size={16} />
+                </button>
+              )}
+            </div>
           </div>
 
           <div>
-            <p className="section-label">Chọn vai trò</p>
             <div className="account-list" aria-live="polite">
               {accountsState.status === 'loading' && (
                 <p className="muted">Đang tải...</p>
@@ -298,7 +305,7 @@ function LoginPanel({
                 accountsState.accounts.map((account) => (
                   <button
                     aria-label={`Mở ${loginRoleLabel(account.role)} (${account.email})`}
-                    className={`account-button${
+                    className={`account-button login-role-${account.role}${
                       credentials.email === account.email ? ' selected' : ''
                     }`}
                     disabled={!canUseAuth || isSubmitting || isAcceptingInvite}
@@ -321,13 +328,14 @@ function LoginPanel({
           </div>
 
           <label className="field login-field">
-            <span>Email</span>
+            <span className="login-field-label">Email</span>
             <span className="login-input-frame">
               <Mail aria-hidden="true" size={18} />
               <input
                 autoComplete="username"
                 disabled={!canUseAuth || isSubmitting || isAcceptingInvite}
                 name="email"
+                placeholder="Email"
                 type="email"
                 value={credentials.email}
                 onChange={(event) =>
@@ -341,14 +349,15 @@ function LoginPanel({
           </label>
 
           <label className="field login-field">
-            <span>Mật khẩu</span>
+            <span className="login-field-label">Mật khẩu</span>
             <span className="login-input-frame">
               <LockKeyhole aria-hidden="true" size={18} />
               <input
                 autoComplete="current-password"
                 disabled={!canUseAuth || isSubmitting || isAcceptingInvite}
                 name="password"
-                type="password"
+                placeholder="Mật khẩu"
+                type={isPasswordVisible ? 'text' : 'password'}
                 value={credentials.password}
                 onChange={(event) =>
                   onChangeCredentials({
@@ -357,6 +366,20 @@ function LoginPanel({
                   })
                 }
               />
+              <button
+                aria-label={isPasswordVisible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                className="password-visibility-button"
+                disabled={!canUseAuth || isSubmitting || isAcceptingInvite}
+                title={isPasswordVisible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                type="button"
+                onClick={() => setIsPasswordVisible((current) => !current)}
+              >
+                {isPasswordVisible ? (
+                  <EyeOff aria-hidden="true" size={20} />
+                ) : (
+                  <Eye aria-hidden="true" size={20} />
+                )}
+              </button>
             </span>
           </label>
 
@@ -367,7 +390,7 @@ function LoginPanel({
             disabled={!canUseAuth || isSubmitting || isAcceptingInvite}
             type="submit"
           >
-            <ShieldCheck aria-hidden="true" size={18} />
+            <LogIn aria-hidden="true" size={22} />
             {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
 
@@ -380,7 +403,7 @@ function LoginPanel({
               onClick={onOpenInvitePanel}
             >
               <Ticket aria-hidden="true" size={17} />
-              Mã mời
+              Đăng nhập bằng Mã mời
             </button>
           </div>
         </form>

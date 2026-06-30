@@ -23,8 +23,8 @@ const WORKSPACE_CONFIG: Record<UserRole, WorkspaceConfig> = {
   admin: {
     role: 'admin',
     title: 'Không gian Admin',
-    eyebrow: 'Kiểm duyệt',
-    focus: 'Duyệt lesson trước khi xuất bản cho sinh viên.',
+    eyebrow: 'Duyệt nội dung',
+    focus: 'Quản lý bài học, tri thức và người dùng.',
     primaryActions: [
       'Hàng đợi duyệt',
       'Cảnh báo citation',

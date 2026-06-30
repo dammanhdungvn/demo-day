@@ -24,7 +24,6 @@ import {
   Alert,
   DataTable,
   PaginationControls,
-  Spinner,
 } from '../../ui/application'
 import { buildPaginationState } from '../../ui/pagination'
 
@@ -70,7 +69,19 @@ function jobTypeLabel(jobType: string): string {
 }
 
 function formatJobTime(value?: string | null): string {
-  return value ? new Date(value).toLocaleString('vi-VN') : 'Chưa có'
+  if (!value) {
+    return 'Chưa có'
+  }
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return 'Chưa có'
+  }
+  return date.toLocaleString('vi-VN', {
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    month: '2-digit',
+  })
 }
 
 function compactText(value: unknown): string | null {
@@ -575,28 +586,32 @@ export function JobCenter({
 
               <div className="job-detail-actions">
                 <button
-                  className="primary-button"
+                  aria-label={`Thử lại ${jobTypeLabel(selectedJob.job_type)}`}
+                  className="primary-button job-detail-action-button"
                   disabled={!canRetry(selectedJob) || busyJob !== null}
+                  title="Thử lại"
                   type="button"
                   onClick={() => void handleRetry(selectedJob)}
                 >
                   {busyJob?.id === selectedJob.id && busyJob.action === 'retry' ? (
-                    <Spinner label="Đang thử" />
+                    <Loader2 aria-hidden="true" className="job-spin" size={16} />
                   ) : (
-                    <>
-                      <RotateCcw aria-hidden="true" size={16} />
-                      Thử lại
-                    </>
+                    <RotateCcw aria-hidden="true" size={16} />
                   )}
                 </button>
                 <button
-                  className="ghost-button danger-action"
+                  aria-label={`Hủy ${jobTypeLabel(selectedJob.job_type)}`}
+                  className="ghost-button danger-action job-detail-action-button"
                   disabled={!canCancel(selectedJob) || busyJob !== null}
+                  title="Hủy"
                   type="button"
                   onClick={() => void handleCancel(selectedJob)}
                 >
-                  <Ban aria-hidden="true" size={16} />
-                  Hủy
+                  {busyJob?.id === selectedJob.id && busyJob.action === 'cancel' ? (
+                    <Loader2 aria-hidden="true" className="job-spin" size={16} />
+                  ) : (
+                    <Ban aria-hidden="true" size={16} />
+                  )}
                 </button>
               </div>
             </>

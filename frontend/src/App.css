@@ -5243,6 +5243,34 @@ body {
   overflow: hidden;
 }
 
+.job-table-panel .ui-table {
+  width: 100%;
+  min-width: 620px;
+  table-layout: fixed;
+}
+
+.job-table-panel .ui-table th:nth-child(1),
+.job-table-panel .ui-table td:nth-child(1) {
+  width: 38%;
+}
+
+.job-table-panel .ui-table th:nth-child(2),
+.job-table-panel .ui-table td:nth-child(2) {
+  width: 18%;
+}
+
+.job-table-panel .ui-table th:nth-child(3),
+.job-table-panel .ui-table td:nth-child(3) {
+  width: 26%;
+  white-space: nowrap;
+}
+
+.job-table-panel .ui-table th:nth-child(4),
+.job-table-panel .ui-table td:nth-child(4) {
+  width: 18%;
+  text-align: center;
+}
+
 .job-detail-panel {
   display: grid;
   gap: 14px;
@@ -5356,6 +5384,21 @@ body {
   border-radius: 12px;
 }
 
+.job-detail-actions {
+  justify-content: flex-end;
+}
+
+.job-detail-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 14px;
+}
+
 .job-detail-title {
   align-items: flex-start;
 }
@@ -5452,8 +5495,7 @@ body {
 
 @media (max-width: 720px) {
   .job-center-header,
-  .job-center-toolbar,
-  .job-detail-actions {
+  .job-center-toolbar {
     align-items: stretch;
     flex-direction: column;
   }
@@ -6854,5 +6896,630 @@ body {
     right: -96px;
     bottom: -88px;
     width: 100%;
+  }
+}
+
+/* Login v1 approved design fidelity. */
+:root {
+  font-family:
+    "Be Vietnam Pro", Inter, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.app-shell:has(.login-layout) {
+  min-height: 100svh;
+  width: 100%;
+  overflow-x: clip;
+  padding: 0;
+}
+
+.login-layout {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 560px);
+  gap: clamp(28px, 4vw, 64px);
+  width: 100%;
+  max-width: 1536px;
+  min-height: 100svh;
+  padding: clamp(22px, 5vh, 64px) clamp(20px, 4vw, 72px);
+  overflow-x: clip;
+  overflow-y: hidden;
+  background:
+    radial-gradient(circle at 95% 32%, rgb(91 110 246 / 11%) 0 15rem, transparent 15.2rem),
+    radial-gradient(circle at 3% 96%, rgb(78 108 246 / 13%) 0 13rem, transparent 13.2rem),
+    linear-gradient(135deg, #fbfcff 0%, #f3f6ff 55%, #eef4ff 100%);
+}
+
+.login-layout::after {
+  position: absolute;
+  right: -13rem;
+  top: -10rem;
+  width: 34rem;
+  height: 34rem;
+  border-radius: 999px;
+  background: rgb(88 107 246 / 7%);
+  content: '';
+  pointer-events: none;
+}
+
+.login-layout .product-panel {
+  position: relative;
+  align-self: stretch;
+  min-height: 0;
+  height: min(800px, calc(100svh - clamp(44px, 10vh, 128px)));
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.login-layout .product-panel-copy {
+  max-width: 860px;
+}
+
+.login-layout .brand-lockup {
+  gap: clamp(18px, 1.8vw, 28px);
+  margin-bottom: clamp(38px, 6vh, 76px);
+  color: #071540;
+  font-size: clamp(36px, 3.3vw, 62px);
+  font-weight: 850;
+  line-height: 1;
+}
+
+.login-layout .brand-mark {
+  width: clamp(76px, 6.2vw, 108px);
+  height: clamp(76px, 6.2vw, 108px);
+  border-radius: 26px;
+  background: linear-gradient(135deg, #28a7ff 0%, #7a4dff 100%);
+  box-shadow: 0 20px 38px rgb(67 92 246 / 22%);
+}
+
+.login-layout .brand-mark svg {
+  width: 62%;
+  height: 62%;
+  stroke-width: 2.2;
+}
+
+.login-layout .product-panel h1 {
+  max-width: 850px;
+  color: #071540;
+  font-size: clamp(50px, 4.2vw, 76px);
+  font-weight: 850;
+  line-height: 1.08;
+}
+
+.login-layout .login-tagline {
+  margin: 20px 0 0;
+  color: #344ee8;
+  font-size: clamp(24px, 2vw, 36px);
+  font-weight: 620;
+  line-height: 1.3;
+}
+
+.login-layout .login-feature-strip {
+  grid-template-columns: repeat(4, minmax(110px, 1fr));
+  gap: clamp(16px, 2.4vw, 40px);
+  max-width: 760px;
+  margin-top: clamp(34px, 5.5vh, 60px);
+}
+
+.login-layout .login-feature-chip {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #071540;
+  font-size: 15px;
+  font-weight: 620;
+  line-height: 1.35;
+  box-shadow: none;
+}
+
+.login-layout .login-feature-chip svg {
+  width: clamp(70px, 5.2vw, 90px);
+  height: clamp(70px, 5.2vw, 90px);
+  padding: 18px;
+  border-radius: 18px;
+  background: rgb(255 255 255 / 88%);
+  box-shadow:
+    0 18px 38px rgb(63 80 137 / 10%),
+    inset 0 0 0 1px rgb(212 222 248 / 86%);
+}
+
+.login-layout .product-hero-visual {
+  right: min(-34px, -2vw);
+  bottom: clamp(-34px, -3vh, -10px);
+  width: min(860px, 82%);
+  height: min(420px, 43vh);
+  overflow: hidden;
+  border-radius: 26px;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 12%, #000 100%);
+}
+
+.login-layout .product-hero-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+}
+
+.login-layout .auth-panel-stack {
+  align-self: center;
+  z-index: 1;
+  width: min(100%, 560px);
+}
+
+.login-layout .login-card {
+  gap: 28px;
+  padding: clamp(34px, 4vw, 56px);
+  border: 1px solid rgb(214 223 244 / 85%);
+  border-radius: 34px;
+  background: rgb(255 255 255 / 88%);
+  box-shadow: 0 34px 86px rgb(42 57 126 / 14%);
+  backdrop-filter: blur(18px);
+}
+
+.login-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.login-card-heading h2 {
+  color: #071540;
+  font-size: clamp(22px, 1.8vw, 30px);
+  font-weight: 780;
+}
+
+.login-layout .login-system-status {
+  min-height: 36px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.login-layout .login-system-status .ui-spinner span {
+  display: none;
+}
+
+.login-layout .login-card .account-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 0;
+}
+
+.login-layout .login-card .account-button {
+  min-height: clamp(152px, 13vw, 190px);
+  padding: 24px 14px;
+  border-color: #dce5f7;
+  border-radius: 18px;
+  background: rgb(255 255 255 / 88%);
+  box-shadow:
+    0 18px 36px rgb(63 80 137 / 7%),
+    inset 0 0 0 1px rgb(255 255 255 / 70%);
+}
+
+.login-layout .login-card .account-button.login-role-teacher {
+  border-color: #255cff;
+  box-shadow:
+    0 20px 46px rgb(37 92 255 / 14%),
+    inset 0 0 0 1px rgb(37 92 255 / 18%);
+}
+
+.login-layout .login-card .account-button svg {
+  width: 68px;
+  height: 68px;
+  padding: 14px;
+  border-radius: 20px;
+}
+
+.login-layout .login-card .account-button strong {
+  font-size: clamp(17px, 1.25vw, 22px);
+  font-weight: 760;
+}
+
+.login-field-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.login-layout .login-input-frame {
+  min-height: 70px;
+  border-color: #d8e1f4;
+  border-radius: 14px;
+  color: #8794b3;
+  box-shadow: 0 10px 20px rgb(63 80 137 / 4%);
+}
+
+.login-layout .login-input-frame input {
+  min-height: 66px;
+  color: #071540;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.login-layout .login-input-frame input::placeholder {
+  color: #9aa6bf;
+}
+
+.password-visibility-button {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #7d8aaa;
+  cursor: pointer;
+}
+
+.password-visibility-button:hover,
+.password-visibility-button:focus-visible {
+  background: #f2f5ff;
+  color: #255cff;
+  outline: 0;
+}
+
+.login-layout .primary-button {
+  min-height: 72px;
+  border-radius: 14px;
+  font-size: 20px;
+  font-weight: 720;
+  background: linear-gradient(135deg, #4664ff 0%, #7948f4 100%);
+}
+
+.login-layout .invite-entry {
+  display: block;
+  padding-top: 20px;
+}
+
+.login-layout .invite-toggle-button {
+  min-height: 68px;
+  border-radius: 14px;
+  color: #255cff;
+  font-size: 18px;
+  font-weight: 620;
+}
+
+@media (max-width: 1180px) {
+  .login-layout {
+    grid-template-columns: 1fr;
+    width: 100%;
+    min-height: auto;
+    overflow: visible;
+  }
+
+  .login-layout .product-panel {
+    height: auto;
+    min-height: 520px;
+  }
+
+  .login-layout .auth-panel-stack {
+    width: min(100%, 760px);
+  }
+}
+
+@media (min-width: 1181px) and (max-width: 1380px),
+  (min-width: 1181px) and (max-height: 820px) {
+  .login-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(390px, 500px);
+    gap: clamp(22px, 3vw, 44px);
+    padding: 22px clamp(18px, 3vw, 46px);
+  }
+
+  .login-layout .brand-lockup {
+    margin-bottom: 34px;
+    font-size: clamp(30px, 3vw, 48px);
+  }
+
+  .login-layout .brand-mark {
+    width: clamp(64px, 5vw, 84px);
+    height: clamp(64px, 5vw, 84px);
+  }
+
+  .login-layout .product-panel h1 {
+    font-size: clamp(44px, 4vw, 64px);
+  }
+
+  .login-layout .login-tagline {
+    font-size: clamp(22px, 1.8vw, 30px);
+  }
+
+  .login-layout .login-feature-strip {
+    margin-top: 30px;
+  }
+
+  .login-layout .login-feature-chip svg {
+    width: 66px;
+    height: 66px;
+  }
+
+  .login-layout .login-card {
+    gap: 20px;
+    padding: 32px;
+  }
+
+  .login-layout .login-card .account-list {
+    gap: 16px;
+  }
+
+  .login-layout .login-card .account-button {
+    min-height: 136px;
+  }
+
+  .login-layout .login-input-frame,
+  .login-layout .primary-button,
+  .login-layout .invite-toggle-button {
+    min-height: 58px;
+  }
+
+  .login-layout .login-input-frame input {
+    min-height: 54px;
+  }
+}
+
+@media (max-width: 760px) {
+  .login-layout {
+    gap: 16px;
+    padding: 20px 16px 28px;
+    overflow-x: clip;
+  }
+
+  .login-layout::after {
+    display: none;
+  }
+
+  .login-layout .product-panel {
+    min-height: 330px;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 28px;
+  }
+
+  .login-layout .brand-lockup {
+    margin-bottom: 34px;
+    font-size: clamp(25px, 7vw, 34px);
+  }
+
+  .login-layout .brand-mark {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+  }
+
+  .login-layout .product-panel h1 {
+    max-width: 330px;
+    font-size: clamp(38px, 10.5vw, 48px);
+  }
+
+  .login-layout .login-tagline {
+    margin-top: 10px;
+    font-size: 20px;
+  }
+
+  .login-layout .login-feature-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    max-width: 260px;
+    margin-top: 24px;
+  }
+
+  .login-layout .login-feature-chip {
+    gap: 8px;
+    font-size: 11px;
+  }
+
+  .login-layout .login-feature-chip svg {
+    width: 48px;
+    height: 48px;
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .login-layout .product-hero-visual {
+    display: none;
+  }
+
+  .login-layout .login-card {
+    gap: 18px;
+    padding: 24px;
+    border-radius: 28px;
+  }
+
+  .login-card-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .login-layout .login-card .account-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .login-layout .login-card .account-button {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    min-height: 104px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+
+  .login-layout .login-card .account-button svg {
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .login-layout .login-card .account-button strong {
+    font-size: 13px;
+  }
+
+  .login-layout .login-input-frame,
+  .login-layout .primary-button,
+  .login-layout .invite-toggle-button {
+    min-height: 56px;
+  }
+
+  .login-layout .login-input-frame input {
+    min-height: 52px;
+    font-size: 15px;
+  }
+}
+
+/* Login production scale: keep the approved composition inside one real viewport. */
+@media (min-width: 901px) {
+  .login-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
+    gap: clamp(24px, 3vw, 46px);
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: clamp(18px, 3.2vh, 34px) clamp(18px, 3vw, 42px);
+    overflow: hidden;
+  }
+
+  .login-layout .product-panel {
+    height: calc(100svh - clamp(36px, 6.4vh, 68px));
+    max-height: 720px;
+  }
+
+  .login-layout .brand-lockup {
+    margin-bottom: clamp(26px, 4vh, 44px);
+    font-size: clamp(30px, 2.9vw, 42px);
+  }
+
+  .login-layout .brand-mark {
+    width: clamp(56px, 5vw, 76px);
+    height: clamp(56px, 5vw, 76px);
+    border-radius: 18px;
+  }
+
+  .login-layout .product-panel h1 {
+    max-width: 640px;
+    font-size: clamp(42px, 4vw, 58px);
+    line-height: 1.08;
+  }
+
+  .login-layout .login-tagline {
+    margin-top: 12px;
+    font-size: clamp(21px, 1.9vw, 27px);
+  }
+
+  .login-layout .login-feature-strip {
+    gap: clamp(12px, 2vw, 28px);
+    max-width: 640px;
+    margin-top: clamp(24px, 4vh, 36px);
+  }
+
+  .login-layout .login-feature-chip {
+    font-size: 13px;
+  }
+
+  .login-layout .login-feature-chip svg {
+    width: clamp(54px, 4.5vw, 68px);
+    height: clamp(54px, 4.5vw, 68px);
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .login-layout .product-hero-visual {
+    left: clamp(110px, 16vw, 220px);
+    right: auto;
+    bottom: clamp(4px, 2vh, 26px);
+    width: min(560px, 70%);
+    height: min(290px, 34vh);
+    overflow: hidden;
+    border-radius: 22px;
+    mask-image: none;
+  }
+
+  .login-layout .product-hero-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+  }
+
+  .login-layout .auth-panel-stack {
+    width: min(100%, 430px);
+  }
+
+  .login-layout .login-card {
+    gap: clamp(14px, 2.2vh, 20px);
+    padding: clamp(24px, 3vw, 34px);
+    border-radius: 28px;
+  }
+
+  .login-card-heading h2 {
+    font-size: clamp(21px, 1.8vw, 27px);
+  }
+
+  .login-layout .login-card .account-list {
+    gap: 14px;
+  }
+
+  .login-layout .login-card .account-button {
+    min-height: clamp(104px, 14vh, 132px);
+    padding: 16px 10px;
+  }
+
+  .login-layout .login-card .account-button svg {
+    width: clamp(46px, 4vw, 56px);
+    height: clamp(46px, 4vw, 56px);
+    padding: 12px;
+  }
+
+  .login-layout .login-card .account-button strong {
+    font-size: clamp(14px, 1.4vw, 18px);
+  }
+
+  .login-layout .login-input-frame,
+  .login-layout .primary-button,
+  .login-layout .invite-toggle-button {
+    min-height: clamp(50px, 7vh, 58px);
+  }
+
+  .login-layout .login-input-frame input {
+    min-height: clamp(46px, 6.5vh, 54px);
+    font-size: 15px;
+  }
+
+  .login-layout .primary-button,
+  .login-layout .invite-toggle-button {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1120px) {
+  .login-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(330px, 380px);
+    gap: 20px;
+    padding-inline: 18px;
+  }
+
+  .login-layout .product-panel h1 {
+    max-width: 520px;
+    font-size: clamp(36px, 4vw, 46px);
+  }
+
+  .login-layout .login-feature-strip {
+    max-width: 500px;
+  }
+
+  .login-layout .product-hero-visual {
+    left: clamp(80px, 13vw, 150px);
+    width: min(430px, 68%);
+    height: min(230px, 30vh);
   }
 }
