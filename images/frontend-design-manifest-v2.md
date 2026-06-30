@@ -4,38 +4,38 @@ Mục tiêu: mỗi page frontend có đúng một ảnh design PNG riêng. Các 
 
 ## Page chung
 
-- `login-page-web-design-v2.png`: Login page trong `App.tsx`.
+- `teachflow-login-role-selection-design-v2.png`: Login page trong `App.tsx`, gồm chọn role demo và form đăng nhập.
 
 ## Admin
 
-- `admin/system-organizations-page-web-design-v2.png`: `system-organizations`.
-- `admin/system-admin-invites-page-web-design-v2.png`: `system-admin-invites`.
-- `admin/review-page-web-design-v2.png`: `admin-review`.
-- `admin/knowledge-page-web-design-v2.png`: `admin-knowledge`.
-- `admin/users-page-web-design-v2.png`: `admin-users`.
-- `admin/jobs-page-web-design-v2.png`: `admin-jobs`.
+- `admin/system-admin-organization-management-design-v2.png`: `system-organizations`, quản lý organization/tenant.
+- `admin/system-admin-organization-admin-invite-design-v2.png`: `system-admin-invites`, mời Admin đầu tiên cho organization.
+- `admin/admin-lesson-review-queue-design-v2.png`: `admin-review`, duyệt bài học trước khi publish.
+- `admin/admin-ai-knowledge-library-design-v2.png`: `admin-knowledge`, quản lý kho tri thức dài hạn hidden cho AI.
+- `admin/admin-teacher-student-management-design-v2.png`: `admin-users`, quản lý Teacher/Student bằng table.
+- `admin/admin-ai-job-monitoring-design-v2.png`: `admin-jobs`, theo dõi tác vụ xử lý tài liệu/AI.
 
 ## Teacher
 
-- `teacher/overview-page-web-design-v2.png`: `teacher-overview`.
-- `teacher/setup-page-web-design-v2.png`: `teacher-setup`.
-- `teacher/documents-page-web-design-v2.png`: `teacher-documents`.
-- `teacher/outline-page-web-design-v2.png`: `teacher-outline`.
-- `teacher/studio-page-web-design-v2.png`: `teacher-studio`.
-- `teacher/jobs-page-web-design-v2.png`: `teacher-jobs`.
+- `teacher/teacher-dashboard-overview-design-v2.png`: `teacher-overview`, tổng quan workflow và bước tiếp theo.
+- `teacher/teacher-course-class-management-design-v2.png`: `teacher-setup`, quản lý khóa học, lớp và Student.
+- `teacher/teacher-lesson-source-documents-design-v2.png`: `teacher-documents`, upload/chọn tài liệu nguồn cho bài giảng.
+- `teacher/teacher-lesson-outline-builder-design-v2.png`: `teacher-outline`, tạo/chỉnh dàn ý bài giảng.
+- `teacher/teacher-lesson-studio-editor-design-v2.png`: `teacher-studio`, review, chỉnh sửa, approve và submit lesson.
+- `teacher/teacher-processing-job-center-design-v2.png`: `teacher-jobs`, theo dõi tác vụ upload/generation của Teacher.
 
 ## Student
 
-- `student/classes-page-web-design-v2.png`: `student-classes`.
-- `student/lessons-page-web-design-v2.png`: `student-lessons`.
-- `student/practice-page-web-design-v2.png`: `student-practice`.
-- `student/documents-page-web-design-v2.png`: `student-documents`.
-- `student/lesson-presentation-page-web-design-v2.png`: `LessonPresentation`.
+- `student/student-my-classes-dashboard-design-v2.png`: `student-classes`, lớp của tôi và tiếp tục học.
+- `student/student-lesson-reader-ai-tutor-design-v2.png`: `student-lessons`, đọc lesson và hỏi AI Tutor có citation.
+- `student/student-practice-quiz-self-check-design-v2.png`: `student-practice`, luyện tập, self-check và xem giải thích.
+- `student/student-personal-documents-design-v2.png`: `student-documents`, quản lý tài liệu cá nhân ngắn hạn.
+- `student/student-lesson-presentation-viewer-design-v2.png`: `LessonPresentation`, trình chiếu lesson trên web.
 
 ## Import assets được phép dùng
 
-- `assets/login-education-hero-asset-v2.png`: chỉ dùng cho login hero.
-- `assets/photosynthesis-lesson-diagram-asset-v2.png`: dùng cho Lesson, Studio hoặc Presentation khi cần minh họa bài học.
+- `assets/teachflow-login-education-hero-asset-v2.png`: chỉ dùng cho login hero.
+- `assets/lesson-photosynthesis-diagram-asset-v2.png`: dùng cho Lesson, Studio hoặc Presentation khi cần minh họa bài học.
 
 Không tạo thêm import image cho table, toolbar, action button, status, pagination, toast, skeleton hoặc empty state. Các phần đó nên triển khai bằng component, icon và CSS.
 
