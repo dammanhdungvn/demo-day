@@ -52,11 +52,26 @@ require_file "session-handoff.md"
 require_file "docs/version1/MVP.md"
 require_file "docs/version1/PRD_MVP.md"
 require_file "docs/version1/USER_STORIES_MVP.md"
+require_file "docs/version2/README.md"
+require_file "docs/version2/PRD_V2_PRODUCTION.md"
+require_file "docs/version2/USER_STORIES_V2.md"
+require_file "docs/version2/V1_P2_MIGRATION.md"
+require_file "docs/version3/README.md"
+require_file "docs/version3/PRD_V3_GROWTH.md"
+require_file "docs/version3/USER_STORIES_V3.md"
+require_file "docs/version4/README.md"
+require_file "docs/version4/PRD_V4_PRODUCT_EXCELLENCE.md"
+require_file "docs/version4/USER_STORIES_V4.md"
+require_file "docs/version4/UX_RESEARCH_NOTES.md"
+require_file "docs/version4/PRODUCT_REVIEW.md"
+require_file "docs/version4/PRODUCTION_GAP_ANALYSIS.md"
+require_file "docs/OVERNIGHT_HANDOFF.md"
 require_file "docs/harness/SOP.md"
 require_file "docs/harness/TASK_NOTE_TEMPLATE.md"
 require_file "docs/harness/ARCHITECTURE.md"
 require_file "docs/harness/QUALITY_SCORE.md"
 require_file "docs/harness/RELIABILITY_SECURITY.md"
+require_file "docs/harness/OPERATIONS_RUNBOOK.md"
 require_file "docs/harness/exec-plans/tech-debt-tracker.md"
 require_file ".env.example"
 
@@ -68,6 +83,21 @@ elif command -v python >/dev/null 2>&1; then
 else
   warn "Khong tim thay python/python3 de validate JSON"
 fi
+
+info "Kiem tra operations runbook co cac section bat buoc"
+required_runbook_sections=(
+  "Backup Process"
+  "Restore Smoke"
+  "User Data Export"
+  "User Data Delete"
+  "Secret Safety"
+)
+
+for section in "${required_runbook_sections[@]}"; do
+  if ! grep -q "$section" docs/harness/OPERATIONS_RUNBOOK.md; then
+    fail "docs/harness/OPERATIONS_RUNBOOK.md thieu section ${section}"
+  fi
+done
 
 info "Kiem tra .env.example co cac bien bat buoc"
 required_env_keys=(

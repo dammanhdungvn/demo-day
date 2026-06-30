@@ -7,6 +7,7 @@ export type UserProfile = {
   email: string
   name: string
   role: UserRole
+  organization_id?: string | null
 }
 
 export type AuthUser = UserProfile
@@ -20,13 +21,46 @@ export type LoginCredentials = {
   password: string
 }
 
+export type DemoLoginPayload = {
+  account_id: string
+}
+
 export type AuthSession = {
   access_token: string
   token_type: 'bearer'
   user: UserProfile
+  refresh_token?: string | null
+  expires_in?: number | null
 }
 
 export type LoginResponse = AuthSession
+
+export type InviteStatus = 'pending' | 'accepted' | 'revoked'
+
+export type InviteCreatePayload = {
+  email: string
+  role: UserRole
+}
+
+export type InviteAcceptPayload = {
+  invite_code: string
+  email: string
+  name: string
+  password: string
+}
+
+export type OrganizationInvite = {
+  id: string
+  email: string
+  role: UserRole
+  status: InviteStatus
+  organization_id: string
+  invited_by: string
+  invite_code: string
+  created_at: string
+  expires_at?: string | null
+  accepted_at: string | null
+}
 
 export type RoleDashboard = {
   workspace: UserRole
@@ -71,6 +105,23 @@ export async function fetchDemoAccounts(
   return readJson<PublicDemoAccount[]>(response, 'Demo accounts')
 }
 
+export async function demoLogin(
+  payload: DemoLoginPayload,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<AuthSession> {
+  const response = await fetcher(buildApiUrl('/auth/demo-login', backendUrl), {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  return readJson<AuthSession>(response, 'Demo login')
+}
+
 export async function login(
   credentials: LoginCredentials,
   fetcher: typeof fetch = fetch,
@@ -86,6 +137,23 @@ export async function login(
   })
 
   return readJson<AuthSession>(response, 'Login')
+}
+
+export async function refreshSession(
+  refreshToken: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<AuthSession> {
+  const response = await fetcher(buildApiUrl('/auth/refresh', backendUrl), {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  })
+
+  return readJson<AuthSession>(response, 'Session refresh')
 }
 
 export async function logout(
@@ -124,6 +192,53 @@ export async function fetchRoleDashboard(
   })
 
   return readJson<RoleDashboard>(response, `${roleLabel(role)} dashboard`)
+}
+
+export async function createInvite(
+  payload: InviteCreatePayload,
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<OrganizationInvite> {
+  const response = await fetcher(buildApiUrl('/auth/invites', backendUrl), {
+    method: 'POST',
+    headers: {
+      ...authHeaders(token),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  return readJson<OrganizationInvite>(response, 'Create invite')
+}
+
+export async function fetchInvites(
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<OrganizationInvite[]> {
+  const response = await fetcher(buildApiUrl('/auth/invites', backendUrl), {
+    headers: authHeaders(token),
+  })
+
+  return readJson<OrganizationInvite[]>(response, 'Organization invites')
+}
+
+export async function acceptInvite(
+  payload: InviteAcceptPayload,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<AuthSession> {
+  const response = await fetcher(buildApiUrl('/auth/invites/accept', backendUrl), {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  return readJson<AuthSession>(response, 'Accept invite')
 }
 
 export function getRoleRoute(role: UserRole): string {

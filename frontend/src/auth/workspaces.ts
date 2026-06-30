@@ -25,9 +25,9 @@ const WORKSPACE_CONFIG: Record<UserRole, WorkspaceConfig> = {
     role: 'teacher',
     title: 'Không gian Giảng viên',
     eyebrow: 'Thiết kế bài giảng',
-    focus: 'Tạo course, lớp học và rà soát Lesson Studio theo từng block.',
+    focus: 'Tạo khóa học, lớp học và rà soát Lesson Studio theo từng khối nội dung.',
     primaryActions: [
-      'Tạo course',
+      'Tạo khóa học',
       'Tạo lớp',
       'Thêm sinh viên',
       'Mở Lesson Studio',
@@ -40,6 +40,7 @@ const WORKSPACE_CONFIG: Record<UserRole, WorkspaceConfig> = {
     focus: 'Xem lesson đã xuất bản trong lớp mình được thêm vào.',
     primaryActions: [
       'Lớp của tôi',
+      'Tài liệu ngữ cảnh',
       'Lesson đã xuất bản',
       'Chế độ đọc',
       'Trình chiếu/PDF',

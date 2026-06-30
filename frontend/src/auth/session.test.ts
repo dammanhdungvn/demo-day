@@ -34,11 +34,14 @@ class MemoryStorage implements Storage {
 const session: AuthSession = {
   access_token: 'token',
   token_type: 'bearer',
+  refresh_token: 'refresh-token',
+  expires_in: 3600,
   user: {
     id: 'demo-admin',
     email: 'admin@teachflow.local',
     name: 'Admin Demo',
     role: 'admin',
+    organization_id: 'org-demo',
   },
 }
 
