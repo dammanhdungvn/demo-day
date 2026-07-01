@@ -1,0 +1,443 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script id="tailwind-config">try{
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#5046e5",
+                        surface: "#f8f9ff",
+                        "on-surface": "#0b1c30",
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    }
+                }
+            }
+        }
+    }catch(_e){}</script></head><body class="text-on-surface antialiased">
+    <div class="flex min-h-screen">
+        <!-- Sidebar Navigation -->
+        <aside class="w-[240px] h-screen sticky top-0 bg-white border-r border-slate-100 flex flex-col z-50 py-6">
+            <div class="px-6 mb-10 flex items-center gap-2">
+                <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white aspect-square">
+                    <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-xl text-primary leading-tight">TeachFlow AI</h1>
+                </div>
+            </div>
+
+            <nav class="flex-1 px-4 space-y-1">
+                <a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 transition-colors rounded-xl font-medium" href="#">
+                    <span class="material-symbols-outlined text-xl">move_to_inbox</span>
+                    <span class="text-[15px]">Hàng đợi</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 transition-colors rounded-xl font-medium" href="#">
+                    <span class="material-symbols-outlined text-xl">folder_open</span>
+                    <span class="text-[15px]">Kho tri thức</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 transition-colors rounded-xl font-medium" href="#">
+                    <span class="material-symbols-outlined text-xl">group</span>
+                    <span class="text-[15px]">Người dùng</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-3 sidebar-active rounded-xl font-semibold" href="#">
+                    <span class="material-symbols-outlined text-xl">task_alt</span>
+                    <span class="text-[15px]">Tác vụ</span>
+                </a>
+            </nav>
+
+            <div class="px-4 mt-auto">
+                <a class="flex items-center justify-between gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 transition-colors rounded-xl font-medium" href="#">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-xl">settings</span>
+                        <span class="text-[15px]">Cài đặt</span>
+                    </div>
+                    <span class="material-symbols-outlined text-slate-400 text-lg">chevron_right</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col min-w-0">
+            <!-- Top Header -->
+            <header class="h-[72px] bg-white/80 backdrop-blur-md px-10 flex items-center justify-between sticky top-0 z-40 border-b border-slate-50">
+                <div></div> <!-- Placeholder for layout alignment -->
+                <div class="flex items-center gap-6">
+                    <button class="relative p-2 text-slate-400 hover:text-slate-600 transition-colors">
+                        <span class="material-symbols-outlined text-2xl">notifications</span>
+                        <span class="absolute top-2 right-2 w-4 h-4 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white">3</span>
+                    </button>
+                    <div class="flex items-center gap-3 pl-4 border-l border-slate-100">
+                        <img alt="Admin Avatar" class="w-9 h-9 rounded-full object-cover aspect-square" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKBhx5e1mn3OeGvscAXhYlgcT75h9lNVVB5l7UUcqRe-Ms8GeYxnDu1u50uCTZYCPay1GM1qscTsyN_Q484FHxVyTGv1qbToOcRjqV51lKKUUJeCRAekca4t1znzcgfskN3pNGuuxsuVHbAaYHYPYN809VLZzNEjObY_aj00w7i26ajscWI-ctAwoyTZvLH2Lu3YOOdWA3b6V9mdQGo0baDj-Nb4In6JV9B8OEuPT6LQPJfArnRDWQFNSJcoYgD1RjgVmNHgYKJt4">
+                        <div class="flex items-center gap-1">
+                            <span class="text-sm font-bold text-slate-700">Admin</span>
+                            <span class="material-symbols-outlined text-slate-400 text-lg">expand_more</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="p-10 space-y-8 max-w-[1600px]">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-2xl font-bold text-slate-800">Tác vụ</h2>
+                    <div class="flex items-center bg-green-50 text-green-700 px-4 py-2 rounded-xl border border-green-100 text-sm font-medium gap-3">
+                        <span class="material-symbols-outlined text-green-500 text-lg" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        Đã hủy tác vụ
+                        <button class="ml-2 text-green-400 hover:text-green-600 transition-colors">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Status Overview Cards -->
+                <div class="grid grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-50 card-shadow flex items-center gap-6">
+                        <div class="w-14 h-14 bg-orange-50 rounded-full flex items-center justify-center aspect-square">
+                            <span class="material-symbols-outlined text-orange-400 text-3xl">play_circle</span>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium mb-1">Đang chạy</p>
+                            <h3 class="text-3xl font-bold text-slate-800">8</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-50 card-shadow flex items-center gap-6">
+                        <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center text-red-400 aspect-square">
+                            <span class="material-symbols-outlined text-3xl">cancel</span>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium mb-1">Lỗi</p>
+                            <h3 class="text-3xl font-bold text-slate-800">3</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-50 card-shadow flex items-center gap-6">
+                        <div class="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center text-green-500 aspect-square">
+                            <span class="material-symbols-outlined text-3xl">check_circle</span>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium mb-1">Xong</p>
+                            <h3 class="text-3xl font-bold text-slate-800">142</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-50 card-shadow flex items-center gap-6">
+                        <div class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center text-blue-500 aspect-square">
+                            <span class="material-symbols-outlined text-3xl">article</span>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 text-sm font-medium mb-1">Tổng</p>
+                            <h3 class="text-3xl font-bold text-slate-800">153</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-8">
+                    <div class="flex-1 space-y-6">
+                        <!-- Filters -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex bg-white p-1 rounded-xl border border-slate-100 shadow-sm">
+                                <button class="px-6 py-2 text-sm font-bold text-primary border-b-2 border-primary">Tất cả</button>
+                                <button class="px-6 py-2 text-sm font-medium text-slate-500 hover:text-slate-700">Đang chạy</button>
+                                <button class="px-6 py-2 text-sm font-medium text-slate-500 hover:text-slate-700">Lỗi</button>
+                                <button class="px-6 py-2 text-sm font-medium text-slate-500 hover:text-slate-700">Xong</button>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="relative min-w-[240px]">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                                    <input type="text" placeholder="Tìm kiếm tác vụ..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-100 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-slate-400">
+                                </div>
+                                <button class="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50">
+                                    <span class="material-symbols-outlined text-lg">filter_alt</span>
+                                    Tất cả loại
+                                    <span class="material-symbols-outlined text-lg">expand_more</span>
+                                </button>
+                                <button class="p-2.5 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-slate-600">
+                                    <span class="material-symbols-outlined text-xl">tune</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Main Table -->
+                        <div class="bg-white rounded-2xl border border-slate-50 shadow-sm overflow-hidden">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-slate-50/50">
+                                    <tr class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                        <th class="px-6 py-4">Loại</th>
+                                        <th class="px-6 py-4">Người tạo</th>
+                                        <th class="px-6 py-4">Trạng thái</th>
+                                        <th class="px-6 py-4">Thời gian bắt đầu</th>
+                                        <th class="px-6 py-4">Thời lượng</th>
+                                        <th class="px-6 py-4 text-center">Thử lại</th>
+                                        <th class="px-6 py-4 text-center">Hủy</th>
+                                        <th class="px-6 py-4 text-center">Chi tiết</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-50">
+                                    <!-- Row 1 (Active/Selected) -->
+                                    <tr class="bg-indigo-50/30 border-y border-indigo-100/50">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white aspect-square">
+                                                    <span class="material-symbols-outlined text-xl">article</span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-bold text-slate-700">Index tài liệu</p>
+                                                    <p class="text-[11px] text-slate-400">Sinh học 11.pdf</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm font-bold text-slate-700">Nguyễn Thu Hà</p>
+                                            <p class="text-[11px] text-slate-400">thuha.nguyen@school.edu.vn</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-50 text-orange-500 text-[11px] font-bold">
+                                                <span class="w-1.5 h-1.5 bg-orange-400 rounded-full"></span>
+                                                Đang chạy
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-slate-500 font-medium">20/05/2025 09:30:21</td>
+                                        <td class="px-6 py-4 text-sm text-slate-500 font-medium">2m 15s</td>
+                                        <td class="px-6 py-4 text-center">
+                                            <button class="p-1.5 text-indigo-500 hover:bg-indigo-100 rounded-lg transition-colors"><span class="material-symbols-outlined text-xl">refresh</span></button>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <button class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors"><span class="material-symbols-outlined text-xl">cancel</span></button>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <button class="p-1.5 text-indigo-500 hover:bg-indigo-100 rounded-lg transition-colors"><span class="material-symbols-outlined text-xl">visibility</span></button>
+                                        </td>
+                                    </tr>
+                                    <!-- Row 2 -->
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center text-white aspect-square">
+                                                    <span class="material-symbols-outlined text-xl">view_day</span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-bold text-slate-700">Tạo slide</p>
+                                                    <p class="text-[11px] text-slate-400">Bài giảng Quang hợp</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm font-bold text-slate-700">Trần Minh Đức</p>
+                                            <p class="text-[11px] text-slate-400">minhduc.tran@school.edu.vn</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-[11px] font-bold">
+                                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                                Xong
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-slate-500 font-medium">20/05/2025 09:22:10</td>
+                                        <td class="px-6 py-4 text-sm text-slate-500 font-medium">1m 48s</td>
+                                        <td class="px-6 py-4 text-center text-slate-300">—</td>
+                                        <td class="px-6 py-4 text-center text-slate-300">—</td>
+                                        <td class="px-6 py-4 text-center">
+                                            <button class="p-1.5 text-indigo-500 hover:bg-indigo-100 rounded-lg transition-colors"><span class="material-symbols-outlined text-xl">visibility</span></button>
+                                        </td>
+                                    </tr>
+                                    <!-- Row 3 -->
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white aspect-square">
+                                                    <span class="material-symbols-outlined text-xl">forum</span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-bold text-slate-700">Tạo slide</p>
+                                                    <p class="text-[11px] text-slate-400">Giới thiệu Python</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm font-bold text-slate-700">Lê Phương Anh</p>
+                                            <p class="text-[11px] text-slate-400">phuonganh.le@school.edu.vn</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-500 text-[11px] font-bold">
+                                                <span class="material-symbols-outlined text-sm">error</span>
+                                                Lỗi
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-slate-500 font-medium">20/05/2025 09:15:33</td>
+                                        <td class="px-6 py-4 text-sm text-slate-500 font-medium">—</td>
+                                        <td class="px-6 py-4 text-center">
+                                            <button class="p-1.5 text-indigo-500 hover:bg-indigo-100 rounded-lg transition-colors"><span class="material-symbols-outlined text-xl">refresh</span></button>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <button class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors"><span class="material-symbols-outlined text-xl">cancel</span></button>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <button class="p-1.5 text-indigo-500 hover:bg-indigo-100 rounded-lg transition-colors"><span class="material-symbols-outlined text-xl">visibility</span></button>
+                                        </td>
+                                    </tr>
+                                    <!-- Row 4 -->
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white aspect-square">
+                                                    <span class="material-symbols-outlined text-xl">text_snippet</span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-bold text-slate-700">Trích xuất nội dung</p>
+                                                    <p class="text-[11px] text-slate-400">Đề cương Toán 12.docx</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm font-bold text-slate-700">Vũ Thị Lan</p>
+                                            <p class="text-[11px] text-slate-400">thilan.vu@school.edu.vn</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-[11px] font-bold">
+                                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                                Xong
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-slate-500 font-medium">20/05/2025 09:05:12</td>
+                                        <td class="px-6 py-4 text-sm text-slate-500 font-medium">50s</td>
+                                        <td class="px-6 py-4 text-center text-slate-300">—</td>
+                                        <td class="px-6 py-4 text-center text-slate-300">—</td>
+                                        <td class="px-6 py-4 text-center">
+                                            <button class="p-1.5 text-indigo-500 hover:bg-indigo-100 rounded-lg transition-colors"><span class="material-symbols-outlined text-xl">visibility</span></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3 text-slate-500 text-sm">
+                                <span class="">Hiển thị</span>
+                                <select class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-sm outline-none">
+                                    <option>10</option>
+                                    <option>20</option>
+                                    <option>50</option>
+                                </select>
+                                <span class="">/ trang</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button class="w-9 h-9 border border-slate-100 bg-white rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600">
+                                    <span class="material-symbols-outlined text-lg">chevron_left</span>
+                                </button>
+                                <button class="w-9 h-9 bg-primary text-white rounded-lg font-bold text-sm">1</button>
+                                <button class="w-9 h-9 bg-white border border-slate-100 text-slate-500 rounded-lg font-medium text-sm hover:bg-slate-50">2</button>
+                                <button class="w-9 h-9 bg-white border border-slate-100 text-slate-500 rounded-lg font-medium text-sm hover:bg-slate-50">3</button>
+                                <span class="text-slate-300 px-1">...</span>
+                                <button class="w-9 h-9 bg-white border border-slate-100 text-slate-500 rounded-lg font-medium text-sm hover:bg-slate-50">16</button>
+                                <button class="w-9 h-9 border border-slate-100 bg-white rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600">
+                                    <span class="material-symbols-outlined text-lg">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Detail Panel -->
+                    <div class="w-[380px] space-y-6">
+                        <div class="bg-white rounded-2xl border border-slate-50 card-shadow p-6">
+                            <div class="flex items-center justify-between mb-8">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-600 aspect-square">
+                                        <span class="material-symbols-outlined text-2xl">article</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-slate-800">Index tài liệu</h4>
+                                        <p class="text-[12px] text-slate-400">Sinh học 11.pdf</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <span class="text-[11px] font-bold text-orange-400 bg-orange-50 px-2 py-1 rounded-md">Đang chạy</span>
+                                    <button class="text-slate-300 hover:text-slate-500"><span class="material-symbols-outlined">close</span></button>
+                                </div>
+                            </div>
+
+                            <div class="flex border-b border-slate-50 mb-6">
+                                <button class="px-4 py-2 text-sm font-bold text-primary border-b-2 border-primary">Tổng quan</button>
+                                <button class="px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-600">Thông tin</button>
+                            </div>
+
+                            <div class="space-y-6">
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800 mb-6">Tiến trình</p>
+                                    <div class="relative pl-6 space-y-6">
+                                        <div class="absolute left-1 top-2 bottom-2 w-[2px] bg-slate-100"></div>
+                                        <div class="relative flex items-center justify-between">
+                                            <div class="absolute -left-[23px] w-3 h-3 bg-indigo-500 rounded-full ring-4 ring-indigo-50"></div>
+                                            <span class="text-[13px] text-slate-500">Đã nhận tác vụ</span>
+                                            <span class="text-[11px] text-slate-400">20/05/2025 09:30:21</span>
+                                        </div>
+                                        <div class="relative flex items-center justify-between">
+                                            <div class="absolute -left-[23px] w-3 h-3 bg-indigo-500 rounded-full ring-4 ring-indigo-50"></div>
+                                            <span class="text-[13px] font-bold text-indigo-500">Đang đọc tài liệu</span>
+                                            <span class="text-[11px] font-bold text-indigo-500">20/05/2025 09:30:23</span>
+                                        </div>
+                                        <div class="relative flex items-center justify-between">
+                                            <div class="absolute -left-[21px] w-2 h-2 bg-slate-300 rounded-full"></div>
+                                            <span class="text-[13px] text-slate-400">Đang xử lý nội dung</span>
+                                        </div>
+                                        <div class="relative flex items-center justify-between">
+                                            <div class="absolute -left-[21px] w-2 h-2 bg-slate-300 rounded-full"></div>
+                                            <span class="text-[13px] text-slate-400">Đang tạo embedding</span>
+                                        </div>
+                                        <div class="relative flex items-center justify-between">
+                                            <div class="absolute -left-[21px] w-2 h-2 bg-slate-300 rounded-full"></div>
+                                            <span class="text-[13px] text-slate-400">Đang lưu vào kho</span>
+                                        </div>
+                                        <div class="relative flex items-center justify-between">
+                                            <div class="absolute -left-[21px] w-2 h-2 bg-slate-300 rounded-full"></div>
+                                            <span class="text-[13px] text-slate-400">Hoàn tất</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4 pt-4">
+                                    <p class="text-sm font-bold text-slate-800">Thông tin</p>
+                                    <div class="flex justify-between text-[13px]">
+                                        <span class="text-slate-400">Loại</span>
+                                        <span class="text-slate-700 font-medium">Index tài liệu</span>
+                                    </div>
+                                    <div class="flex justify-between text-[13px]">
+                                        <span class="text-slate-400">Người tạo</span>
+                                        <span class="text-slate-700 font-medium">Nguyễn Thu Hà</span>
+                                    </div>
+                                    <div class="flex justify-between text-[13px]">
+                                        <span class="text-slate-400">Thời gian bắt đầu</span>
+                                        <span class="text-slate-700 font-medium">20/05/2025 09:30:21</span>
+                                    </div>
+                                </div>
+
+                                <div class="p-4 bg-red-50 rounded-xl border border-red-100">
+                                    <p class="text-[12px] font-bold text-red-500 mb-1">Lỗi gần nhất</p>
+                                    <p class="text-[12px] text-red-400 leading-relaxed">Không thể đọc trang 42. Vui lòng kiểm tra tệp nguồn.</p>
+                                </div>
+
+                                <div class="p-4 bg-blue-50/50 rounded-xl">
+                                    <p class="text-[12px] font-bold text-blue-500 mb-1">Gợi ý</p>
+                                    <p class="text-[12px] text-blue-400">Kiểm tra tệp nguồn và thử lại tác vụ.</p>
+                                </div>
+
+                                <div class="space-y-3 pt-2">
+                                    <button class="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+                                        <span class="material-symbols-outlined text-lg">refresh</span>
+                                        Thử lại
+                                    </button>
+                                    <button class="w-full bg-white border border-red-200 text-red-500 py-3 rounded-xl font-bold text-sm hover:bg-red-50 flex items-center justify-center gap-2">
+                                        <span class="material-symbols-outlined text-lg">cancel</span>
+                                        Hủy
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Charts Script (Minimal--></body></html>

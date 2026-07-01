@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TeachFlow AI - Hàng đợi duyệt</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#5046e5',
+            surface: '#f8f9ff',
+            'surface-dim': '#cbdbf5',
+            'surface-container-lowest': '#ffffff',
+            'warning-bg': '#fff7ed',
+            'warning-text': '#ea580c',
+            'pending-bg': '#eff6ff',
+            'pending-text': '#2563eb',
+            'success-btn': '#34a853',
+            'edit-btn': '#f97316',
+            'reject-btn': '#f43f5e'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          borderRadius: {
+            'custom': '8px',
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scroll">
+    /* Custom scrollbar for a cleaner dashboard look */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-surface font-sans text-slate-800 antialiased h-screen overflow-hidden flex">
+<!-- BEGIN: LeftSideNavBar -->
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0" data-purpose="main-navigation">
+<div class="p-6 flex items-center gap-3">
+<div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-slate-900">TeachFlow <span class="text-indigo-600">AI</span></h1>
+</div>
+<nav class="flex-1 px-4 space-y-2 mt-4">
+<a class="flex items-center gap-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-custom font-medium" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Hàng đợi
+      </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-custom font-medium transition" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Kho tri thức
+      </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-custom font-medium transition" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Người dùng
+      </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-custom font-medium transition" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        Tác vụ
+      </a>
+</nav>
+<div class="p-4 border-t border-slate-100">
+<a class="flex items-center justify-between px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-custom font-medium transition" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Cài đặt
+        </div>
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+</div>
+</aside>
+<!-- END: LeftSideNavBar -->
+<main class="flex-1 flex flex-col overflow-hidden">
+<!-- BEGIN: TopNavBar -->
+<header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0" data-purpose="top-navigation">
+<h2 class="text-2xl font-bold text-slate-900">Hàng đợi duyệt</h2>
+<div class="flex items-center gap-6">
+<div class="relative w-96">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+<input class="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-full bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Tìm kiếm bài nộp..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative p-2 text-slate-400 hover:text-indigo-600">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="absolute top-2 right-2 block h-4 w-4 rounded-full bg-red-500 text-[10px] text-white flex items-center justify-center font-bold">3</span>
+</button>
+<div class="flex items-center gap-3 pl-4 border-l border-slate-200">
+<img alt="Admin Avatar" class="h-10 w-10 rounded-full border-2 border-indigo-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAK5ay7Qc5ZOVv-7zPujsYt1E4NJLmFGCUA-X9pDGEO9PbMnOAAkB-OuRUICizxP6bNcbCiA2T0_HqABLkaAjcTu36SHJ10jufhNu0J9OAesN3Cekpz_PKPC2-wVoiHLipHi7hHnVR4Bn9hp7QY9PH0OWUcxBC2fnBN-P6ynxoZdi4uO8q_oYNUbOH3932P2KQeq3sdmoOOLo9E70lPhVZ5gvNLfhWHz4FiMARCw_vLBOPSOvMJoiE0qFmnd42rkVap2f1SEQxRR70"/>
+<div class="flex flex-col">
+<div class="flex items-center gap-1">
+<span class="text-sm font-semibold text-slate-900 leading-tight">Admin</span>
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopNavBar -->
+<div class="flex-1 flex overflow-hidden">
+<!-- BEGIN: LeftQueuePane -->
+<section class="w-80 border-r border-slate-200 bg-white flex flex-col shrink-0" data-purpose="submission-queue">
+<div class="p-5 flex items-center justify-between border-b border-slate-100">
+<h3 class="font-bold text-slate-900">Hàng đợi <span class="text-slate-400 font-normal">(23)</span></h3>
+<div class="flex items-center gap-2">
+<button class="p-1.5 text-slate-400 hover:bg-slate-50 rounded-md"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+<button class="p-1.5 text-slate-400 hover:bg-slate-50 rounded-md"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-3">
+<!-- Active Item -->
+<div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3 shadow-sm relative overflow-hidden group cursor-pointer">
+<div class="flex gap-3">
+<div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center border border-indigo-100 shrink-0">
+<img alt="icon" class="w-6 h-6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwQzgmKDk4Wjdqj2OKlyoU3qPET36UEoQNlRp1gIunpB04bK2eBev6LFoSgx-okYK-BPiQ2u-JvOeN5XNo318aZY6OFcH4xjkyMnui0u4pM0otWBBHEYFX6N7L-fyZNCigb8PqaCSvr8WenHApGrdwcLEtuFTH6Cp42gHn11fVTZUPMfiBzEyVkJ_PhFlc78bQilUy7pIPU7u1xI4sO-_ESwfz2eS9NqgMMM_3UmTCoxWyDnH5ar9p177uEO81CPl3ZxP-35iWg0s"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-bold text-slate-900 truncate">Quang hợp ở thực vật</h4>
+<p class="text-xs text-slate-500 mt-0.5">Minh Anh</p>
+<div class="flex items-center justify-between mt-2">
+<span class="text-[10px] text-slate-400">2 phút trước</span>
+<span class="px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-bold rounded-full">Cần cảnh báo</span>
+</div>
+</div>
+</div>
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500"></div>
+</div>
+<!-- Queue Items -->
+<div class="hover:bg-slate-50 border border-slate-100 rounded-xl p-3 transition cursor-pointer">
+<div class="flex gap-3">
+<div class="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0 text-indigo-600">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-bold text-slate-900 truncate">Phân số và phép tính</h4>
+<p class="text-xs text-slate-500 mt-0.5">Hoàng Nam</p>
+<div class="flex items-center justify-between mt-2">
+<span class="text-[10px] text-slate-400">15 phút trước</span>
+<span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full">Chờ duyệt</span>
+</div>
+</div>
+</div>
+</div>
+<div class="hover:bg-slate-50 border border-slate-100 rounded-xl p-3 transition cursor-pointer">
+<div class="flex gap-3">
+<div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center shrink-0 text-blue-600">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-bold text-slate-900 truncate">Động lực học Newton</h4>
+<p class="text-xs text-slate-500 mt-0.5">Lan Phương</p>
+<div class="flex items-center justify-between mt-2">
+<span class="text-[10px] text-slate-400">30 phút trước</span>
+<span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full">Chờ duyệt</span>
+</div>
+</div>
+</div>
+</div>
+<div class="hover:bg-slate-50 border border-slate-100 rounded-xl p-3 transition cursor-pointer">
+<div class="flex gap-3">
+<div class="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center shrink-0 overflow-hidden">
+<img alt="thumbnail" class="object-cover w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGe2vneN2jKabxCkPlji7qs8m2espDA6RyYcSHZM11qk6sOVS8gr3kHgkvm7QCeg02eOU3d_es53pe1y_8V69ABm0STUaVb3nRl_dGvcDNtwQgc9bfzDHgEOaDVT95AfO5o7yBfTvTbnnNNWIvWNccBvwUVxBB5LBll5IMSjo1PUO-TstfFO5P_MhkO6y9nN7BICIzQ-MFcZ5ah5wTmN0HpDaHH8AWKzZDnj_ViFZWEjnDOouay7-1OxikqeJzadjlqMaG8N8RWfg"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-bold text-slate-900 truncate">Thế Chiến II (1939-1945)</h4>
+<p class="text-xs text-slate-500 mt-0.5">Trần Bảo</p>
+<div class="flex items-center justify-between mt-2">
+<span class="text-[10px] text-slate-400">1 giờ trước</span>
+<span class="px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-bold rounded-full">Cần cảnh báo</span>
+</div>
+</div>
+</div>
+</div>
+<div class="hover:bg-slate-50 border border-slate-100 rounded-xl p-3 transition cursor-pointer">
+<div class="flex gap-3">
+<div class="w-12 h-12 rounded-lg bg-teal-100 flex items-center justify-center shrink-0">
+<svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.183.394l-1.154.908a2 2 0 00-.595 2.132 10 10 0 0019.498-3.076l-1.19-.64z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-bold text-slate-900 truncate">Cấu trúc tế bào</h4>
+<p class="text-xs text-slate-500 mt-0.5">Ngọc Hà</p>
+<div class="flex items-center justify-between mt-2">
+<span class="text-[10px] text-slate-400">2 giờ trước</span>
+<span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full">Chờ duyệt</span>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full py-3 text-xs font-semibold text-indigo-600 flex items-center justify-center gap-2 hover:bg-indigo-50 rounded-lg transition mt-4">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Tải thêm
+          </button>
+</div>
+</section>
+<!-- END: LeftQueuePane -->
+<!-- BEGIN: CenterMainPane -->
+<section class="flex-1 overflow-y-auto custom-scrollbar bg-slate-50 p-8" data-purpose="content-preview">
+<div class="max-w-4xl mx-auto space-y-6">
+<!-- Lesson Header -->
+<div class="flex items-start justify-between">
+<div class="space-y-1">
+<div class="flex items-center gap-3">
+<span class="bg-indigo-50 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded">Bài nộp #TF-2024-0178</span>
+</div>
+<div class="flex items-center gap-4 mt-4">
+<h2 class="text-3xl font-extrabold text-slate-900">Quang hợp ở thực vật</h2>
+<span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">Khoa học tự nhiên - Lớp 6</span>
+</div>
+<div class="flex items-center gap-6 text-slate-500 text-sm mt-3">
+<div class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> Minh Anh</div>
+<div class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> 20/05/2024 09:32</div>
+<div class="flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> 12 trang</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 border border-slate-200 bg-white rounded-lg hover:bg-slate-50"><svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+<div class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-700">1 / 12</div>
+<button class="p-2 border border-slate-200 bg-white rounded-lg hover:bg-slate-50"><svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+</div>
+</div>
+<!-- Tabs and Content Area -->
+<div class="grid grid-cols-12 gap-6 items-start">
+<!-- Sidebar Tabs -->
+<div class="col-span-3 space-y-1">
+<button class="w-full text-left px-4 py-3 bg-indigo-50 text-indigo-700 rounded-lg font-bold flex items-center gap-3">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> Tổng quan
+              </button>
+<button class="w-full text-left px-4 py-3 text-slate-500 hover:bg-slate-100 rounded-lg font-medium flex items-center gap-3 transition">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> Mục tiêu
+              </button>
+<button class="w-full text-left px-4 py-3 text-slate-500 hover:bg-slate-100 rounded-lg font-medium flex items-center gap-3 transition">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> Nội dung
+              </button>
+<button class="w-full text-left px-4 py-3 text-slate-500 hover:bg-slate-100 rounded-lg font-medium flex items-center gap-3 transition">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> Hoạt động
+              </button>
+<button class="w-full text-left px-4 py-3 text-slate-500 hover:bg-slate-100 rounded-lg font-medium flex items-center gap-3 transition">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> Câu hỏi
+              </button>
+<button class="w-full text-left px-4 py-3 text-slate-500 hover:bg-slate-100 rounded-lg font-medium flex items-center gap-3 transition">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> Tài liệu
+              </button>
+<button class="w-full text-left px-4 py-3 text-slate-500 hover:bg-slate-100 rounded-lg font-medium flex items-center gap-3 transition">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> Đánh giá
+              </button>
+</div>
+<!-- Content Preview -->
+<div class="col-span-9 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm min-h-[500px] flex flex-col items-center">
+<h3 class="text-xl font-bold text-slate-900 mb-8">Quang hợp ở thực vật</h3>
+<div class="flex-1 w-full max-w-lg mb-6 flex flex-col items-center justify-center">
+<!-- Use IMAGE_21: Photosynthesis Diagram -->
+<img alt="Photosynthesis Diagram" class="rounded-lg shadow-inner w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVwudscLLw8w021DApM9NNJL2inSFz9LB2_w0DwXVdxrYvKAX6X9Fi3blUBJwsdoTiv2hfo3dyEePa1nBuxWFH4TP8VjwYZvtDJrZepw_UuG_aJUKcWMh-AAAZuG0d7hVo_oy-5437Nw9HRklkmV4FOnSu6z6AuoSB1nFruw-O993KJzyfNMuGNSySsLTkW5KST2EhZa1SzIb8JIdLoi6EfrdI3ljRX9Vpp3fp3f9ABszUKDl2gO8X12xvFzFdkLQH76Aux0vdkzs"/>
+</div>
+<!-- Thumbnails -->
+<div class="flex gap-3 overflow-x-auto w-full pb-2 scroll-hide">
+<div class="w-16 h-16 shrink-0 rounded-lg border-2 border-indigo-500 overflow-hidden"><img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVwudscLLw8w021DApM9NNJL2inSFz9LB2_w0DwXVdxrYvKAX6X9Fi3blUBJwsdoTiv2hfo3dyEePa1nBuxWFH4TP8VjwYZvtDJrZepw_UuG_aJUKcWMh-AAAZuG0d7hVo_oy-5437Nw9HRklkmV4FOnSu6z6AuoSB1nFruw-O993KJzyfNMuGNSySsLTkW5KST2EhZa1SzIb8JIdLoi6EfrdI3ljRX9Vpp3fp3f9ABszUKDl2gO8X12xvFzFdkLQH76Aux0vdkzs"/></div>
+<div class="w-16 h-16 shrink-0 rounded-lg border border-slate-200 overflow-hidden opacity-60"><img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCF-ve9AW4oARNSzkmdFl-ZpB5FT8jxQqAvNE-FOFWRJvR6TDkXVwmwzT3R5JvcpGcGOXOExbD4Yoc05dCNUnW6843yQOqsmVu8WSdSdK8CkfzYacSaPXAj9yizbDixXKCYmn9QTzXFFnTYCRWjWvm04TC4G9LBC3Wzwhn7BRDnx5s4bnghsBO11bsbAXtY584XOLITmPqdZPqyTaBiJXlBnkD0EHMS2_Kw4HLJ6S9ELsKHTaU5NdbC8l3f_qBzKjmyyR08q4D49PA"/></div>
+<div class="w-16 h-16 shrink-0 rounded-lg border border-slate-200 overflow-hidden opacity-60"><img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHyT2mIkLsjbwDmLgX5L0kqC4WIBQDbKRLGV8pjjNm0QoQd7rvr-lgYag4EOI7TtIOubMcBTc9xOpIM1J9Qop5-CAV-TviMobe3DRHwo9C-J6LewoqURK279HhbcfZ33PU32K5zoyUJ0aHcS768Kd2d3FxAfa7e34tTP9V0DSKR8TUZyf797vNQfYmIQmpa_aP4yrn7v4B6Dm8ZoaEWvmFzjUatblOju1TrOVvVU3cUFdKE367uIoY0S-T_G-ZgQXKt_N5uf0Z0jM"/></div>
+<div class="w-16 h-16 shrink-0 rounded-lg border border-slate-200 overflow-hidden opacity-60"><img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBI5YuewWt0FMJ1xydbUD6M3L4do0KnDyQ3djwygeBFC7cf-MFM9CPfizc7kzihyroKDnkE4h0VsS312bqA9hQItaithvOhgb6wlfCKp55CGq0tfqZTrGritYNfrk8NHEbU0ljLAcauXiF7EeQLNPd6H5XlLbi7bgPOO77_d98xnV1HHHlM_gWV9XFZKG7AM07EqkXD2F_GebFES0GqHNxqxOqLg-8qTS_CY87cCnTVAbinMVNdAzCd_THsE6_cITwv2D1i5nrJTIs"/></div>
+<div class="w-16 h-16 shrink-0 rounded-lg border border-slate-200 overflow-hidden opacity-60 flex items-center justify-center bg-slate-100 text-slate-400 font-bold text-sm">+8</div>
+</div>
+</div>
+</div>
+<!-- Bottom Meta Info -->
+<div class="grid grid-cols-3 gap-6">
+<div class="bg-white p-5 rounded-2xl border border-slate-200 flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
+<svg class="w-6 h-6" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" fill-rule="evenodd"></path></svg>
+</div>
+<div>
+<p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Định dạng</p>
+<p class="text-sm font-bold text-slate-900">Slide (PPTX)</p>
+</div>
+</div>
+<div class="bg-white p-5 rounded-2xl border border-slate-200 flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500">
+<svg class="w-6 h-6" fill="currentColor" viewbox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1a1 1 0 112 0v1a1 1 0 11-2 0zM13.536 14.95a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM15 11h3a1 1 0 110 2h-3a1 1 0 110-2z"></path></svg>
+</div>
+<div>
+<p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Dung lượng</p>
+<p class="text-sm font-bold text-slate-900">12.4 MB</p>
+</div>
+</div>
+<div class="bg-white p-5 rounded-2xl border border-slate-200 flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+<svg class="w-6 h-6" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z" fill-rule="evenodd"></path></svg>
+</div>
+<div>
+<p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Ngôn ngữ</p>
+<p class="text-sm font-bold text-slate-900">Tiếng Việt</p>
+</div>
+</div>
+</div>
+<!-- Notes Card -->
+<div class="bg-white p-6 rounded-2xl border border-slate-200 space-y-4">
+<h4 class="font-bold text-slate-900">Ghi chú của giáo viên</h4>
+<div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 text-sm italic leading-relaxed">
+              "Nội dung bám sát SGK. Cần bổ sung nguồn hình ảnh và kiểm tra số liệu."
+            </div>
+</div>
+</div>
+</section>
+<!-- END: CenterMainPane -->
+<!-- BEGIN: RightSidebarPane -->
+<aside class="w-80 border-l border-slate-200 bg-white flex flex-col p-6 overflow-y-auto custom-scrollbar shrink-0" data-purpose="contextual-tools">
+<!-- Citation Section -->
+<div class="space-y-4 mb-8">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<h4 class="font-bold text-slate-900 text-sm">Citation</h4>
+</div>
+<span class="bg-indigo-50 text-indigo-700 text-[10px] font-bold px-2 py-0.5 rounded-full">3</span>
+</div>
+<div class="space-y-3">
+<div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex gap-3 group hover:border-indigo-200 transition">
+<span class="text-xs font-bold text-indigo-400">1</span>
+<div class="flex-1">
+<p class="text-xs font-bold text-slate-800">Sách giáo khoa KHTN 6</p>
+<p class="text-[10px] text-slate-400 mt-1">NXB Giáo dục Việt Nam, 2021</p>
+</div>
+<svg class="w-4 h-4 text-slate-300 group-hover:text-indigo-400 transition" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex gap-3 group hover:border-indigo-200 transition">
+<span class="text-xs font-bold text-indigo-400">2</span>
+<div class="flex-1">
+<p class="text-xs font-bold text-slate-800">Campbell Biology</p>
+<p class="text-[10px] text-slate-400 mt-1">Pearson, 11th Edition, 2017</p>
+</div>
+<svg class="w-4 h-4 text-slate-300 group-hover:text-indigo-400 transition" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex gap-3 group hover:border-indigo-200 transition">
+<span class="text-xs font-bold text-indigo-400">3</span>
+<div class="flex-1">
+<p class="text-xs font-bold text-slate-800">Britannica – Photosynthesis</p>
+<p class="text-[10px] text-slate-400 mt-1">britannica.com</p>
+</div>
+<svg class="w-4 h-4 text-slate-300 group-hover:text-indigo-400 transition" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+<button class="w-full py-2 border-2 border-dashed border-indigo-100 text-indigo-600 text-xs font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-indigo-50 transition">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> Thêm citation
+          </button>
+</div>
+<!-- Alerts Section -->
+<div class="space-y-4 mb-8">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<h4 class="font-bold text-slate-900 text-sm">Cảnh báo</h4>
+</div>
+<span class="bg-orange-50 text-orange-700 text-[10px] font-bold px-2 py-0.5 rounded-full">2</span>
+</div>
+<div class="space-y-3">
+<div class="p-3 bg-orange-50/50 rounded-xl border border-orange-100 flex items-start gap-3">
+<div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-orange-500 shrink-0">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div>
+<p class="text-xs font-bold text-slate-800">Hình ảnh chưa có nguồn</p>
+<p class="text-[10px] text-slate-500 mt-1">Trang 3, 7</p>
+</div>
+</div>
+<div class="p-3 bg-orange-50/50 rounded-xl border border-orange-100 flex items-start gap-3">
+<div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-orange-500 shrink-0">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div>
+<p class="text-xs font-bold text-slate-800">Số liệu cần kiểm chứng</p>
+<p class="text-[10px] text-slate-500 mt-1">Trang 5</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Actions -->
+<div class="mt-auto pt-6 border-t border-slate-100 space-y-3">
+<p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Duyệt bài</p>
+<button class="w-full py-3.5 bg-success-btn text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-green-100 hover:opacity-90 transition">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> Publish
+          </button>
+<button class="w-full py-3.5 bg-edit-btn text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> Sửa
+          </button>
+<button class="w-full py-3.5 bg-reject-btn text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> Từ chối
+          </button>
+</div>
+</aside>
+<!-- END: RightSidebarPane -->
+</div>
+</main>
+</body></html>

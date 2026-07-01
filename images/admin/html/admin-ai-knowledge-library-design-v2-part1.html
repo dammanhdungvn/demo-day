@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .glass-card {
+            background: #ffffff;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#6ffbbe",
+                      "surface-container-highest": "#d3e4fe",
+                      "on-tertiary-fixed": "#002113",
+                      "secondary-fixed-dim": "#c3c6d2",
+                      "on-primary": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface-variant": "#464555",
+                      "on-primary-fixed-variant": "#3422cc",
+                      "surface-container": "#e5eeff",
+                      "surface-dim": "#cbdbf5",
+                      "inverse-surface": "#213145",
+                      "outline": "#777587",
+                      "on-primary-container": "#dbd8ff",
+                      "primary-fixed": "#e2dfff",
+                      "on-secondary-container": "#61646f",
+                      "on-tertiary-container": "#67f4b7",
+                      "background": "#f8f9ff",
+                      "primary": "#3625cd",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#434751",
+                      "secondary-fixed": "#e0e2ef",
+                      "error-container": "#ffdad6",
+                      "outline-variant": "#c7c4d8",
+                      "secondary-container": "#e0e2ef",
+                      "on-error": "#ffffff",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "surface-container-high": "#dce9ff",
+                      "inverse-primary": "#c3c0ff",
+                      "tertiary-container": "#006e4b",
+                      "on-background": "#0b1c30",
+                      "tertiary": "#005338",
+                      "surface-variant": "#d3e4fe",
+                      "surface-tint": "#4e44e3",
+                      "surface": "#f8f9ff",
+                      "on-primary-fixed": "#0f0069",
+                      "on-secondary-fixed": "#181b24",
+                      "surface-container-low": "#eff4ff",
+                      "secondary": "#5b5e69",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "on-error-container": "#93000a",
+                      "inverse-on-surface": "#eaf1ff",
+                      "surface-bright": "#f8f9ff",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "primary-container": "#5046e5",
+                      "on-surface": "#0b1c30"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.5rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-gap": "12px",
+                      "topbar-height": "72px",
+                      "container-padding": "24px",
+                      "sidebar-width": "260px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "label-uppercase": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "title-sm": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "700"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "display-lg": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "label-uppercase": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                      "title-sm": ["16px", {"lineHeight": "24px", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface overflow-x-hidden">
+<!-- SideNavBar -->
+<aside class="w-[260px] h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant flex flex-col z-50">
+<div class="flex items-center gap-3 h-[72px] px-6">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">auto_stories</span>
+</div>
+<div>
+<h1 class="font-bold text-[18px] text-primary leading-tight">TeachFlow AI</h1>
+<p class="text-[10px] font-bold text-secondary uppercase tracking-widest">Admin Portal</p>
+</div>
+</div>
+<nav class="flex-1 px-3 py-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">dashboard</span>
+<span class="text-[14px] font-medium">Tổng quan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">domain</span>
+<span class="text-[14px] font-medium">Tổ chức</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 bg-primary/10 text-primary rounded-lg font-semibold" href="#">
+<span class="material-symbols-outlined text-[22px]">library_books</span>
+<span class="text-[14px]">Kho tri thức</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">group</span>
+<span class="text-[14px] font-medium">Người dùng</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">assignment</span>
+<span class="text-[14px] font-medium">Tác vụ</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">analytics</span>
+<span class="text-[14px] font-medium">Báo cáo</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">settings</span>
+<span class="text-[14px] font-medium">Cài đặt</span>
+</a>
+</nav>
+<div class="px-6 py-6 border-t border-outline-variant mt-auto">
+<div class="mb-4">
+<p class="text-[11px] font-bold text-secondary uppercase mb-3">Thông số kho</p>
+<div class="space-y-2">
+<div class="flex justify-between text-[12px]">
+<span class="text-on-surface-variant">Dung lượng</span>
+<span class="font-semibold">18.7 / 50 GB</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 37%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<img alt="Admin" class="w-9 h-9 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo_PEo_Hk9ydtMORY8-QqQBq5zlu_ajKsnV3_UfQgjgWFwVCX-ZKaZ4B7GL-FF8JyUbtyVLgk9HzFiDTLJYfNwfswtkRX2Q3J1VrzCGr5rCwny9ua5CfveGPbUpvBQKfMptoY4vcQv16EfOye-hhlvhp-9HEqa1EMDoaTvLnq0jEgadNYPQgPo4hel90vMMLST3wqOuoJw2RElSSQar2fon70UeatT82ShL9UCAx5Kp5CluahokN2dNfWcg83yjXRzylqhKSNKODs"/>
+<div class="flex-1 min-w-0">
+<p class="text-[13px] font-semibold truncate">Nguyễn Admin</p>
+<p class="text-[11px] text-on-surface-variant truncate">Quản trị viên</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">expand_more</span>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="ml-[260px] min-h-screen">
+<!-- TopNavBar -->
+<header class="h-[72px] sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-outline-variant flex items-center justify-between px-8 w-full">
+<div class="flex items-center gap-6 flex-1">
+<h2 class="text-[22px] font-bold text-on-surface">Kho bài giảng mẫu</h2>
+<div class="relative w-full max-w-[380px]">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border-transparent focus:border-primary focus:ring-0 rounded-lg text-[14px] outline-none transition-all" placeholder="Tìm kiếm tài liệu học thuật..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all relative">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all">
+<span class="material-symbols-outlined text-[24px]">help_outline</span>
+</button>
+<div class="h-6 w-[1px] bg-outline-variant mx-1"></div>
+<button class="px-5 py-2.5 bg-primary text-white text-[14px] font-semibold rounded-lg hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95">
+                    Mời quản trị viên
+                </button>
+</div>
+</header>
+<div class="p-8">
+<!-- Summary Info -->
+<div class="mb-8 flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[20px] fill-current">verified_user</span>
+<span class="text-[14px]">Thư viện được kiểm duyệt bởi AI – Dành riêng cho giáo viên</span>
+</div>
+<!-- Filters & Actions -->
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-3 overflow-x-auto pb-2 custom-scrollbar">
+<button class="px-5 py-2.5 rounded-full bg-primary text-white text-[14px] font-semibold whitespace-nowrap shadow-md shadow-primary/20">Tất cả</button>
+<button class="px-5 py-2.5 rounded-full bg-white border border-outline-variant text-on-surface-variant text-[14px] font-medium hover:border-primary hover:text-primary transition-all whitespace-nowrap">Toán học</button>
+<button class="px-5 py-2.5 rounded-full bg-white border border-outline-variant text-on-surface-variant text-[14px] font-medium hover:border-primary hover:text-primary transition-all whitespace-nowrap">Ngữ văn</button>
+<button class="px-5 py-2.5 rounded-full bg-white border border-outline-variant text-on-surface-variant text-[14px] font-medium hover:border-primary hover:text-primary transition-all whitespace-nowrap">Vật lý</button>
+<button class="px-5 py-2.5 rounded-full bg-white border border-outline-variant text-on-surface-variant text-[14px] font-medium hover:border-primary hover:text-primary transition-all whitespace-nowrap">Hóa học</button>
+<button class="px-5 py-2.5 rounded-full bg-white border border-outline-variant text-on-surface-variant text-[14px] font-medium hover:border-primary hover:text-primary transition-all whitespace-nowrap">Lịch sử</button>
+<button class="px-5 py-2.5 rounded-full bg-white border border-outline-variant text-on-surface-variant text-[14px] font-medium hover:border-primary hover:text-primary transition-all whitespace-nowrap">Sinh học</button>
+</div>
+<div class="flex gap-2 shrink-0 ml-4">
+<div class="relative group">
+<button class="flex items-center gap-2 px-4 py-2.5 bg-white border border-outline-variant rounded-lg text-on-surface-variant hover:border-primary transition-all">
+<span class="material-symbols-outlined text-[20px]">sort</span>
+<span class="text-[14px] font-medium">Sắp xếp</span>
+</button>
+</div>
+<button class="flex items-center justify-center w-11 h-11 bg-white border border-outline-variant rounded-lg text-on-surface-variant hover:border-primary transition-all">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>
+</button>
+</div>
+</div>
+<!-- Content Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+<!-- Card Template 1 -->
+<div class="bg-white rounded-xl border border-outline-variant/60 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+<div class="relative aspect-[16/10] overflow-hidden">
+<img alt="Toán học" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWDnHZwiGfpQI8HSCQwb7dAeT2uvYSu2RDxEGIgLn1VSGW762f-CygNxvIRWA9n3_nU05segGFc8axidZwfIXeLnDcreoWiniFBmg-DmXW5CVZmL0CclQpiAD9poQB_C7onb93XOmEaSnjxXMH8OUK-MXis7g_8eym9iWXs4NCLzuvIx-anzaE2UuLswgimuf6w3U9tttM6BxE_lvICHzYh8BhC-otvmJyw2fTmV48L6kONbiKK-X6P5ZajcM5hRZjNjXEcXHxAAQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="absolute top-3 left-3 flex gap-1.5">
+<span class="px-2.5 py-1 bg-white/95 backdrop-blur rounded-md text-[10px] font-bold text-primary uppercase shadow-sm">Khối 12</span>
+<span class="px-2.5 py-1 bg-primary text-white rounded-md text-[10px] font-bold uppercase shadow-sm">Toán học</span>
+</div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h3 class="text-[16px] font-bold text-on-surface mb-2 line-clamp-1 group-hover:text-primary transition-colors">Đạo hàm và Ứng dụng</h3>
+<div class="flex items-center gap-2 mb-5">
+<img alt="Author" class="w-6 h-6 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpkcNNfNiFNzTB20qxrv0eUHkWSnSiKpMIT0HLw5f0Tgh-iiC1b5b6iPQG8guxm7_QtHoU_h5Ahtw_x6_ao-ylNpsRJzOK8Ycr5Fu4xmG5K2FEfkqeWz_POQwhOc1j2hm-xGjq-x5uJnG9Re-ig0Ziy5baAztq5PddvI4Slt6YFQ1JrfmfykgsPi4Dc4Asdk2iF2VT34IC41nmL7TP8bDSOObwyPD6OwGTMUSwTOUzMxzvNTOLrFE2WF_B1HmPs_tO1wFH5HWv7YU"/>
+<span class="text-[12px] text-on-surface-variant font-medium">GS. Nguyễn Văn A</span>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant/40 flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+<span class="text-[12px] font-medium">1.2k lượt</span>
+</div>
+<button class="flex items-center gap-1 text-primary text-[14px] font-bold hover:underline transition-all">
+                                Xem thử
+                                <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card Template 2 -->
+<div class="bg-white rounded-xl border border-outline-variant/60 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+<div class="relative aspect-[16/10] overflow-hidden">
+<img alt="Sinh học" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCa_j2s3o2LbjyovRp47Ja1CKFj16hiXBs9RFcgUYqYcFBzcIPaIFgkBy3epjbeuVtVHgqV7r55VXLlU_YiWKwWnvyepMSTBBGLpl41SmskiNADErWFhaKurpfg-J43GqKwPn_0k5DGXPfRfGnFZ0fqLCSR01BJVfrPYQiVbTqmvN9iVlR57h-tvxR4ArRAFLLtsnJUQchsvOOUQPBsa8_mLUDSp31MdKRfXPZoStk6C2qdYISXG76LJmOIbo80asUDFJrk80ISptk"/>
+<div class="absolute top-3 left-3 flex gap-1.5">
+<span class="px-2.5 py-1 bg-white/95 backdrop-blur rounded-md text-[10px] font-bold text-primary uppercase shadow-sm">Khối 10</span>
+<span class="px-2.5 py-1 bg-primary text-white rounded-md text-[10px] font-bold uppercase shadow-sm">Sinh học</span>
+</div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h3 class="text-[16px] font-bold text-on-surface mb-2 line-clamp-1 group-hover:text-primary transition-colors">Di truyền học Phân tử</h3>
+<div class="flex items-center gap-2 mb-5">
+<img alt="Author" class="w-6 h-6 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQQEspDOsNdrTGKtf3MYmZC6mGgU64B-2na7N6sE0uegj8XpcCFI7ByNIXcIb8_Faq6z5j-21vO_RN-wUfFGIVoZqNsItph1EGQ35OXXWuRTUYV8Ewhya3GIwsTttDcu48ZyryFljZdxVI2gk0FOz2hlRZY7efxODz8W1v5EC79WEAh37yBjAirpRntu8I6wjw_FmUnnoV0oRMswdUMdOi-EEIFNxMvsBF_kJOBnb6OW_moOFNKJk6EHO5A_929sKn0Cu4350gqGk"/>
+<span class="text-[12px] text-on-surface-variant font-medium">ThS. Lê Thị B</span>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant/40 flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+<span class="text-[12px] font-medium">850 lượt</span>
+</div>
+<button class="flex items-center gap-1 text-primary text-[14px] font-bold hover:underline transition-all">
+                                Xem thử
+                                <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card Template 3 -->
+<div class="bg-white rounded-xl border border-outline-variant/60 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+<div class="relative aspect-[16/10] overflow-hidden">
+<img alt="Ngữ văn" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9axIEj9lSTyBKuuPuyvRCA8ptIJvWDF5lfTuS93oanMCaRaDJl-pQr86gc-tX7lZ_WfPAdKxpAcujtcGBK61BFJU4qfRTCEmc7Ktoz7sufTjHp6ZGF-IQ7OBG-fmqgzk3MnYY99ZXtfMoyXOw6o0EzbaCcWJUI1oRRHzfemVubMrADnrKCJmOUiKbD_OLy9kMWoIdrlseYfiMTUQR0SyueeEuGIJAmWo9J97V98_g1MxaFJXs1B1z1WRiGbAIIFj7_QHw7Ny98C0"/>
+<div class="absolute top-3 left-3 flex gap-1.5">
+<span class="px-2.5 py-1 bg-white/95 backdrop-blur rounded-md text-[10px] font-bold text-primary uppercase shadow-sm">Khối 9</span>
+<span class="px-2.5 py-1 bg-primary text-white rounded-md text-[10px] font-bold uppercase shadow-sm">Ngữ văn</span>
+</div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h3 class="text-[16px] font-bold text-on-surface mb-2 line-clamp-1 group-hover:text-primary transition-colors">Văn học Trung đại VN</h3>
+<div class="flex items-center gap-2 mb-5">
+<img alt="Author" class="w-6 h-6 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA5eti_ALe1So2dfKGZ_MZpmZY9LUlXvfv-fCtr9SfHBfVrJO7v-rMG6dEvee6eP1O9q4deS0PAlK5a_18i_pjBKym5hhfHV88FMphTu0akKOfsjyEK5wn52qijfU4ejrXbR4UNmyCCw_WGssHYnDFwvIygtEpezccvrwnLF5fU0fICZoUIyUPgTlq9l5fyCWgFWYid7PbRCS-PD6YXpe-6PYk2M_rP5FshPy8N5SQ40QFc4RmsfxQ9VnUyt7UU4hxSPrmqV2q6Ds"/>
+<span class="text-[12px] text-on-surface-variant font-medium">TS. Trần Văn C</span>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant/40 flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+<span class="text-[12px] font-medium">2.4k lượt</span>
+</div>
+<button class="flex items-center gap-1 text-primary text-[14px] font-bold hover:underline transition-all">
+                                Xem thử
+                                <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Add New Template -->
+<div class="border-2 border-dashed border-outline-variant/50 rounded-xl flex flex-col items-center justify-center p-8 text-center bg-surface-container-low/30 hover:bg-white hover:border-primary transition-all cursor-pointer group h-full">
+<div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-5 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[32px]">add</span>
+</div>
+<h3 class="text-[16px] font-bold text-on-surface">Tạo giáo án mới</h3>
+<p class="text-[12px] text-on-surface-variant mt-2 max-w-[180px]">Bắt đầu thiết kế bài giảng với hỗ trợ từ AI</p>
+</div>
+</div>
+<!-- Pagination -->
+<div class="mt-12 flex justify-center">
+<button class="px-8 py-3.5 border border-primary text-primary text-[14px] font-bold rounded-lg hover:bg-primary/5 transition-all flex items-center gap-2.5 active:scale-95 group">
+                    Xem thêm bài giảng
+                    <span class="material-symbols-outlined text-[20px] group-hover:translate-y-0.5 transition-transform">expand_more</span>
+</button>
+</div>
+</div>
+</main>
+<!-- FAB -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined text-[28px]">auto_fix_high</span>
+</button>
+<script>
+        // Simple filter button interactions
+        const filterButtons = document.querySelectorAll('.flex.items-center.gap-3 button');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => {
+                    b.classList.remove('bg-primary', 'text-white', 'shadow-md', 'shadow-primary/20', 'font-semibold');
+                    b.classList.add('bg-white', 'text-on-surface-variant', 'border-outline-variant', 'font-medium');
+                });
+                btn.classList.add('bg-primary', 'text-white', 'shadow-md', 'shadow-primary/20', 'font-semibold');
+                btn.classList.remove('bg-white', 'text-on-surface-variant', 'border-outline-variant', 'font-medium');
+            });
+        });
+    </script>
+</body></html>

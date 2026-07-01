@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cài đặt Hệ thống - TeachFlow AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#464555",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "secondary-fixed-dim": "#c3c6d2",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed": "#6ffbbe",
+                    "surface-container-highest": "#d3e4fe",
+                    "on-tertiary-fixed": "#002113",
+                    "inverse-surface": "#213145",
+                    "outline": "#777587",
+                    "surface-container": "#e5eeff",
+                    "surface-dim": "#cbdbf5",
+                    "on-primary-fixed-variant": "#3422cc",
+                    "background": "#f8f9ff",
+                    "on-secondary-container": "#61646f",
+                    "on-tertiary-container": "#67f4b7",
+                    "primary-fixed": "#e2dfff",
+                    "on-primary-container": "#dbd8ff",
+                    "secondary-fixed": "#e0e2ef",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#434751",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#5046e5",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "surface-container-high": "#dce9ff",
+                    "secondary-container": "#e0e2ef",
+                    "on-error": "#ffffff",
+                    "outline-variant": "#c7c4d8",
+                    "tertiary": "#005338",
+                    "surface-variant": "#d3e4fe",
+                    "tertiary-container": "#006e4b",
+                    "on-background": "#0b1c30",
+                    "inverse-primary": "#c3c0ff",
+                    "surface-container-low": "#eff4ff",
+                    "secondary": "#5b5e69",
+                    "on-secondary-fixed": "#181b24",
+                    "surface": "#f8f9ff",
+                    "on-primary-fixed": "#0f0069",
+                    "surface-tint": "#5046e5",
+                    "on-surface": "#0b1c30",
+                    "surface-bright": "#f8f9ff",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "primary-container": "#5046e5",
+                    "inverse-on-surface": "#eaf1ff",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-gap": "12px",
+                    "container-padding": "24px",
+                    "topbar-height": "72px",
+                    "sidebar-width": "260px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "title-sm": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-uppercase": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "display-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "title-sm": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-uppercase": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "display-lg": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card-base {
+            background-color: #ffffff;
+            border: 1px solid #c7c4d8;
+            border-radius: 0.75rem;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background">
+<!-- SideNavBar -->
+<aside class="w-[sidebar-width] h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant flex flex-col gap-2 p-4 z-50">
+<div class="mb-6 px-2">
+<h1 class="font-display-lg text-primary text-[22px] leading-tight font-bold">TeachFlow AI</h1>
+<p class="text-label-uppercase text-on-surface-variant">Admin Portal</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg font-body-md" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg font-body-md" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span>Organizations</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg font-body-md" href="#">
+<span class="material-symbols-outlined">library_books</span>
+<span>Content Library</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg font-body-md" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Users</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg font-body-md" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span>Tasks</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg font-body-md" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Reports</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 bg-primary text-on-primary rounded-lg font-semibold font-body-md" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 border-t border-outline-variant">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg font-body-md" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span>Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="ml-[260px] min-h-screen">
+<!-- TopNavBar -->
+<header class="h-[72px] sticky top-0 z-40 bg-surface border-b border-outline-variant flex items-center justify-between px-6 w-full">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md focus-within:ring-2 focus-within:ring-primary/20 rounded-lg transition-all">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-body-md focus:ring-1 focus:ring-primary focus:border-primary" placeholder="Tìm kiếm cài đặt..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-primary text-on-primary px-5 py-2 rounded-lg font-title-sm hover:opacity-90 transition-opacity">
+                    Invite Admin
+                </button>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+<div class="h-9 w-9 rounded-full overflow-hidden border-2 border-outline-variant">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXMNN79Numw9uMPLmPi87djQQvCgL6NEth6ecuY7GWoRCPNNfjYkVl05gO56bINBDaDsWh1oU5l1rYWpiBOBRhhcNO6nTbZU11DRdTkEIuYpgryxxgIg9PbFAH_tXUvMf9eZHI0-KlxU34TYuy6-atdhAmAx8TIHz7LF_a68BEg92T3SyExcpkQvLkb1yhzRFFWEYIeWnidnUze9He0_bUixvRnQYAKIS6zuDWKt8rgeXR0MWc0gI30ERzZzFBw3uGN4L_NaSE8ws"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-8 max-w-6xl mx-auto">
+<header class="mb-8">
+<h2 class="font-display-lg text-display-lg text-on-surface mb-1">Cài đặt Hệ thống</h2>
+<p class="text-body-md text-on-surface-variant">Quản lý cấu hình AI, bảo mật và thông báo cho hệ thống TeachFlow AI.</p>
+</header>
+<!-- Tabbed Interface -->
+<div class="mb-8">
+<div class="flex gap-8 border-b border-outline-variant">
+<button class="tab-btn px-1 py-4 font-title-sm text-primary border-b-2 border-primary transition-all" id="tab-ai-config" onclick="switchTab('ai-config')">
+                        Cấu hình AI
+                    </button>
+<button class="tab-btn px-1 py-4 font-title-sm text-on-surface-variant hover:text-primary border-b-2 border-transparent transition-all" id="tab-notifications" onclick="switchTab('notifications')">
+                        Thông báo
+                    </button>
+<button class="tab-btn px-1 py-4 font-title-sm text-on-surface-variant hover:text-primary border-b-2 border-transparent transition-all" id="tab-security" onclick="switchTab('security')">
+                        Bảo mật
+                    </button>
+</div>
+</div>
+<!-- Tab: Cấu hình AI -->
+<div class="tab-content active space-y-6" id="ai-config">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Model Selection Card -->
+<div class="md:col-span-2 card-base p-6 shadow-sm">
+<h3 class="font-title-sm text-title-sm mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">psychology</span>
+                            Lựa chọn Model mặc định
+                        </h3>
+<div class="space-y-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<label class="relative flex flex-col p-4 border-2 border-primary bg-primary-container/5 rounded-xl cursor-pointer hover:bg-primary/5 transition-colors">
+<input checked="" class="absolute top-4 right-4 text-primary focus:ring-primary h-4 w-4" name="ai_model" type="radio" value="gpt4o"/>
+<span class="font-bold text-on-surface">GPT-4o</span>
+<span class="text-body-sm text-on-surface-variant mt-1">Năng lực xử lý mạnh mẽ, phù hợp cho phân tích dữ liệu phức tạp.</span>
+<span class="mt-3 text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded self-start">Hoạt động</span>
+</label>
+<label class="relative flex flex-col p-4 border-2 border-outline-variant rounded-xl cursor-pointer hover:bg-surface-container transition-colors">
+<input class="absolute top-4 right-4 text-primary focus:ring-primary h-4 w-4" name="ai_model" type="radio" value="claude35"/>
+<span class="font-bold text-on-surface">Claude 3.5 Sonnet</span>
+<span class="text-body-sm text-on-surface-variant mt-1">Cân bằng tốt giữa tốc độ và độ chính xác cho văn bản học thuật.</span>
+</label>
+</div>
+</div>
+</div>
+<!-- Usage Limits Card -->
+<div class="card-base p-6 shadow-sm">
+<h3 class="font-title-sm text-title-sm mb-4">Giới hạn sử dụng</h3>
+<div class="space-y-6">
+<div>
+<div class="flex justify-between mb-2">
+<span class="text-body-sm font-medium">Ngân sách tháng</span>
+<span class="text-body-sm text-on-surface-variant">$850 / $1,000</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2">
+<div class="bg-primary h-2 rounded-full" style="width: 85%"></div>
+</div>
+</div>
+<div class="space-y-3">
+<div>
+<label class="block text-body-sm font-medium mb-1">Max Token mỗi yêu cầu</label>
+<input class="w-full border-outline-variant rounded-lg p-2 text-body-md focus:ring-primary focus:border-primary" type="number" value="4096"/>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-body-sm">Cảnh báo khi đạt 90%</span>
+<input checked="" class="rounded text-primary focus:ring-primary h-5 w-5" type="checkbox"/>
+</div>
+</div>
+</div>
+</div>
+<!-- API Key Management -->
+<div class="md:col-span-3 card-base p-6 shadow-sm overflow-hidden">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-sm text-title-sm">Quản lý API Keys</h3>
+<button class="text-primary font-title-sm flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined">add</span> Tạo Key mới
+                            </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="px-4 py-3 text-label-uppercase text-on-surface-variant">Tên Key</th>
+<th class="px-4 py-3 text-label-uppercase text-on-surface-variant">Key</th>
+<th class="px-4 py-3 text-label-uppercase text-on-surface-variant">Ngày tạo</th>
+<th class="px-4 py-3 text-label-uppercase text-on-surface-variant">Trạng thái</th>
+<th class="px-4 py-3 text-label-uppercase text-on-surface-variant text-right">Hành động</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-4 py-4 font-body-md font-medium">Production Primary</td>
+<td class="px-4 py-4 text-body-md font-mono text-on-surface-variant">sk-proj-••••••••K9L2</td>
+<td class="px-4 py-4 text-body-sm">12/05/2024</td>
+<td class="px-4 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tertiary-fixed text-on-tertiary-fixed-variant">
+                                                Active
+                                            </span>
+</td>
+<td class="px-4 py-4 text-right">
+<button class="p-1 hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-4 py-4 font-body-md font-medium">Staging Test</td>
+<td class="px-4 py-4 text-body-md font-mono text-on-surface-variant">sk-proj-••••••••A3X9</td>
+<td class="px-4 py-4 text-body-sm">28/06/2024</td>
+<td class="px-4 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-container text-on-secondary-container">
+                                                Disabled
+                                            </span>
+</td>
+<td class="px-4 py-4 text-right">
+<button class="p-1 hover:text-primary transition-colors"><span class="material-symbols-outlined">edit</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<!-- Tab: Thông báo -->
+<div class="tab-content space-y-6" id="notifications">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="card-base p-6 shadow-sm">
+<h3 class="font-title-sm text-title-sm mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">mail</span>
+                            Cấu hình Email
+                        </h3>
+<div class="space-y-6">
+<div class="flex items-center justify-between pb-4 border-b border-outline-variant">
+<div>
+<p class="font-medium">Báo cáo hệ thống hàng tuần</p>
+<p class="text-body-sm text-on-surface-variant">Nhận tóm tắt hiệu suất AI vào mỗi thứ Hai.</p>
+</div>
+<input checked="" class="rounded text-primary focus:ring-primary h-5 w-5" type="checkbox"/>
+</div>
+<div class="flex items-center justify-between pb-4 border-b border-outline-variant">
+<div>
+<p class="font-medium">Cảnh báo bảo mật</p>
+<p class="text-body-sm text-on-surface-variant">Thông báo ngay khi có đăng nhập bất thường.</p>
+</div>
+<input checked="" class="rounded text-primary focus:ring-primary h-5 w-5" type="checkbox"/>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<p class="font-medium">Cập nhật sản phẩm</p>
+<p class="text-body-sm text-on-surface-variant">Thông báo về các tính năng và model mới.</p>
+</div>
+<input class="rounded text-primary focus:ring-primary h-5 w-5" type="checkbox"/>
+</div>
+</div>
+</div>
+<div class="card-base p-6 shadow-sm">
+<h3 class="font-title-sm text-title-sm mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">notifications_active</span>
+                            Cảnh báo Hệ thống (In-App)
+                        </h3>
+<div class="space-y-6">
+<div class="flex items-center justify-between pb-4 border-b border-outline-variant">
+<div>
+<p class="font-medium">Lỗi kết nối API</p>
+<p class="text-body-sm text-on-surface-variant">Hiển thị toast khi API không phản hồi.</p>
+</div>
+<input checked="" class="rounded text-primary focus:ring-primary h-5 w-5" type="checkbox"/>
+</div>
+<div class="flex items-center justify-between pb-4 border-b border-outline-variant">
+<div>
+<p class="font-medium">Người dùng mới đăng ký</p>
+<p class="text-body-sm text-on-surface-variant">Hiện thông báo khi tổ chức thêm thành viên.</p>
+</div>
+<input class="rounded text-primary focus:ring-primary h-5 w-5" type="checkbox"/>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<p class="font-medium">Âm thanh thông báo</p>
+<p class="text-body-sm text-on-surface-variant">Phát âm thanh khi có cảnh báo quan trọng.</p>
+</div>
+<input checked="" class="rounded text-primary focus:ring-primary h-5 w-5" type="checkbox"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Tab: Bảo mật -->
+<div class="tab-content space-y-6" id="security">
+<div class="max-w-3xl card-base p-8 shadow-sm">
+<h3 class="font-title-sm text-title-sm mb-8 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+                        Chính sách Mật khẩu &amp; Truy cập
+                    </h3>
+<div class="space-y-8">
+<div>
+<label class="block font-medium mb-3">Độ dài mật khẩu tối thiểu</label>
+<div class="flex items-center gap-4">
+<input class="flex-1 accent-primary" max="24" min="8" type="range" value="12"/>
+<span class="bg-primary text-on-primary px-3 py-1 rounded-lg font-bold w-12 text-center">12</span>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div class="flex items-start gap-3">
+<input checked="" class="mt-1 rounded text-primary focus:ring-primary h-5 w-5" type="checkbox"/>
+<div>
+<p class="font-medium">Bắt buộc ký tự đặc biệt</p>
+<p class="text-body-sm text-on-surface-variant">Mật khẩu phải chứa ít nhất một ký tự (!@#$%^&amp;*).</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<input checked="" class="mt-1 rounded text-primary focus:ring-primary h-5 w-5" type="checkbox"/>
+<div>
+<p class="font-medium">Bắt buộc chữ hoa &amp; thường</p>
+<p class="text-body-sm text-on-surface-variant">Mật khẩu phải bao gồm cả chữ hoa và chữ thường.</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<input class="mt-1 rounded text-primary focus:ring-primary h-5 w-5" type="checkbox"/>
+<div>
+<p class="font-medium">Hết hạn mật khẩu (90 ngày)</p>
+<p class="text-body-sm text-on-surface-variant">Yêu cầu đổi mật khẩu định kỳ mỗi 3 tháng.</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<input checked="" class="mt-1 rounded text-primary focus:ring-primary h-5 w-5" type="checkbox"/>
+<div>
+<p class="font-medium">Xác thực 2 yếu tố (2FA)</p>
+<p class="text-body-sm text-on-surface-variant">Bắt buộc cho tài khoản quản trị viên hệ thống.</p>
+</div>
+</div>
+</div>
+<div class="pt-6 border-t border-outline-variant flex justify-end gap-3">
+<button class="px-6 py-2 rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container-low transition-colors">
+                                Hủy bỏ
+                            </button>
+<button class="px-6 py-2 rounded-lg bg-primary text-on-primary font-bold shadow-md hover:opacity-90 transition-all">
+                                Lưu cài đặt bảo mật
+                            </button>
+</div>
+</div>
+</div>
+<!-- Session Management -->
+<div class="max-w-3xl card-base p-6 shadow-sm border-l-4 border-error">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-error text-3xl">dangerous</span>
+<div class="flex-1">
+<h4 class="font-title-sm text-error">Vùng nguy hiểm</h4>
+<p class="text-body-sm text-on-surface-variant mt-1">Đăng xuất khỏi tất cả các thiết bị hiện đang hoạt động và yêu cầu đăng nhập lại.</p>
+</div>
+<button class="px-4 py-2 bg-error-container text-on-error-container border border-error/20 rounded-lg text-body-md font-bold hover:bg-error hover:text-white transition-all">
+                            Đăng xuất tất cả
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom Save Bar (Floating style) -->
+<div class="fixed bottom-6 right-8 z-50">
+<button class="flex items-center gap-2 bg-primary text-on-primary pl-4 pr-6 py-3 rounded-full shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all group">
+<span class="material-symbols-outlined group-hover:rotate-12 transition-transform">save</span>
+<span class="font-title-sm">Lưu tất cả thay đổi</span>
+</button>
+</div>
+</main>
+<script>
+        function switchTab(tabId) {
+            // Hide all content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            // Show target content
+            document.getElementById(tabId).classList.add('active');
+
+            // Reset tab button styles
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('text-primary', 'border-primary');
+                btn.classList.add('text-on-surface-variant', 'border-transparent');
+            });
+            // Highlight active button
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.remove('text-on-surface-variant', 'border-transparent');
+            activeBtn.classList.add('text-primary', 'border-primary');
+        }
+
+        // Add some subtle interaction animations
+        document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => {
+            el.addEventListener('change', () => {
+                el.parentElement.classList.add('scale-[1.01]');
+                setTimeout(() => el.parentElement.classList.remove('scale-[1.01]'), 150);
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html><html class="light" lang="vi"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#c3c0ff",
+                        "outline": "#777587",
+                        "on-primary-fixed": "#0f0069",
+                        "surface-variant": "#d3e4fe",
+                        "inverse-surface": "#213145",
+                        "on-surface": "#0b1c30",
+                        "primary-fixed": "#e2dfff",
+                        "primary-container": "#5046e5",
+                        "surface-container-high": "#dce9ff",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-tertiary-container": "#67f4b7",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-background": "#0b1c30",
+                        "primary": "#3625cd",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "background": "#fdfdff",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#e0e2ef",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed": "#002113",
+                        "on-secondary-fixed": "#181b24",
+                        "on-secondary-fixed-variant": "#434751",
+                        "surface-dim": "#cbdbf5",
+                        "secondary": "#5b5e69",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#e5eeff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container-low": "#eff4ff",
+                        "surface-bright": "#fdfdff",
+                        "surface": "#fdfdff",
+                        "surface-container-highest": "#d3e4fe",
+                        "secondary-fixed": "#e0e2ef",
+                        "outline-variant": "#c7c4d8",
+                        "surface-tint": "#4e44e3",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#3422cc",
+                        "on-primary-container": "#dbd8ff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-secondary-container": "#61646f",
+                        "secondary-fixed-dim": "#c3c6d2",
+                        "on-surface-variant": "#464555",
+                        "tertiary": "#005338",
+                        "tertiary-container": "#006e4b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "label-uppercase": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-uppercase": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "title-sm": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "display-lg": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "700"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    }catch(_e){}</script></head><body class="bg-background min-h-screen flex items-center justify-center p-4 md:p-8 overflow-x-hidden relative">
+    
+    <!-- 3D Decorative Elements -->
+    <div class="fixed top-20 left-[10%] w-12 h-12 bg-primary/10 rounded-xl floating rotate-12 -z-10 blur-[1px]"></div>
+    <div class="fixed top-[60%] left-[5%] w-8 h-8 bg-tertiary-fixed-dim/20 rounded-full floating-delayed -z-10 blur-[1px]"></div>
+    <div class="fixed bottom-20 right-[15%] w-16 h-16 bg-secondary-container/30 rounded-lg floating-reverse -z-10 blur-[1px]"></div>
+    <div class="fixed top-10 right-[5%] w-10 h-10 bg-primary/5 rounded-full floating -z-10 blur-[2px]"></div>
+
+    <div class="max-w-[1240px] w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative">
+        <!-- Background Atmospheric Element -->
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-primary/5 rounded-full blur-[120px] -z-10"></div>
+        <div class="absolute -bottom-40 right-20 w-[500px] h-[500px] bg-surface-variant/20 rounded-full blur-[150px] -z-10"></div>
+
+        <!-- Left Side: Branding & Hero -->
+        <div class="flex flex-col gap-12">
+            <div class="flex flex-col gap-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary/25">
+                        <span class="material-symbols-outlined text-3xl icon-fill">auto_stories</span>
+                    </div>
+                    <h1 class="font-headline-md text-[28px] tracking-tight flex items-baseline">
+                        <span class="text-on-surface font-extrabold">TeachFlow</span>
+                        <span class="text-primary font-extrabold ml-1">AI</span>
+                    </h1>
+                </div>
+                <h2 class="font-display-lg text-[48px] leading-[1.1] font-extrabold text-on-surface tracking-tight max-w-lg">
+                    AI Teaching <span class="text-primary">Assistant</span>
+                </h2>
+            </div>
+
+            <!-- 2.5D Feature Icons Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                <div class="flex flex-col items-center gap-4 group">
+                    <div class="w-16 h-16 rounded-2xl bg-white border border-outline-variant/30 flex items-center justify-center text-primary depth-icon shadow-sm">
+                        <div class="w-10 h-10 rounded-lg bg-primary/5 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">description</span>
+                        </div>
+                    </div>
+                    <span class="font-title-sm text-body-sm font-semibold text-on-surface-variant text-center">Soạn giáo án</span>
+                </div>
+                <div class="flex flex-col items-center gap-4 group">
+                    <div class="w-16 h-16 rounded-2xl bg-white border border-outline-variant/30 flex items-center justify-center text-tertiary depth-icon shadow-sm">
+                        <div class="w-10 h-10 rounded-lg bg-tertiary-container/10 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">present_to_all</span>
+                        </div>
+                    </div>
+                    <span class="font-title-sm text-body-sm font-semibold text-on-surface-variant text-center">Tạo slide</span>
+                </div>
+                <div class="flex flex-col items-center gap-4 group">
+                    <div class="w-16 h-16 rounded-2xl bg-white border border-outline-variant/30 flex items-center justify-center text-secondary depth-icon shadow-sm">
+                        <div class="w-10 h-10 rounded-lg bg-secondary-container/30 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">folder_managed</span>
+                        </div>
+                    </div>
+                    <span class="font-title-sm text-body-sm font-semibold text-on-surface-variant text-center">Tài liệu</span>
+                </div>
+                <div class="flex flex-col items-center gap-4 group">
+                    <div class="w-16 h-16 rounded-2xl bg-white border border-outline-variant/30 flex items-center justify-center text-primary depth-icon shadow-sm">
+                        <div class="w-10 h-10 rounded-lg bg-surface-variant/40 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-2xl icon-fill group-hover:scale-110 transition-transform">check_circle</span>
+                        </div>
+                    </div>
+                    <span class="font-title-sm text-body-sm font-semibold text-on-surface-variant text-center">Đánh giá</span>
+                </div>
+            </div>
+
+            <!-- Enhanced Illustration Container: Glow & Depth -->
+            <div class="relative mt-4 group">
+                <!-- Background Glow -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-primary/10 rounded-full blur-[100px] pointer-events-none -z-10 group-hover:bg-primary/20 transition-all duration-1000"></div>
+                <!-- Image Wrapper -->
+                <div class="relative overflow-hidden rounded-[32px] p-2 glass-card border border-white/60 shadow-2xl transition-all duration-500">
+                    <img alt="TeachFlow AI illustration" class="w-full h-auto drop-shadow-xl floating brightness-[1.05] relative z-10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4VYCCQdY4UOjbVimtKtFE_aOJk4jb518BOr7IAQqJ1xuUV80AWpAlSWYnu2cp9e1feSofLTazv04t_dXr-lHF5Qrz5jk6XenS0PNN_WYe12kiaihbVRPNM7mWxEQ7xYUevusFfZ4xobENvDy_gWw_MJXb7IzVBEJzlUMQJQku_S3W1xHXGWdFUoVZ-JBMCYNc4iKZZ8Q_7Vk2gSH7vb7wZg8-t1hghp-nn03_icPjaIFMdNvO_YKjBFi2eb02nExsT0AfcNH28vU">
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Login Form Container -->
+        <div class="flex justify-center lg:justify-end">
+            <div class="w-full max-w-[480px] bg-white rounded-[40px] p-10 md:p-12 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.06)] border border-outline-variant/20 transition-all duration-500 hover:shadow-[0_40px_80px_-10px_rgba(54,37,205,0.08)]">
+                <form class="flex flex-col gap-10" onsubmit="event.preventDefault();">
+                    <!-- Role Switcher -->
+                    <div class="grid grid-cols-3 gap-4" id="role-switcher">
+                        <!-- Admin -->
+                        <button class="role-btn group flex flex-col items-center gap-3 p-4 rounded-2xl border-2 border-transparent transition-all duration-300" data-role="Admin" type="button">
+                            <div class="w-14 h-14 rounded-2xl bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:bg-primary/5 transition-colors">
+                                <span class="material-symbols-outlined text-2xl">shield_person</span>
+                            </div>
+                            <span class="font-title-sm text-[13px] text-on-surface-variant font-bold">Admin</span>
+                        </button>
+                        <!-- Teacher -->
+                        <button class="role-btn role-btn-active group flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all duration-300" data-role="Teacher" type="button">
+                            <div class="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                                <span class="material-symbols-outlined text-2xl icon-fill">school</span>
+                            </div>
+                            <span class="font-title-sm text-[13px] text-primary font-bold">Teacher</span>
+                        </button>
+                        <!-- Student -->
+                        <button class="role-btn group flex flex-col items-center gap-3 p-4 rounded-2xl border-2 border-transparent transition-all duration-300" data-role="Student" type="button">
+                            <div class="w-14 h-14 rounded-2xl bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:bg-primary/5 transition-colors">
+                                <span class="material-symbols-outlined text-2xl">person</span>
+                            </div>
+                            <span class="font-title-sm text-[13px] text-on-surface-variant font-bold">Student</span>
+                        </button>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="relative flex items-center justify-center">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-outline-variant/40"></div>
+                        </div>
+                        <span class="relative px-5 bg-white text-on-surface-variant/60 font-body-sm text-[13px] font-medium italic">đăng nhập bằng email</span>
+                    </div>
+
+                    <!-- Form Inputs -->
+                    <div class="flex flex-col gap-6">
+                        <div class="flex flex-col gap-2">
+                            <label class="font-body-sm text-body-sm font-bold text-on-surface ml-1">Email</label>
+                            <div class="relative group">
+                                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors text-xl">mail</span>
+                                <input class="w-full pl-12 pr-4 py-4 bg-surface-bright border border-outline-variant rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-body-md text-body-md" placeholder="Nhập email của bạn" required="" type="email">
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="font-body-sm text-body-sm font-bold text-on-surface ml-1">Mật khẩu</label>
+                            <div class="relative group">
+                                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors text-xl">lock</span>
+                                <input class="w-full pl-12 pr-12 py-4 bg-surface-bright border border-outline-variant rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-body-md text-body-md" id="password-field" placeholder="Nhập mật khẩu" required="" type="password">
+                                <button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface-variant transition-colors" onclick="togglePassword()" type="button">
+                                    <span class="material-symbols-outlined text-xl" id="eye-icon">visibility</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex flex-col gap-6">
+                        <button class="w-full bg-primary text-white font-title-sm text-title-sm py-4.5 rounded-2xl flex items-center justify-center gap-3 shadow-2xl shadow-primary/30 hover:bg-primary-container active:scale-[0.98] transition-all" style="padding-top: 1.125rem; padding-bottom: 1.125rem;" type="submit">
+                            <span class="material-symbols-outlined text-xl">login</span>
+                            <span class="font-bold">Đăng nhập</span>
+                        </button>
+                        
+                        <div class="relative flex items-center justify-center">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-outline-variant/40"></div>
+                            </div>
+                            <span class="relative px-5 bg-white text-on-surface-variant/60 font-body-sm text-[13px]">hoặc</span>
+                        </div>
+
+                        <button class="w-full bg-white border-2 border-primary/10 text-primary font-title-sm text-title-sm py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-primary/5 hover:border-primary/20 transition-all font-bold" type="button">
+                            <span class="material-symbols-outlined text-xl">confirmation_number</span>
+                            Sử dụng mã mời
+                        </button>
+                    </div>
+
+                    <p class="text-center font-body-sm text-body-sm text-on-surface-variant">
+                        Chưa có tài khoản? <a class="text-primary font-bold hover:underline" href="#">Đăng ký ngay</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script class="">
+        function togglePassword() {
+            const input = document.getElementById('password-field');
+            const icon = document.getElementById('eye-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerText = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.innerText = 'visibility';
+            }
+        }
+
+        const buttons = document.querySelectorAll('.role-btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                buttons.forEach(b => {
+                    b.classList.remove('role-btn-active');
+                    b.classList.add('border-transparent');
+                    const iconContainer = b.querySelector('div');
+                    iconContainer.classList.remove('bg-primary', 'text-white', 'shadow-lg', 'shadow-primary/20');
+                    iconContainer.classList.add('bg-surface-container', 'text-on-surface-variant');
+                    const label = b.querySelector('span:last-child');
+                    label.classList.remove('text-primary');
+                    label.classList.add('text-on-surface-variant');
+                    const icon = iconContainer.querySelector('span');
+                    icon.classList.remove('icon-fill');
+                });
+                
+                btn.classList.add('role-btn-active');
+                btn.classList.remove('border-transparent');
+                const iconContainer = btn.querySelector('div');
+                iconContainer.classList.add('bg-primary', 'text-</script></body></html>

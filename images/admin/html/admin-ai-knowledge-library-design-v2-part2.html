@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kho tri thức - TeachFlow AI</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Lucide Icons (Approximate for the mock) -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#5046e5',
+            'primary-container': '#e0e7ff',
+            'on-primary-container': '#312e81',
+            surface: '#f8f9ff',
+            'surface-container-lowest': '#ffffff',
+            'surface-container-low': '#eff4ff',
+            'outline-variant': '#e2e8f0',
+            'on-surface-variant': '#64748b',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          borderRadius: {
+            'custom': '8px',
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbar">
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+<style data-purpose="layout-components">
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 1.5rem;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .status-success { background-color: #ecfdf5; color: #10b981; border: 1px solid #d1fae5; }
+    .status-processing { background-color: #fffbeb; color: #f59e0b; border: 1px solid #fef3c7; }
+    .status-failed { background-color: #fef2f2; color: #ef4444; border: 1px solid #fee2e2; }
+  </style>
+</head>
+<body class="bg-surface font-sans text-slate-900">
+<!-- BEGIN: SideNavBar -->
+<aside class="w-[260px] h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant flex flex-col p-4 z-50">
+<div class="flex items-center gap-2 px-2 mb-8" data-purpose="brand-header">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+<i class="text-white w-5 h-5" data-lucide="graduation-cap"></i>
+</div>
+<span class="text-xl font-bold text-slate-800">TeachFlow <span class="text-primary">AI</span></span>
+</div>
+<nav class="flex-1 flex flex-col gap-1" data-purpose="main-navigation">
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors" href="#">
+<i class="w-5 h-5" data-lucide="layout-dashboard"></i>
+<span class="font-medium">Hàng đợi</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 bg-primary-container text-on-primary-container rounded-lg font-semibold shadow-sm" href="#">
+<i class="w-5 h-5" data-lucide="library"></i>
+<span class="font-medium">Kho tri thức</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors" href="#">
+<i class="w-5 h-5" data-lucide="users"></i>
+<span class="font-medium">Người dùng</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors" href="#">
+<i class="w-5 h-5" data-lucide="clipboard-list"></i>
+<span class="font-medium">Tác vụ</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 border-t border-outline-variant" data-purpose="sidebar-footer">
+<!-- Storage Overview Card -->
+<div class="bg-surface-container-low rounded-xl p-4 mb-4">
+<p class="text-xs text-slate-500 font-medium mb-3">Tổng quan kho</p>
+<div class="space-y-3">
+<div>
+<p class="text-[10px] text-slate-400 uppercase tracking-wider">Tài liệu</p>
+<p class="text-sm font-bold">128</p>
+</div>
+<div>
+<p class="text-[10px] text-slate-400 uppercase tracking-wider">Chunks</p>
+<p class="text-sm font-bold">1,280,450</p>
+</div>
+<div>
+<div class="flex justify-between items-end mb-1">
+<div>
+<p class="text-[10px] text-slate-400 uppercase tracking-wider">Dung lượng</p>
+<p class="text-sm font-bold">18.7 GB <span class="text-slate-400 font-normal">/ 50 GB</span></p>
+</div>
+</div>
+<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full" style="width: 37%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Admin Profile -->
+<div class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer">
+<img alt="Admin Avatar" class="w-10 h-10 rounded-full border border-slate-200" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAniTnuBIAWDqDpShzch7G_A8YENQEYoAIO-tXeeNEqITxXEUo3bYcwl7NmrMTBZvN5EY3XAdaOUvShOINBUnjUAL3CnoGPhXzKJa_zmeW4gIpFVm6L0ww8mwrdf5_h9FUkaxU5i_FEZSTLX-lAooM-0ePGzqKwlbKkCoDIT28SQpwBmwdQL-I5XXVPZcK8H_297zKIwWPnl-YrA7vfzDIHCi4Q6F0vNaaPcPbzC2BicG4eaAM6GFQPD8ZPeVSieQeTJoSg6djsV1A"/>
+<div class="flex-1 overflow-hidden">
+<p class="text-sm font-semibold truncate">Admin</p>
+<p class="text-xs text-slate-500 truncate">Quản trị viên</p>
+</div>
+<i class="w-4 h-4 text-slate-400" data-lucide="chevron-down"></i>
+</div>
+</div>
+</aside>
+<!-- END: SideNavBar -->
+<!-- Main Content Wrapper -->
+<div class="ml-[260px] min-h-screen flex flex-col">
+<!-- BEGIN: TopNavBar -->
+<header class="h-[72px] sticky top-0 bg-white border-b border-outline-variant flex items-center justify-between px-8 z-40">
+<div class="flex items-center gap-4">
+<h1 class="text-2xl font-bold text-slate-800">Kho tri thức</h1>
+<div class="flex items-center gap-1.5 px-3 py-1 bg-primary/5 text-primary text-xs font-semibold rounded-full border border-primary/10">
+<i class="w-3.5 h-3.5" data-lucide="shield-check"></i>
+          Thư viện ẩn – Dành riêng cho AI
+        </div>
+</div>
+<div class="flex items-center gap-5">
+<button class="relative text-slate-500 hover:text-slate-700 transition-colors">
+<i class="w-6 h-6" data-lucide="bell"></i>
+<span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+</button>
+<div class="w-px h-6 bg-slate-200"></div>
+<img alt="User Profile" class="w-8 h-8 rounded-full cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDyk5WohTJLLIW5DTuLe2MtXLHDsg7ntYSDjHlr4fT0Usi57EO0Oh5cIaifc11zWhUkwfRppAxVtwjZE0OftgTZSn7WCWvLRfC8mCGZ-tlmFygwsKbkTw0ecIKpBfttn52t908sHniP1kJoLGKzPXQ1kBbrjF_XyDdKrklaTqTE8Qgp_ZS-eFyfTN2p3bnnVwZchNfRGGscZRZlic1dK5_cPumeri5wnIO9y_FWNJ090OdWXROcRSnvVkK7foTjfW4ieEZKWcLS-0"/>
+</div>
+</header>
+<!-- END: TopNavBar -->
+<!-- BEGIN: MainContent -->
+<main class="p-8 flex-1">
+<div class="main-grid">
+<!-- Left Side: Table & Filters -->
+<section data-purpose="table-container">
+<!-- Filters and Actions -->
+<div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-2 px-4 py-2 border border-primary text-primary font-medium rounded-lg hover:bg-primary/5 transition-colors">
+<i class="w-4 h-4" data-lucide="upload-cloud"></i>
+                Tải lên
+              </button>
+<button class="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors">
+<i class="w-4 h-4" data-lucide="link"></i>
+                URL
+              </button>
+</div>
+<div class="flex-1 max-w-md relative">
+<i class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" data-lucide="search"></i>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Tìm kiếm tài liệu..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<select class="text-sm border-slate-200 rounded-lg text-slate-600 focus:ring-primary/20">
+<option>Tất cả loại</option>
+</select>
+<select class="text-sm border-slate-200 rounded-lg text-slate-600 focus:ring-primary/20">
+<option>Tất cả trạng thái</option>
+</select>
+<button class="p-2 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50">
+<i class="w-5 h-5" data-lucide="sliders-horizontal"></i>
+</button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="bg-white rounded-xl border border-outline-variant overflow-hidden">
+<table class="w-full text-left text-sm">
+<thead class="bg-slate-50/50 text-slate-500 font-medium border-b border-outline-variant">
+<tr>
+<th class="px-4 py-4 font-semibold">Tài liệu</th>
+<th class="px-4 py-4 font-semibold">Loại</th>
+<th class="px-4 py-4 font-semibold">Trạng thái</th>
+<th class="px-4 py-4 font-semibold text-center">Chunks</th>
+<th class="px-4 py-4 font-semibold text-center">Nguồn</th>
+<th class="px-4 py-4 font-semibold">Ngày</th>
+<th class="px-4 py-4 font-semibold text-right">Thao tác</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Active Row Sample -->
+<tr class="bg-blue-50/30 border-l-2 border-l-primary">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-red-100 text-red-600 rounded">
+<span class="text-[10px] font-bold">PDF</span>
+</div>
+<div>
+<p class="font-semibold text-slate-800">Chương trình Sinh học 11</p>
+<p class="text-[10px] text-slate-400">PDF</p>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 text-slate-600">Sách giáo khoa</td>
+<td class="px-4 py-4">
+<span class="status-badge status-success">
+<i class="w-3 h-3 mr-1.5" data-lucide="check-circle-2"></i>
+                      Hoàn tất
+                    </span>
+</td>
+<td class="px-4 py-4 text-center font-medium text-slate-600">42,351</td>
+<td class="px-4 py-4">
+<div class="flex justify-center">
+<img alt="Drive" class="w-4 h-4 opacity-70" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaoEfyr6BMYWTkEk-psxbHBP06foWoKMpldVNR5RDXLmmIXIs8bG0rN6H5vT3H0tkO5zcwgSAhNrzhaNN-poAYuBxosReZckMdPAKD3sx5d_3U1I_VCBnFOyNs8UGxTTpL_5U9Yu3A21YkIrE3hb-I2Wmn_FAN0LKYS5BjpprJhh5hLDC1nqfBgEKLebJCm73NvKyL4aX5Yo1J2AZ9EVB6vYyHxcdaRIHFSiq8BWV4DSJJED2y4SEbqzbwkWp9p0M5BETNNXsgFmA"/>
+</div>
+</td>
+<td class="px-4 py-4 text-slate-500 leading-tight">
+                    16/05/2025<br/><span class="text-[10px]">09:15</span>
+</td>
+<td class="px-4 py-4 text-right">
+<div class="flex justify-end gap-3 text-slate-400">
+<button class="hover:text-primary transition-colors"><i class="w-4 h-4" data-lucide="edit-3"></i></button>
+<button class="hover:text-primary transition-colors"><i class="w-4 h-4" data-lucide="refresh-cw"></i></button>
+<button class="hover:text-red-500 transition-colors"><i class="w-4 h-4" data-lucide="trash-2"></i></button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Processing -->
+<tr>
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-blue-100 text-blue-600 rounded">
+<span class="text-[10px] font-bold">DOCX</span>
+</div>
+<div>
+<p class="font-semibold text-slate-800">Đề cương ôn tập Toán 12</p>
+<p class="text-[10px] text-slate-400">DOCX</p>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 text-slate-600">Tài liệu giảng dạy</td>
+<td class="px-4 py-4">
+<span class="status-badge status-success">
+<i class="w-3 h-3 mr-1.5" data-lucide="check-circle-2"></i>
+                      Hoàn tất
+                    </span>
+</td>
+<td class="px-4 py-4 text-center font-medium text-slate-600">18,942</td>
+<td class="px-4 py-4">
+<div class="flex justify-center">
+<i class="w-4 h-4 text-blue-400" data-lucide="cloud"></i>
+</div>
+</td>
+<td class="px-4 py-4 text-slate-500 leading-tight">
+                    15/05/2025<br/><span class="text-[10px]">16:40</span>
+</td>
+<td class="px-4 py-4 text-right">
+<div class="flex justify-end gap-3 text-slate-400">
+<button class="hover:text-primary transition-colors"><i class="w-4 h-4" data-lucide="edit-3"></i></button>
+<button class="hover:text-primary transition-colors"><i class="w-4 h-4" data-lucide="refresh-cw"></i></button>
+<button class="hover:text-red-500 transition-colors"><i class="w-4 h-4" data-lucide="trash-2"></i></button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Status Processing -->
+<tr>
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-green-100 text-green-600 rounded">
+<span class="text-[10px] font-bold">XLSX</span>
+</div>
+<div>
+<p class="font-semibold text-slate-800">Ngân hàng câu hỏi Hóa học</p>
+<p class="text-[10px] text-slate-400">XLSX</p>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 text-slate-600">Ngân hàng câu hỏi</td>
+<td class="px-4 py-4">
+<span class="status-badge status-processing">
+<div class="w-2 h-2 rounded-full bg-yellow-400 mr-2 animate-pulse"></div>
+                      Đang xử lý
+                    </span>
+</td>
+<td class="px-4 py-4 text-center font-medium text-slate-600">12,804</td>
+<td class="px-4 py-4">
+<div class="flex justify-center">
+<img alt="Drive" class="w-4 h-4 opacity-70" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCe9PglKndbd9fWa2HRJQjaNDWZ40_yIDZ22BGrF0cvSQjs27N55CGk-htms3Dh0M3KO1OmoX13AW4izAj3FnMjGM1nsCdB5mF5tyWUbv3KT96j7u1oqt6w5R__HZ-PsrewHfCSsgrYEreAM2XgPVvyLKCnUVKnA5xiwDaEWHQ5jp4WDXFnCc96hQ_HczlBgV_5ffV9s5icWFAAyn582_nU7OH6Wl7Mkv6FGyjtUJXoiWU1hh-ZeTdnF0QDR9nZMpiCaNX3JgGuyuU"/>
+</div>
+</td>
+<td class="px-4 py-4 text-slate-500 leading-tight">
+                    14/05/2025<br/><span class="text-[10px]">10:05</span>
+</td>
+<td class="px-4 py-4 text-right">
+<div class="flex justify-end gap-3 text-slate-400">
+<button class="hover:text-primary transition-colors"><i class="w-4 h-4" data-lucide="edit-3"></i></button>
+<button class="hover:text-primary transition-colors"><i class="w-4 h-4" data-lucide="refresh-cw"></i></button>
+<button class="hover:text-red-500 transition-colors"><i class="w-4 h-4" data-lucide="trash-2"></i></button>
+</div>
+</td>
+</tr>
+<!-- Row 7: Status Failed -->
+<tr>
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-red-100 text-red-600 rounded">
+<span class="text-[10px] font-bold">PDF</span>
+</div>
+<div>
+<p class="font-semibold text-slate-800">Đề thi thử THPT Quốc gia 2024</p>
+<p class="text-[10px] text-slate-400">PDF</p>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 text-slate-600">Đề thi</td>
+<td class="px-4 py-4">
+<span class="status-badge status-failed">
+<i class="w-3 h-3 mr-1.5" data-lucide="alert-triangle"></i>
+                      Thất bại
+                    </span>
+</td>
+<td class="px-4 py-4 text-center font-medium text-slate-400">—</td>
+<td class="px-4 py-4">
+<div class="flex justify-center">
+<img alt="Drive" class="w-4 h-4 opacity-70" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgMuIwaxWLvLf_BEn_epA-YhnMO48bcH3v_Yip3myrsMBGq1QcrzdSmDq14zqH5o1UC8KGWrGMNCABH4_gYFfIo730h6GjJo3lbECcS_bf7hgxSFI7uQYbldKAUH7hUFVHa1Sgwhl-hjCtC_P75t_Tmq192If40I-M6xFVUQ_KjeIhBZdxuyMd1sA42Ta3HS-cOgDjtU0O0V6KyLi44ew64NrlJNa_xSlwdTFizgh11he2L2eo7CX4jMhLmCMjJR7UmdsnFtEO3-Y"/>
+</div>
+</td>
+<td class="px-4 py-4 text-slate-500 leading-tight">
+                    11/05/2025<br/><span class="text-[10px]">14:20</span>
+</td>
+<td class="px-4 py-4 text-right">
+<div class="flex justify-end gap-3 text-slate-400">
+<button class="hover:text-primary transition-colors"><i class="w-4 h-4" data-lucide="edit-3"></i></button>
+<button class="hover:text-primary transition-colors"><i class="w-4 h-4" data-lucide="refresh-cw"></i></button>
+<button class="hover:text-red-500 transition-colors"><i class="w-4 h-4" data-lucide="trash-2"></i></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination -->
+<div class="px-4 py-4 border-t border-outline-variant flex items-center justify-between">
+<span class="text-xs text-slate-500">Hiển thị 1–10 của 128 tài liệu</span>
+<div class="flex items-center gap-2">
+<div class="flex items-center">
+<button class="p-1 hover:bg-slate-100 rounded text-slate-400"><i class="w-4 h-4" data-lucide="chevron-left"></i></button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-primary text-white text-xs font-semibold">1</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 text-xs font-medium">2</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 text-xs font-medium">3</button>
+<span class="px-1 text-slate-400">...</span>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 text-xs font-medium">13</button>
+<button class="p-1 hover:bg-slate-100 rounded text-slate-400"><i class="w-4 h-4" data-lucide="chevron-right"></i></button>
+</div>
+<select class="text-xs border-slate-200 rounded-lg text-slate-600 focus:ring-primary/20">
+<option>10 / trang</option>
+</select>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Side: Details Panel -->
+<aside class="space-y-6" data-purpose="details-sidebar">
+<div class="bg-white rounded-xl border border-outline-variant p-5">
+<div class="flex items-start justify-between mb-6">
+<div class="flex gap-3">
+<div class="p-3 bg-red-100 text-red-600 rounded-lg h-fit">
+<i class="w-6 h-6" data-lucide="file-text"></i>
+</div>
+<div>
+<h3 class="font-bold text-slate-800 leading-tight">Chương trình Sinh học 11</h3>
+<p class="text-[10px] text-slate-400 uppercase font-semibold">PDF • 24.6 MB</p>
+</div>
+</div>
+<button class="text-slate-300 hover:text-slate-500"><i class="w-5 h-5" data-lucide="x"></i></button>
+</div>
+<!-- Tabs -->
+<div class="flex border-b border-outline-variant mb-6">
+<button class="flex-1 pb-3 text-sm font-semibold text-primary border-b-2 border-primary">Tổng quan</button>
+<button class="flex-1 pb-3 text-sm font-medium text-slate-500 border-b-2 border-transparent hover:text-slate-700">Thông tin</button>
+</div>
+<!-- Source Health Section -->
+<div class="mb-8">
+<div class="flex items-center justify-between mb-4">
+<h4 class="text-sm font-bold text-slate-800">Sức khỏe nguồn</h4>
+<span class="flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-bold rounded-md border border-green-100">
+<i class="w-3 h-3" data-lucide="sparkles"></i> Tốt
+                </span>
+</div>
+<ul class="space-y-3">
+<li class="flex items-center justify-between text-xs text-slate-600">
+<span class="flex items-center gap-2"><i class="w-4 h-4 text-green-500" data-lucide="check-circle-2"></i> Truy cập được</span>
+<i class="w-3.5 h-3.5 text-green-500" data-lucide="check"></i>
+</li>
+<li class="flex items-center justify-between text-xs text-slate-600">
+<span class="flex items-center gap-2"><i class="w-4 h-4 text-green-500" data-lucide="check-circle-2"></i> Đồng bộ</span>
+<i class="w-3.5 h-3.5 text-green-500" data-lucide="check"></i>
+</li>
+<li class="flex items-center justify-between text-xs text-slate-600">
+<span class="flex items-center gap-2"><i class="w-4 h-4 text-green-500" data-lucide="check-circle-2"></i> Định dạng hợp lệ</span>
+<i class="w-3.5 h-3.5 text-green-500" data-lucide="check"></i>
+</li>
+</ul>
+</div>
+<!-- Extraction Coverage Section -->
+<div class="mb-8">
+<h4 class="text-sm font-bold text-slate-800 mb-4">Độ phủ trích dẫn</h4>
+<div class="flex items-center gap-6">
+<div class="relative w-24 h-24">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<circle class="stroke-slate-100" cx="18" cy="18" fill="none" r="16" stroke-width="4"></circle>
+<circle class="stroke-primary" cx="18" cy="18" fill="none" r="16" stroke-dasharray="78, 100" stroke-width="4"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center flex-col">
+<span class="text-xl font-bold text-slate-800">78%</span>
+</div>
+</div>
+<div class="flex-1 space-y-2">
+<div class="flex items-center gap-2 text-[10px] text-slate-600">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="flex-1">Được trích dẫn</span>
+<span class="font-bold">78%</span>
+</div>
+<div class="flex items-center gap-2 text-[10px] text-slate-600">
+<div class="w-2 h-2 rounded-full bg-blue-300"></div>
+<span class="flex-1">Chưa trích dẫn</span>
+<span class="font-bold">17%</span>
+</div>
+<div class="flex items-center gap-2 text-[10px] text-slate-400">
+<div class="w-2 h-2 rounded-full bg-slate-200"></div>
+<span class="flex-1">Không áp dụng</span>
+<span class="font-bold">5%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Capacity Limits Section -->
+<div class="mb-8">
+<h4 class="text-sm font-bold text-slate-800 mb-4">Dung lượng &amp; hạn mức</h4>
+<div class="space-y-4">
+<div>
+<div class="flex justify-between text-[10px] mb-1">
+<span class="text-slate-500 font-medium">18.7 GB / 50 GB</span>
+<span class="text-slate-400 font-bold">37%</span>
+</div>
+<div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full" style="width: 37%"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-y-2 text-[10px]">
+<span class="text-slate-400">Tài liệu</span>
+<span class="text-right font-bold text-slate-600">128</span>
+<span class="text-slate-400">Chunks</span>
+<span class="text-right font-bold text-slate-600">1,280,450</span>
+<span class="text-slate-400">Lần index gần nhất</span>
+<span class="text-right font-bold text-slate-600">16/05/2025 09:15</span>
+</div>
+</div>
+</div>
+<button class="w-full py-2.5 bg-primary/5 text-primary text-sm font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-primary/10 transition-colors">
+<i class="w-4 h-4" data-lucide="eye"></i>
+              Xem trước tài liệu
+            </button>
+</div>
+</aside>
+</div>
+</main>
+<!-- END: MainContent -->
+</div>
+<script data-purpose="lucide-init">
+    lucide.createIcons();
+  </script>
+</body></html>

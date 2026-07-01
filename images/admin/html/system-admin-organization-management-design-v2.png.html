@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quản lý Tổ chức - TeachFlow AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9ff;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c7c4d8;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #777587;
+        }
+        .sidebar-active {
+            background-color: #f1f0ff;
+            color: #5046e5;
+            font-weight: 600;
+        }
+        .status-badge-active {
+            background-color: #ecfdf5;
+            color: #10b981;
+        }
+        .status-badge-locked {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+        .status-badge-disabled {
+            background-color: #fef2f2;
+            color: #ef4444;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#5046e5",
+                        "surface": "#f8f9ff",
+                        "on-surface": "#0b1c30",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#e5e7eb",
+                        "on-surface-variant": "#4b5563",
+                        "outline": "#9ca3af",
+                        "background": "#f8f9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontSize": {
+                        "display-lg": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "title-sm": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- Layout Container -->
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-[240px] flex flex-col border-r border-outline-variant bg-white z-50">
+<div class="p-6">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">school</span>
+</div>
+<h1 class="font-bold text-xl tracking-tight text-on-surface">TeachFlow <span class="text-primary">AI</span></h1>
+</div>
+</div>
+<nav class="flex-1 px-3 space-y-1 mt-4">
+<a class="flex items-center gap-3 px-3 py-2.5 sidebar-active rounded-lg text-body-md active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[22px]">domain</span>
+<span>Tổ chức</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:bg-gray-50 rounded-lg text-body-md active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[22px]">person_add</span>
+<span>Mời Admin</span>
+</a>
+</nav>
+<div class="mt-auto p-4">
+<button class="w-full flex items-center justify-between p-3 border border-outline-variant rounded-xl text-body-sm bg-gray-50/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+<span class="font-medium">System Admin</span>
+</div>
+<span class="material-symbols-outlined text-outline">expand_less</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 bg-[#fbfbfc]">
+<!-- Header -->
+<header class="h-16 border-b border-outline-variant bg-white flex items-center justify-end px-8 gap-6 shrink-0">
+<button class="p-2 text-on-surface-variant hover:bg-gray-100 rounded-full">
+<span class="material-symbols-outlined">search</span>
+</button>
+<div class="relative">
+<button class="p-2 text-on-surface-variant hover:bg-gray-100 rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
+</div>
+<img alt="Admin" class="w-8 h-8 rounded-full border border-outline-variant object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbwC77r-U9Qe804pzfBCNWEDmK42DpEX3_sPz4Soc4Tp5CIZxwFy2eEvbczbTB3th1eM9XH-5Bfoc6UZ5ymUqvNGuP-AstvUd9WRoZJtR_yzA2166qmI35w2Z0YkcWQN2TV_vK0TrRVfZB5bHj62RC0pnS3fszb6fzujkGrcZarPnL1O9L-izROIXtzQWgPdORQotSKTp2DpWe8OkPhPZQpBveV_3612NtOUoPTvmwPjIn3fJCmSA9oEyB3TN7AqNn06x1U1QQOK0"/>
+</header>
+<div class="flex-1 flex min-h-0">
+<!-- Center Section (Table) -->
+<section class="flex-1 p-8 overflow-y-auto">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-xl font-bold">Tổ chức</h2>
+<button class="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-lg hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+<div class="bg-white border border-outline-variant rounded-xl overflow-hidden">
+<table class="w-full text-left">
+<thead>
+<tr class="text-[12px] uppercase tracking-wider text-outline border-b border-outline-variant">
+<th class="px-6 py-4 font-semibold">Tên</th>
+<th class="px-4 py-4 font-semibold">Gói</th>
+<th class="px-4 py-4 font-semibold text-center">Trạng thái</th>
+<th class="px-4 py-4 font-semibold text-center">Admin</th>
+<th class="px-4 py-4 font-semibold text-center">Lớp</th>
+<th class="px-4 py-4 font-semibold">Tạo</th>
+<th class="px-4 py-4 font-semibold text-center">Sửa</th>
+<th class="px-4 py-4 font-semibold text-center">Khóa</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-[#f1f0ff]/30 transition-colors group border-l-2 border-l-transparent hover:border-l-primary animate-fade-in-up" style="animation-delay: 0.1s">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+<img alt="Icon" class="w-6 h-6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHEt22xSSz73g2gU4fqFFgxIlg-ADHzXYVSuc7OYJhcND6xuyPI4W9q6KWUvBXzpXSjQhyuzYOvZARx2Mlh7g0vEMeoU-SAOsSEaaxL9v_c-jqH0OMpeFiKmc4nTgwfO1erieB1-s5ZpL-rMdhfR8SiA5jy2GFP6vQQG4o9Cy8o1lN_073d_r0auQaXPhmHtUkEg9CP58Xo3U-rmYtm2ATqcy4Ztp4C3QpTDsY3xr58DiA9mYyCBIUzIjxQVZweCNOwb-J9KJR5Pw"/>
+</div>
+<span class="font-medium text-body-md">Trường THPT Minh Khai</span>
+</div>
+</td>
+<td class="px-4 py-4 text-body-sm text-on-surface-variant">Pro</td>
+<td class="px-4 py-4 text-center">
+<span class="status-badge-active px-3 py-1 rounded-full text-[12px] font-medium animate-pulse-subtle">Hoạt động</span>
+</td>
+<td class="px-4 py-4 text-center text-body-sm">5</td>
+<td class="px-4 py-4 text-center text-body-sm">28</td>
+<td class="px-4 py-4 text-body-sm text-outline">12/05/2024</td>
+<td class="px-4 py-4 text-center">
+<button class="text-primary hover:bg-primary/5 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+<td class="px-4 py-4 text-center">
+<button class="text-outline hover:text-on-surface p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">lock_open</span>
+</button>
+</td>
+</tr>
+<!-- Repeat Rows -->
+<tr class="hover:bg-[#f1f0ff]/30 transition-colors group animate-fade-in-up" style="animation-delay: 0.2s">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+<img alt="Icon" class="w-6 h-6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQnDyyx8ZZHeZpIz29eSZVWIYCGD2ioUDH7bilo63-C_T8VmisXJxLvgK7055UpkvjWopwO6GpyfOHkCnSQ4SgqbFBj1za0tDe0nqj7800I1B-Seiua9WVv0n0kRYwVjyAKuzg5gU-ijYXh5tgJhw9PtwD0GLZ69TQ5EMEoUGGG-5FgT23vQ59WMNRZsDbZxBp8kPPCzkl_n6QfUGvkearkdwVoY6401mdy65JgdtR86jCwOy9XWkPr_gcSBpwyT5LrKHmozqJ_Zo"/>
+</div>
+<span class="font-medium text-body-md">Trường THCS Nguyễn Du</span>
+</div>
+</td>
+<td class="px-4 py-4 text-body-sm text-on-surface-variant">Pro</td>
+<td class="px-4 py-4 text-center">
+<span class="status-badge-active px-3 py-1 rounded-full text-[12px] font-medium animate-pulse-subtle">Hoạt động</span>
+</td>
+<td class="px-4 py-4 text-center text-body-sm">3</td>
+<td class="px-4 py-4 text-center text-body-sm">16</td>
+<td class="px-4 py-4 text-body-sm text-outline">28/04/2024</td>
+<td class="px-4 py-4 text-center">
+<button class="text-primary hover:bg-primary/5 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+<td class="px-4 py-4 text-center">
+<button class="text-outline hover:text-on-surface p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">lock_open</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-[#f1f0ff]/30 transition-colors group animate-fade-in-up" style="animation-delay: 0.3s">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+<img alt="Icon" class="w-6 h-6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNZQVphif5laVYXU9kNJIS3E5jq3X64YD5fpUdujnMjB3235JO-JX6ahPsGY6fLJDoLgb7ZBBoVKCjTiLwcxtSL3DUX3EaWf_NcXtYfihGob2las9bHCD0Nl05de9b5W3OvA3a7x6IPvuTdNMI71VqjdbMZCzDTr1t0z9YDvc6y6JsmwHuHb6yx1zdwioSofEYCe4fHxIjwF3k2WcxiOHbzMdfM0BDfgO2RI_1qFBI8Y91T2tlNGeDwl_ijaxmf6yhruisxTGuvwE"/>
+</div>
+<span class="font-medium text-body-md">Trường Tiểu học Lê Lợi</span>
+</div>
+</td>
+<td class="px-4 py-4 text-body-sm text-on-surface-variant">Starter</td>
+<td class="px-4 py-4 text-center">
+<span class="status-badge-active px-3 py-1 rounded-full text-[12px] font-medium animate-pulse-subtle">Hoạt động</span>
+</td>
+<td class="px-4 py-4 text-center text-body-sm">2</td>
+<td class="px-4 py-4 text-center text-body-sm">12</td>
+<td class="px-4 py-4 text-body-sm text-outline">20/04/2024</td>
+<td class="px-4 py-4 text-center">
+<button class="text-primary hover:bg-primary/5 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+<td class="px-4 py-4 text-center">
+<button class="text-outline hover:text-on-surface p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">lock_open</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-[#f1f0ff]/30 transition-colors group animate-fade-in-up" style="animation-delay: 0.4s">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+<img alt="Icon" class="w-6 h-6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIZ4gQI9cw4Px5ZNbKL_ZsWy9lC5wHkq-mhsGw3mcykQdT2-_Gwi3_WF5yqN6_0V1wSR1gcC7DAv1eRkKgLgyqf8KqdhliI3dv4v68jsI_dh_PTZkmRP_O0ODEiUJ2sRyaOmQvlB2cav-nIjtTs5O7SCsD68K38-Jd5EJUrVkDlG_97diUGV5g10ukLULwUyYiTwdo7SwFMdoTnrecb_HoCm10earkyt8BbfbkXPURjihyTMHF_btMiRouizvUvlnJEnH6rsB6-zY"/>
+</div>
+<span class="font-medium text-body-md">Trường THCS Lý Tự Trọng</span>
+</div>
+</td>
+<td class="px-4 py-4 text-body-sm text-on-surface-variant">Starter</td>
+<td class="px-4 py-4 text-center">
+<span class="status-badge-locked px-3 py-1 rounded-full text-[12px] font-medium">Tạm khóa</span>
+</td>
+<td class="px-4 py-4 text-center text-body-sm">1</td>
+<td class="px-4 py-4 text-center text-body-sm">8</td>
+<td class="px-4 py-4 text-body-sm text-outline">25/03/2024</td>
+<td class="px-4 py-4 text-center">
+<button class="text-primary hover:bg-primary/5 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+<td class="px-4 py-4 text-center">
+<button class="text-outline hover:text-on-surface p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">lock_open</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-[#f1f0ff]/30 transition-colors group animate-fade-in-up" style="animation-delay: 0.5s">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+<img alt="Icon" class="w-6 h-6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcEDoSQEDs0rQYuOoehxr8fSBlQGyneQVxaxvrJCnRXHMWFopvQNFZBRANxHGc0Gn0f9hn5qU_FCIMvjxB0ydeOOUFIW1YAlsTAsQB1pOMdhMXNJdP2SOryukl1mkCLRqUlj8y_XLEAtsQhmcJ9W85h4OV9-mfU2KzHC3F8p4kpaEMLQRje1nSGwvmzbfIi_G6riGt2RDDnVEH6kAoiiMRQQw_NMn4EXJf8Rf_DPw1lxR-xs3X2VguIkFe-DmasJlOAVjAOlAknIM"/>
+</div>
+<span class="font-medium text-body-md">Trường Tiểu học Hoa Phượng</span>
+</div>
+</td>
+<td class="px-4 py-4 text-body-sm text-on-surface-variant">Starter</td>
+<td class="px-4 py-4 text-center">
+<span class="status-badge-disabled px-3 py-1 rounded-full text-[12px] font-medium">Đã khóa</span>
+</td>
+<td class="px-4 py-4 text-center text-body-sm">0</td>
+<td class="px-4 py-4 text-center text-body-sm">0</td>
+<td class="px-4 py-4 text-body-sm text-outline">01/03/2024</td>
+<td class="px-4 py-4 text-center">
+<button class="text-primary hover:bg-primary/5 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+<td class="px-4 py-4 text-center">
+<button class="text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination -->
+<div class="px-6 py-4 flex items-center justify-between border-t border-outline-variant bg-gray-50/50">
+<div class="flex items-center gap-3 text-body-sm text-on-surface-variant">
+<span>Hiển thị</span>
+<div class="relative">
+<select class="appearance-none border border-outline-variant rounded px-3 py-1 pr-8 bg-white focus:outline-none focus:ring-1 focus:ring-primary text-body-sm">
+<option>10</option>
+<option>20</option>
+</select>
+<span class="material-symbols-outlined absolute right-1 top-1/2 -translate-y-1/2 text-[16px] pointer-events-none">expand_more</span>
+</div>
+<span>/ trang</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded hover:bg-white text-outline">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center bg-primary text-white rounded font-medium text-body-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:bg-gray-100 rounded text-body-sm">2</button>
+<button class="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:bg-gray-100 rounded text-body-sm">3</button>
+<span class="px-1 text-outline">...</span>
+<button class="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:bg-gray-100 rounded text-body-sm">8</button>
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded hover:bg-white text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Detail Panel (Right) -->
+<aside class="w-[380px] bg-white border-l border-outline-variant flex flex-col shrink-0 p-8 animate-fade-in-up">
+<div class="flex justify-end mb-6">
+<button class="text-outline hover:text-on-surface">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex items-center gap-4 mb-10">
+<div class="w-16 h-16 rounded-2xl bg-[#f8f9ff] border border-outline-variant flex items-center justify-center shadow-sm">
+<img alt="Logo" class="w-10 h-10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAR5ncbpcH_uxh9gkc9eIQakuRFiTNNYjDKNGMlLXpbobZL5F4wrqZ3PgTocenZ74atmTIs5WrAYuzqFgQ71Bwk0yRSZoRZFJZ_lPAYX4aJPj3v6bSJtdrhos6b2Oz5Og54KbNj5-FjnohIiBFe8K4cD0sASk6Zr9W_aj56WbkWdufWnsFa-mtslliPflc0IF84_svs6m1-m41WUDtJSd6fqTafJ4eSmwJavmcZFkAhIP0TfpRZMz928CrbkfS-v9kQuy5bh4VtR8"/>
+</div>
+<div>
+<h3 class="text-lg font-bold leading-tight">Trường THPT Minh Khai</h3>
+<span class="status-badge-active px-3 py-0.5 rounded-full text-[11px] font-bold mt-1 inline-block uppercase tracking-wider animate-pulse-subtle">Hoạt động</span>
+</div>
+</div>
+<div class="space-y-6">
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px] text-outline">inventory_2</span>
+<span>Gói</span>
+</div>
+<span class="font-semibold">Pro</span>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px] text-outline">person_outline</span>
+<span>Admin</span>
+</div>
+<span class="font-semibold">5</span>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px] text-outline">groups</span>
+<span>Lớp</span>
+</div>
+<span class="font-semibold">28</span>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px] text-outline">calendar_today</span>
+<span>Ngày tạo</span>
+</div>
+<span class="text-on-surface-variant">12/05/2024</span>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px] text-outline">tag</span>
+<span>Mã tổ chức</span>
+</div>
+<span class="text-on-surface-variant uppercase">ORG-1001</span>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px] text-outline">mail</span>
+<span>Email liên hệ</span>
+</div>
+<span class="text-on-surface-variant">admin@minhkhai.edu.vn</span>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px] text-outline">call</span>
+<span>Số điện thoại</span>
+</div>
+<span class="text-on-surface-variant">(028) 1234 5678</span>
+</div>
+</div>
+<div class="mt-12 pt-8 border-t border-outline-variant grid grid-cols-3 gap-2">
+<button class="flex flex-col items-center gap-2 py-4 rounded-xl border border-outline-variant hover:bg-gray-50 group hover:scale-105 hover:shadow-sm transition-all">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">edit</span>
+<span class="text-[12px] font-semibold text-primary">Sửa</span>
+</button>
+<button class="flex flex-col items-center gap-2 py-4 rounded-xl border border-outline-variant hover:bg-gray-50 group hover:scale-105 hover:shadow-sm transition-all">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:scale-110 transition-transform">lock_open</span>
+<span class="text-[12px] font-semibold text-on-surface-variant">Khóa</span>
+</button>
+<button class="flex flex-col items-center gap-2 py-4 rounded-xl border border-outline-variant hover:bg-red-50 group hover:scale-105 hover:shadow-sm transition-all">
+<span class="material-symbols-outlined text-red-50 group-hover:scale-110 transition-transform text-red-500">delete</span>
+<span class="text-[12px] font-semibold text-red-500">Xóa</span>
+</button>
+</div>
+</aside>
+</div>
+</main>
+</div>
+</body></html>
