@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TeachFlow AI - Practice Quiz</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#5046e5",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#5046e5",
+                        "on-primary-container": "#dbd8ff",
+                        "surface": "#f8f9ff",
+                        "on-surface": "#0b1c30",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container": "#e5eeff",
+                        "surface-container-high": "#dce9ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "outline": "#777587",
+                        "outline-variant": "#c7c4d8",
+                        "secondary": "#5b5e69",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#005338",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "8px",
+                        "lg": "8px",
+                        "xl": "12px",
+                        "2xl": "16px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding": "24px",
+                        "topbar-height": "72px",
+                        "sidebar-width": "260px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "sans": ["Inter", "sans-serif"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "title-sm": ["Inter"]
+                    },
+                    "boxShadow": {
+                        "card": "0 2px 4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.04)",
+                        "premium": "0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02)"
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .glass-sidebar {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+        }
+        
+        .active-nav-item {
+            background-color: #5046e5;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(80, 70, 229, 0.2);
+        }
+
+        .confidence-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #5046e5;
+            border: 4px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-surface font-sans text-on-surface">
+<!-- Sidebar Navigation -->
+<aside class="w-sidebar-width h-screen fixed left-0 top-0 glass-sidebar border-r border-outline-variant/50 flex flex-col z-50">
+<div class="h-[80px] flex items-center px-6 gap-3 mb-4">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-2xl fill-icon">school</span>
+</div>
+<h1 class="font-bold text-xl tracking-tight text-on-surface">TeachFlow AI</h1>
+</div>
+<nav class="flex-1 px-4 space-y-1.5">
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">person_search</span>
+<span class="font-medium text-[14px]">Lớp của tôi</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">menu_book</span>
+<span class="font-medium text-[14px]">Lesson</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 active-nav-item rounded-lg" href="#">
+<span class="material-symbols-outlined fill-icon">quiz</span>
+<span class="font-semibold text-[14px]">Luyện tập</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">folder</span>
+<span class="font-medium text-[14px]">Tài liệu</span>
+</a>
+</nav>
+<div class="mt-auto p-4 border-t border-outline-variant/30">
+<div class="flex items-center gap-3 px-2 py-3">
+<img alt="User" class="w-10 h-10 rounded-full object-cover border border-outline-variant/50" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp1menOkauEGle9gEIT7w0u0KSVqD_oH3D5sSYsxhG3JkmsTpe6yBiw9c2L-d4Pq9VIarrqFlGmhbt2b8_tjATyHkOg6pUBdyGIuKulkyOIfVxv8frkJgUA7BI0ysHufyyUUq9qEUq3M42OQZ_xEDZknkxVdxTDZlHNX3RxN4YHKK6W1orw0HgSsLhNIb8HAKD3lNzDs9kP8BLxVQjxr7USy93U8T2b7ND7FFq0YkTDCDwK2cvzClODINWryU6ihj9XRKw9StaQGA"/>
+<div class="flex-1 min-w-0">
+<p class="font-bold text-[14px] truncate">Minh Đức</p>
+<p class="text-xs text-secondary truncate">Lớp 6A</p>
+</div>
+<span class="material-symbols-outlined text-secondary text-sm">unfold_more</span>
+</div>
+</div>
+</aside>
+<main class="ml-sidebar-width min-h-screen">
+<!-- Header -->
+<header class="h-[80px] px-8 flex justify-between items-center bg-surface sticky top-0 z-40">
+<h2 class="text-2xl font-bold text-on-surface">Luyện tập</h2>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3">
+<div class="relative">
+<span class="material-symbols-outlined text-on-surface/70 cursor-pointer">notifications</span>
+<span class="absolute -top-1 -right-1 w-4 h-4 bg-error text-white text-[10px] flex items-center justify-center rounded-full border-2 border-surface font-bold">3</span>
+</div>
+<div class="flex items-center gap-2 pl-4 border-l border-outline-variant/50">
+<img class="w-9 h-9 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp1menOkauEGle9gEIT7w0u0KSVqD_oH3D5sSYsxhG3JkmsTpe6yBiw9c2L-d4Pq9VIarrqFlGmhbt2b8_tjATyHkOg6pUBdyGIuKulkyOIfVxv8frkJgUA7BI0ysHufyyUUq9qEUq3M42OQZ_xEDZknkxVdxTDZlHNX3RxN4YHKK6W1orw0HgSsLhNIb8HAKD3lNzDs9kP8BLxVQjxr7USy93U8T2b7ND7FFq0YkTDCDwK2cvzClODINWryU6ihj9XRKw9StaQGA"/>
+<span class="material-symbols-outlined text-secondary text-sm">keyboard_arrow_down</span>
+</div>
+</div>
+</div>
+</header>
+<div class="px-8 pb-8 flex gap-6">
+<!-- Left Pane: Set List -->
+<aside class="w-[340px] flex-shrink-0 space-y-6">
+<div class="flex gap-3">
+<div class="flex-1 relative group">
+<select class="w-full appearance-none bg-white border border-outline-variant rounded-lg px-4 py-2.5 text-[14px] font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none cursor-pointer">
+<option>Khoa học tự nhiên 6A</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none">keyboard_arrow_down</span>
+</div>
+<button class="px-3 py-2.5 bg-white border border-outline-variant rounded-lg text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+<div class="flex gap-2 overflow-x-auto scrollbar-hide">
+<button class="whitespace-nowrap px-4 py-2 bg-primary text-white rounded-lg text-[13px] font-semibold">Tất cả</button>
+<button class="whitespace-nowrap px-4 py-2 bg-white border border-outline-variant text-secondary rounded-lg text-[13px] font-medium hover:border-primary/50 transition-colors">Bài tập</button>
+<button class="whitespace-nowrap px-4 py-2 bg-white border border-outline-variant text-secondary rounded-lg text-[13px] font-medium hover:border-primary/50 transition-colors">Trắc nghiệm</button>
+<button class="whitespace-nowrap px-4 py-2 bg-white border border-outline-variant text-secondary rounded-lg text-[13px] font-medium hover:border-primary/50 transition-colors">Tự luận</button>
+</div>
+<div class="space-y-3">
+<h3 class="text-[14px] font-bold text-on-surface/70 px-1 uppercase tracking-wider">Bộ luyện tập</h3>
+<!-- Active Set Card -->
+<div class="p-4 bg-[#f1f1ff] border-2 border-primary/40 rounded-2xl relative shadow-card">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 bg-tertiary/10 text-tertiary rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined fill-icon">eco</span>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-[14px]">Quang hợp ở thực vật</h4>
+<p class="text-[12px] text-secondary">12 câu</p>
+</div>
+<span class="material-symbols-outlined text-primary">chevron_right</span>
+</div>
+<div class="mt-3 flex items-center gap-3">
+<div class="flex-1 h-1.5 bg-white rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[58%]"></div>
+</div>
+<span class="text-[11px] font-bold text-primary">7/12</span>
+</div>
+<div class="absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-primary rounded-r-full"></div>
+</div>
+<!-- Regular Set Cards -->
+<div class="p-4 bg-white border border-outline-variant/40 rounded-2xl shadow-card hover:border-primary/20 transition-all cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined">grid_view</span>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-[14px]">Phân số</h4>
+<p class="text-[12px] text-secondary">10 câu</p>
+</div>
+<div class="w-5 h-5 rounded-full border-2 border-orange-400"></div>
+</div>
+<div class="mt-3 flex items-center gap-3">
+<div class="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[40%]"></div>
+</div>
+<span class="text-[11px] font-bold text-secondary">4/10</span>
+</div>
+</div>
+<div class="p-4 bg-white border border-outline-variant/40 rounded-2xl shadow-card hover:border-primary/20 transition-all cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined">translate</span>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-[14px]">Động từ</h4>
+<p class="text-[12px] text-secondary">10 câu</p>
+</div>
+<div class="w-5 h-5 rounded-full border-2 border-outline-variant"></div>
+</div>
+<div class="mt-3 flex items-center gap-3">
+<div class="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-outline-variant/30 w-0"></div>
+</div>
+<span class="text-[11px] font-bold text-secondary">0/10</span>
+</div>
+</div>
+<div class="p-4 bg-white border border-outline-variant/40 rounded-2xl shadow-card hover:border-primary/20 transition-all cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-[14px]">Điện tích</h4>
+<p class="text-[12px] text-secondary">8 câu</p>
+</div>
+<span class="material-symbols-outlined text-tertiary fill-icon">check_circle</span>
+</div>
+<div class="mt-3 flex items-center gap-3">
+<div class="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-full"></div>
+</div>
+<span class="text-[11px] font-bold text-tertiary">8/8</span>
+</div>
+</div>
+<button class="w-full py-4 border-2 border-dashed border-primary/20 rounded-2xl text-primary font-bold text-[14px] hover:bg-primary/5 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">add</span>
+                    Tạo bộ luyện tập
+                </button>
+</div>
+</aside>
+<!-- Center Pane: Question -->
+<section class="flex-1 flex flex-col gap-6">
+<div class="bg-white rounded-[24px] border border-outline-variant/30 shadow-premium p-10 flex-1 flex flex-col min-h-[600px]">
+<div class="flex items-center justify-between mb-10">
+<div class="text-[15px] font-bold text-on-surface">
+                        Câu hỏi 7 <span class="text-secondary font-medium">/ 12</span>
+</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-secondary cursor-pointer hover:text-primary">bookmark</span>
+<span class="material-symbols-outlined text-secondary cursor-pointer hover:text-primary">more_horiz</span>
+</div>
+</div>
+<div class="mb-8">
+<span class="bg-primary/10 text-primary px-3 py-1 rounded-lg text-[11px] font-extrabold uppercase tracking-widest mb-5 inline-block">Trắc nghiệm</span>
+<h3 class="text-2xl font-bold text-on-surface leading-snug">Quang hợp diễn ra ở đâu trong tế bào thực vật?</h3>
+</div>
+<div class="space-y-3.5 flex-1">
+<label class="flex items-center p-4 border border-outline-variant/60 rounded-2xl cursor-pointer hover:bg-surface-container-low transition-all">
+<span class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center font-bold text-[14px] mr-4">A</span>
+<span class="text-[15px] text-secondary">Nhân tế bào</span>
+</label>
+<label class="flex items-center p-4 border border-outline-variant/60 rounded-2xl cursor-pointer hover:bg-surface-container-low transition-all">
+<span class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center font-bold text-[14px] mr-4">B</span>
+<span class="text-[15px] text-secondary">Ti thể</span>
+</label>
+<label class="flex items-center p-4 border-2 border-tertiary bg-tertiary/5 rounded-2xl cursor-pointer transition-all shadow-sm">
+<span class="w-10 h-10 rounded-xl bg-tertiary text-white flex items-center justify-center font-bold text-[14px] mr-4">C</span>
+<span class="text-[15px] font-bold text-on-surface">Lục lạp</span>
+<span class="ml-auto material-symbols-outlined text-tertiary fill-icon">check_circle</span>
+</label>
+<label class="flex items-center p-4 border border-outline-variant/60 rounded-2xl cursor-pointer hover:bg-surface-container-low transition-all">
+<span class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center font-bold text-[14px] mr-4">D</span>
+<span class="text-[15px] text-secondary">Không bào</span>
+</label>
+</div>
+<!-- Feedback Banner -->
+<div class="mt-8 p-4 bg-tertiary/5 border border-tertiary/20 rounded-2xl flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary fill-icon">check_circle</span>
+<span class="text-tertiary font-bold text-[14px]">Chính xác!</span>
+</div>
+<!-- Confidence Level -->
+<div class="mt-10">
+<div class="flex items-center gap-2 mb-6">
+<span class="text-[14px] font-bold text-on-surface">Mức độ tự tin</span>
+<span class="material-symbols-outlined text-[18px] text-secondary">info</span>
+</div>
+<div class="relative px-2">
+<div class="h-1.5 bg-surface-container rounded-full w-full"></div>
+<div class="absolute h-1.5 bg-primary rounded-full top-0 left-0 w-[80%]"></div>
+<div class="absolute top-1/2 -translate-y-1/2 left-0 w-full flex justify-between pointer-events-none">
+<div class="w-2 h-2 rounded-full bg-primary ring-4 ring-white"></div>
+<div class="w-2 h-2 rounded-full bg-primary ring-4 ring-white"></div>
+<div class="w-2 h-2 rounded-full bg-primary ring-4 ring-white"></div>
+<div class="w-2 h-2 rounded-full bg-primary ring-4 ring-white"></div>
+<div class="w-6 h-6 rounded-full bg-primary border-4 border-white shadow-md -mt-1 cursor-pointer pointer-events-auto"></div>
+</div>
+<div class="flex justify-between mt-6">
+<div class="text-center opacity-50">
+<span class="material-symbols-outlined text-2xl">sentiment_dissatisfied</span>
+<p class="text-[10px] font-extrabold uppercase mt-1">Không chắc</p>
+</div>
+<div class="text-center text-primary">
+<span class="material-symbols-outlined text-2xl fill-icon">sentiment_very_satisfied</span>
+<p class="text-[10px] font-extrabold uppercase mt-1">Rất chắc</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="mt-10 flex gap-4">
+<button class="flex-1 py-3.5 border border-primary/30 text-primary rounded-2xl font-bold text-[15px] hover:bg-primary/5 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">restart_alt</span>
+                        Bỏ qua
+                    </button>
+<button class="flex-[1.8] py-3.5 bg-primary text-white rounded-2xl font-bold text-[15px] hover:shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">check</span>
+                        Kiểm tra
+                    </button>
+</div>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-center gap-2">
+<button class="px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl text-secondary hover:text-primary flex items-center gap-2 text-[14px] font-medium shadow-card">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                    Trước
+                </button>
+<div class="flex gap-1 mx-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-xl text-[14px] font-medium hover:bg-surface-container">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl text-[14px] font-medium hover:bg-surface-container">2</button>
+<span class="w-10 h-10 flex items-center justify-center text-secondary">...</span>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-primary text-white text-[14px] font-bold shadow-lg shadow-primary/20">7</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl text-[14px] font-medium hover:bg-surface-container">8</button>
+<span class="w-10 h-10 flex items-center justify-center text-secondary">...</span>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl text-[14px] font-medium hover:bg-surface-container">12</button>
+</div>
+<button class="px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl text-primary flex items-center gap-2 text-[14px] font-bold shadow-card">
+                    Tiếp
+                    <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- Right Pane: Progress & Stats -->
+<aside class="w-[360px] flex-shrink-0 space-y-6">
+<!-- Overall Progress -->
+<div class="p-6 bg-white rounded-[24px] border border-outline-variant/30 shadow-card">
+<div class="flex justify-between items-center mb-5">
+<h4 class="text-[13px] font-extrabold uppercase text-secondary tracking-widest">Tiến độ</h4>
+<span class="text-[14px] font-bold text-on-surface">7 <span class="text-secondary font-medium">/ 12</span></span>
+</div>
+<div class="h-2 bg-surface-container rounded-full overflow-hidden mb-8">
+<div class="h-full bg-tertiary/60 w-[58%] rounded-full"></div>
+</div>
+<div class="flex flex-col items-center">
+<div class="relative w-44 h-44 mb-8">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-container" cx="88" cy="88" fill="transparent" r="78" stroke="currentColor" stroke-width="12"></circle>
+<circle class="text-tertiary transition-all duration-1000" cx="88" cy="88" fill="transparent" r="78" stroke="currentColor" stroke-dasharray="490" stroke-dashoffset="73" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-3xl font-extrabold text-on-surface">85%</span>
+<span class="text-[10px] font-extrabold text-secondary uppercase tracking-widest mt-1">Điểm số</span>
+</div>
+</div>
+<div class="w-full space-y-3">
+<div class="flex items-center text-[13px]">
+<div class="w-3 h-3 rounded-full bg-tertiary mr-3"></div>
+<span class="text-secondary font-medium flex-1">Đúng</span>
+<span class="font-bold">7</span>
+</div>
+<div class="flex items-center text-[13px]">
+<div class="w-3 h-3 rounded-full bg-error mr-3"></div>
+<span class="text-secondary font-medium flex-1">Sai</span>
+<span class="font-bold">1</span>
+</div>
+<div class="flex items-center text-[13px]">
+<div class="w-3 h-3 rounded-full bg-outline-variant mr-3"></div>
+<span class="text-secondary font-medium flex-1">Chưa làm</span>
+<span class="font-bold">4</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Explanation Box -->
+<div class="p-6 bg-white rounded-[24px] border border-outline-variant/30 shadow-card">
+<div class="flex items-center justify-between mb-4">
+<h4 class="font-bold text-[15px]">Giải thích</h4>
+<span class="bg-tertiary/10 text-tertiary px-2 py-0.5 rounded-lg text-[10px] font-extrabold uppercase tracking-tight">Chính xác</span>
+</div>
+<p class="text-[14px] text-secondary leading-relaxed mb-6">
+                    Quang hợp diễn ra trong lục lạp. Lục lạp chứa diệp lục giúp hấp thụ ánh sáng để chuyển hóa CO₂ và H₂O thành đường và O₂.
+                </p>
+<div class="pt-5 border-t border-outline-variant/30">
+<div class="flex items-center gap-2 mb-4 text-tertiary">
+<span class="material-symbols-outlined text-[18px] fill-icon">verified</span>
+<span class="text-[11px] font-extrabold uppercase tracking-widest">Citation</span>
+</div>
+<div class="flex flex-wrap gap-2">
+<div class="px-3 py-1.5 bg-surface-container rounded-xl text-[11px] font-bold border border-outline-variant/30 hover:bg-primary/5 cursor-pointer">
+                            Nguồn 1 <span class="text-secondary font-medium ml-1">§ 2.1</span>
+</div>
+<div class="px-3 py-1.5 bg-surface-container rounded-xl text-[11px] font-bold border border-outline-variant/30 hover:bg-primary/5 cursor-pointer">
+                            Nguồn 2 <span class="text-secondary font-medium ml-1">§ 1.3</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Improvement Areas -->
+<div class="p-6 bg-white rounded-[24px] border border-outline-variant/30 shadow-card">
+<div class="flex justify-between items-center mb-5">
+<h4 class="font-bold text-[15px]">Yếu</h4>
+<span class="bg-primary/10 text-primary px-3 py-0.5 rounded-full text-[10px] font-bold">2 chủ đề</span>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-4 p-3.5 bg-error/5 border border-error/10 rounded-2xl hover:bg-error/10 transition-all cursor-pointer group">
+<div class="w-10 h-10 bg-error text-white rounded-xl flex items-center justify-center shadow-lg shadow-error/20">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>
+</div>
+<span class="text-[14px] font-bold flex-1">Phân số</span>
+<span class="text-error font-extrabold text-[14px]">40%</span>
+<span class="material-symbols-outlined text-secondary group-hover:text-error">chevron_right</span>
+</div>
+<div class="flex items-center gap-4 p-3.5 bg-orange-50 border border-orange-100 rounded-2xl hover:bg-orange-100/50 transition-all cursor-pointer group">
+<div class="w-10 h-10 bg-orange-400 text-white rounded-xl flex items-center justify-center shadow-lg shadow-orange-400/20">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+</div>
+<span class="text-[14px] font-bold flex-1">Điện tích</span>
+<span class="text-orange-500 font-extrabold text-[14px]">60%</span>
+<span class="material-symbols-outlined text-secondary group-hover:text-orange-500">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Quick Actions -->
+<div class="space-y-4">
+<h4 class="text-[13px] font-extrabold uppercase text-secondary tracking-widest px-1">Hành động nhanh</h4>
+<div class="flex gap-4">
+<button class="flex-1 py-4 bg-white border border-outline-variant/30 rounded-2xl flex flex-col items-center gap-2 hover:bg-primary/5 hover:border-primary/30 transition-all shadow-card group active:scale-95">
+<span class="material-symbols-outlined text-primary group-hover:rotate-180 transition-transform duration-500">refresh</span>
+<span class="text-[11px] font-extrabold uppercase text-on-surface">Ôn lại sai</span>
+</button>
+<button class="flex-1 py-4 bg-white border border-outline-variant/30 rounded-2xl flex flex-col items-center gap-2 hover:bg-primary/5 hover:border-primary/30 transition-all shadow-card group active:scale-95">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">view_list</span>
+<span class="text-[11px] font-extrabold uppercase text-on-surface">Làm lại bộ này</span>
+</button>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<script>
+    // Subtle hover effect for all card-like elements
+    document.querySelectorAll('.shadow-card, .shadow-premium').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+            el.style.transform = 'translateY(-2px)';
+            el.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        });
+        el.addEventListener('mouseleave', () => {
+            el.style.transform = 'translateY(0)';
+        });
+    });
+</script>
+</body></html>jj

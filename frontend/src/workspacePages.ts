@@ -9,10 +9,15 @@ export type WorkspacePageId =
   | 'teacher-outline'
   | 'teacher-studio'
   | 'teacher-jobs'
+  | 'admin-overview'
   | 'admin-review'
+  | 'admin-lesson-library'
   | 'admin-knowledge'
   | 'admin-users'
   | 'admin-jobs'
+  | 'admin-reports'
+  | 'admin-activity-log'
+  | 'admin-settings'
   | 'student-classes'
   | 'student-lessons'
   | 'student-practice'
@@ -39,9 +44,19 @@ const WORKSPACE_PAGES: Record<UserRole, WorkspacePage[]> = {
   ],
   admin: [
     {
+      id: 'admin-overview',
+      label: 'Tổng quan',
+      description: 'Theo dõi vận hành, nội dung và rủi ro chính.',
+    },
+    {
       id: 'admin-review',
       label: 'Hàng đợi duyệt',
       description: 'Duyệt, trả chỉnh sửa hoặc xuất bản lesson.',
+    },
+    {
+      id: 'admin-lesson-library',
+      label: 'Bài giảng mẫu',
+      description: 'Kiểm tra kho bài giảng và nội dung đã sẵn sàng.',
     },
     {
       id: 'admin-knowledge',
@@ -57,6 +72,21 @@ const WORKSPACE_PAGES: Record<UserRole, WorkspacePage[]> = {
       id: 'admin-jobs',
       label: 'Tác vụ',
       description: 'Theo dõi và xử lý tác vụ lỗi trong organization.',
+    },
+    {
+      id: 'admin-reports',
+      label: 'Báo cáo',
+      description: 'Tổng hợp chất lượng nội dung và mức sử dụng.',
+    },
+    {
+      id: 'admin-activity-log',
+      label: 'Nhật ký',
+      description: 'Theo dõi hoạt động gần đây trong organization.',
+    },
+    {
+      id: 'admin-settings',
+      label: 'Cài đặt',
+      description: 'Kiểm tra cấu hình vận hành an toàn trước production.',
     },
   ],
   teacher: [
@@ -122,16 +152,28 @@ const ACTION_PAGE_TARGETS: Record<UserRole, Record<string, WorkspacePageId>> = {
     'Theo dõi tenant': 'system-organizations',
   },
   admin: {
+    'Tổng quan': 'admin-overview',
     'Hàng đợi duyệt': 'admin-review',
     'Cảnh báo citation': 'admin-review',
     'Duyệt và xuất bản': 'admin-review',
     'Yêu cầu chỉnh sửa': 'admin-review',
+    'Bài giảng mẫu': 'admin-lesson-library',
+    'Kho bài giảng': 'admin-lesson-library',
+    'Kho bài giảng mẫu': 'admin-lesson-library',
+    'Content Library': 'admin-lesson-library',
     'Nguồn dẫn': 'admin-knowledge',
+    'Kho tri thức': 'admin-knowledge',
     'Xuất bản': 'admin-review',
     'Tạo tài khoản': 'admin-users',
     'Người dùng': 'admin-users',
     'Tác vụ': 'admin-jobs',
     'Theo dõi tác vụ': 'admin-jobs',
+    'Báo cáo': 'admin-reports',
+    Reports: 'admin-reports',
+    'Nhật ký': 'admin-activity-log',
+    'Hoạt động': 'admin-activity-log',
+    'Cài đặt': 'admin-settings',
+    Settings: 'admin-settings',
   },
   teacher: {
     'Tổng quan': 'teacher-overview',

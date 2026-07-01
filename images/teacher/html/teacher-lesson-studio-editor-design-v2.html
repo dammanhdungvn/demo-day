@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TeachFlow AI - Studio Editor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-tertiary-fixed": "#002113",
+                        "on-primary-fixed-variant": "#3422cc",
+                        "surface": "#f8f9ff",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#cbdbf5",
+                        "primary-container": "#5046e5",
+                        "on-tertiary": "#ffffff",
+                        "background": "#f8f9ff",
+                        "on-surface-variant": "#464555",
+                        "on-tertiary-container": "#67f4b7",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-secondary-fixed": "#181b24",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#006e4b",
+                        "secondary": "#5b5e69",
+                        "on-secondary-container": "#61646f",
+                        "tertiary": "#005338",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#dce9ff",
+                        "secondary-container": "#e0e2ef",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-surface": "#0b1c30",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#213145",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container": "#e5eeff",
+                        "on-background": "#0b1c30",
+                        "primary": "#3625cd",
+                        "outline": "#777587",
+                        "surface-bright": "#f8f9ff",
+                        "on-primary-fixed": "#0f0069",
+                        "secondary-fixed": "#e0e2ef",
+                        "surface-variant": "#d3e4fe",
+                        "outline-variant": "#c7c4d8",
+                        "primary-fixed": "#e2dfff",
+                        "on-secondary-fixed-variant": "#434751",
+                        "on-primary-container": "#dbd8ff",
+                        "secondary-fixed-dim": "#c3c6d2",
+                        "inverse-primary": "#c3c0ff",
+                        "surface-tint": "#4e44e3",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-gap": "12px",
+                        "container-padding": "24px",
+                        "gutter": "16px",
+                        "sidebar-width": "260px",
+                        "topbar-height": "72px"
+                    },
+                    "fontFamily": {
+                        "title-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-uppercase": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "title-sm": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-uppercase": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "display-lg": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-item-active {
+            @apply bg-primary-fixed text-primary font-bold rounded-lg;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md selection:bg-primary-fixed selection:text-primary">
+<div class="flex min-h-screen">
+<!-- Sidebar Navigation -->
+<aside class="w-sidebar-width h-screen sticky top-0 left-0 bg-surface flex flex-col py-container-padding px-4 border-r border-outline-variant">
+<div class="flex items-center gap-3 mb-10 px-2">
+<span class="material-symbols-outlined text-primary text-display-lg" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<div>
+<h1 class="font-display-lg text-display-lg font-bold text-primary">TeachFlow AI</h1>
+<p class="text-[10px] text-secondary uppercase tracking-widest font-semibold">Educational AI Platform</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-secondary hover:text-primary transition-colors hover:bg-surface-container-low rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">dashboard</span>
+<span class="font-title-sm text-title-sm">Tổng quan</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-secondary hover:text-primary transition-colors hover:bg-surface-container-low rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">school</span>
+<span class="font-title-sm text-title-sm">Khóa học</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-secondary hover:text-primary transition-colors hover:bg-surface-container-low rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">description</span>
+<span class="font-title-sm text-title-sm">Tài liệu</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-secondary hover:text-primary transition-colors hover:bg-surface-container-low rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">format_list_bulleted</span>
+<span class="font-title-sm text-title-sm">Dàn ý</span>
+</a>
+<a class="bg-primary-fixed text-primary font-bold rounded-lg flex items-center gap-3 px-3 py-2.5 group" href="#">
+<span class="material-symbols-outlined group-hover:rotate-12 transition-transform" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-title-sm text-title-sm">Studio</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-secondary hover:text-primary transition-colors hover:bg-surface-container-low rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">assignment_turned_in</span>
+<span class="font-title-sm text-title-sm">Tác vụ</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 mb-4">
+<p class="text-[11px] font-bold text-secondary uppercase mb-2">Tiến độ bài học</p>
+<div class="flex items-center gap-4">
+<div class="relative w-12 h-12 flex items-center justify-center">
+<svg class="w-full h-full -rotate-90">
+<circle cx="24" cy="24" fill="transparent" r="20" stroke="#e2dfff" stroke-width="4"></circle>
+<circle cx="24" cy="24" fill="transparent" r="20" stroke="#3625cd" stroke-dasharray="125.6" stroke-dashoffset="31.4" stroke-width="4"></circle>
+</svg>
+<span class="absolute text-[12px] font-bold">75%</span>
+</div>
+<div>
+<p class="text-body-sm font-bold text-on-surface">9 / 12 block</p>
+<a class="text-[11px] text-primary font-semibold hover:underline" href="#">Xem chi tiết</a>
+</div>
+</div>
+</div>
+<a class="flex items-center gap-3 px-3 py-2 text-secondary hover:text-primary transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-title-sm text-title-sm">Cài đặt</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col">
+<!-- Top App Bar -->
+<header class="h-topbar-height w-full flex items-center justify-between px-container-padding bg-surface/80 backdrop-blur-md sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-md text-headline-md text-on-surface">Studio</h2>
+<div class="h-8 w-px bg-outline-variant"></div>
+<div class="relative group">
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors">
+<span class="text-body-md">Lớp 6 – Khoa học tự nhiên</span>
+<span class="material-symbols-outlined text-secondary">expand_more</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-4 h-4 bg-error text-on-error text-[10px] flex items-center justify-center rounded-full border-2 border-surface">3</span>
+</button>
+<div class="flex items-center gap-2 pl-2 border-l border-outline-variant">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Professional headshot of a female educator with a friendly smile, clean lighting, soft background, modern professional attire." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjCO61GXDwXCXGqkbldGXgeoP-LjozrMa0u7yWrGar6rUpz4sm1mKM5Oh9L_ixQ0-mc8bPP6Ngeri78Dsk0FZEAm3Z29RCjT8OQp5yJOf7nb0-MfEWCA3QKk2yHn4fJB4hntNbLp4n72Bfy0dE_9SB6ttCNCE-OHD8tQD0woBTeT0KAzfNCTevQ95Jl29fb1RAGbN3KW-pH5KshbyapIjxBbRGtw0cVbxqYNdhaexU-0GpJC3Dw9QNxy257-t1msINjZ7AZ7BVouA"/>
+<span class="material-symbols-outlined text-secondary text-[18px]">expand_more</span>
+</div>
+</div>
+</header>
+<!-- Editor Workspace -->
+<main class="p-container-padding flex-1 bg-surface-container-lowest grid grid-cols-12 gap-gutter">
+<!-- Left Sidebar: Lesson Blocks -->
+<div class="col-span-3 flex flex-col gap-4">
+<div class="bg-surface rounded-xl border border-outline-variant overflow-hidden flex flex-col h-full shadow-sm">
+<div class="p-4 border-b border-outline-variant flex items-center justify-between">
+<h3 class="font-title-sm text-title-sm">Block</h3>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary-fixed text-primary hover:bg-primary-container hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+<div class="p-2 overflow-y-auto custom-scrollbar flex-1 space-y-1">
+<!-- Block Items -->
+<div class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low rounded-lg cursor-pointer group">
+<span class="material-symbols-outlined text-secondary text-[18px]">drag_indicator</span>
+<div class="w-8 h-8 rounded bg-primary-fixed/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">title</span>
+</div>
+<span class="text-body-md flex-1">1. Tiêu đề</span>
+<span class="material-symbols-outlined text-tertiary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low rounded-lg cursor-pointer group">
+<span class="material-symbols-outlined text-secondary text-[18px]">drag_indicator</span>
+<div class="w-8 h-8 rounded bg-secondary-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">ads_click</span>
+</div>
+<span class="text-body-md flex-1">2. Mục tiêu</span>
+<span class="material-symbols-outlined text-tertiary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center gap-3 p-3 bg-primary-fixed text-primary font-semibold rounded-lg cursor-pointer border-l-4 border-primary">
+<span class="material-symbols-outlined text-primary text-[18px]">drag_indicator</span>
+<div class="w-8 h-8 rounded bg-primary-container text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">description</span>
+</div>
+<span class="text-body-md flex-1">3. Nội dung</span>
+<span class="material-symbols-outlined text-error text-[18px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low rounded-lg cursor-pointer group">
+<span class="material-symbols-outlined text-secondary text-[18px]">drag_indicator</span>
+<div class="w-8 h-8 rounded bg-tertiary-container/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[18px]">extension</span>
+</div>
+<span class="text-body-md flex-1">4. Hoạt động</span>
+<span class="material-symbols-outlined text-tertiary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low rounded-lg cursor-pointer group">
+<span class="material-symbols-outlined text-secondary text-[18px]">drag_indicator</span>
+<div class="w-8 h-8 rounded bg-secondary-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">image</span>
+</div>
+<span class="text-body-md flex-1">5. Ví dụ minh họa</span>
+<span class="material-symbols-outlined text-tertiary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low rounded-lg cursor-pointer group">
+<span class="material-symbols-outlined text-secondary text-[18px]">drag_indicator</span>
+<div class="w-8 h-8 rounded bg-secondary-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">help</span>
+</div>
+<span class="text-body-md flex-1">6. Quiz</span>
+<span class="material-symbols-outlined text-tertiary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low rounded-lg cursor-pointer group">
+<span class="material-symbols-outlined text-secondary text-[18px]">drag_indicator</span>
+<div class="w-8 h-8 rounded bg-secondary-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">summarize</span>
+</div>
+<span class="text-body-md flex-1">7. Tóm tắt</span>
+<span class="material-symbols-outlined text-tertiary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low rounded-lg cursor-pointer group">
+<span class="material-symbols-outlined text-secondary text-[18px]">drag_indicator</span>
+<div class="w-8 h-8 rounded bg-secondary-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">edit_note</span>
+</div>
+<span class="text-body-md flex-1">8. Bài tập</span>
+<span class="material-symbols-outlined text-error text-[18px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Central Canvas: Rich Editor -->
+<div class="col-span-6 flex flex-col gap-6">
+<!-- Lesson Header & Actions -->
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<h2 class="text-display-lg font-bold">Quang hợp ở thực vật</h2>
+<span class="px-2 py-0.5 bg-surface-container text-secondary text-[10px] font-bold rounded uppercase">Bản nháp</span>
+</div>
+<div class="flex items-center gap-4 text-secondary text-body-sm">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">description</span> 12 block</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> Cập nhật lúc 09:15</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">person</span> Minh Anh</span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="bg-surface border border-outline-variant text-secondary p-2.5 rounded-xl hover:bg-surface-container-low transition-colors group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">edit</span>
+<p class="text-[10px] font-bold mt-1">Sửa</p>
+</button>
+<button class="bg-surface border border-outline-variant text-secondary p-2.5 rounded-xl hover:bg-surface-container-low transition-colors group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">download</span>
+<p class="text-[10px] font-bold mt-1">Xuất</p>
+</button>
+<button class="bg-primary text-on-primary p-2.5 rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 group">
+<span class="material-symbols-outlined group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" style="font-variation-settings: 'FILL' 1;">send</span>
+<p class="text-[10px] font-bold mt-1 text-on-primary">Gửi</p>
+</button>
+</div>
+</div>
+<!-- Main Editor Container -->
+<div class="bg-surface rounded-2xl border border-outline-variant overflow-hidden flex flex-col shadow-sm">
+<!-- Tabs -->
+<div class="flex px-4 border-b border-outline-variant bg-surface-container-lowest">
+<button class="px-6 py-4 border-b-2 border-primary text-primary font-bold text-title-sm">Preview</button>
+<button class="px-6 py-4 text-secondary font-semibold text-title-sm hover:text-primary transition-colors">Quiz</button>
+<button class="px-6 py-4 text-secondary font-semibold text-title-sm hover:text-primary transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                                AI gợi ý
+                            </button>
+</div>
+<!-- Editor Canvas -->
+<div class="p-6 flex-1 space-y-6">
+<h3 class="font-title-sm text-title-sm text-on-surface">3. Nội dung</h3>
+<!-- Rich Text Toolbar -->
+<div class="flex items-center gap-2 p-2 bg-surface border border-outline-variant rounded-xl">
+<select class="bg-transparent border-none text-body-md focus:ring-0 cursor-pointer">
+<option>Đoạn văn</option>
+<option>Tiêu đề 1</option>
+</select>
+<div class="h-6 w-px bg-outline-variant mx-1"></div>
+<button class="p-2 hover:bg-surface-container rounded transition-colors"><span class="material-symbols-outlined text-[20px]">format_bold</span></button>
+<button class="p-2 hover:bg-surface-container rounded transition-colors"><span class="material-symbols-outlined text-[20px]">format_italic</span></button>
+<button class="p-2 hover:bg-surface-container rounded transition-colors"><span class="material-symbols-outlined text-[20px]">format_underlined</span></button>
+<div class="h-6 w-px bg-outline-variant mx-1"></div>
+<button class="p-2 hover:bg-surface-container rounded transition-colors"><span class="material-symbols-outlined text-[20px]">format_list_bulleted</span></button>
+<button class="p-2 hover:bg-surface-container rounded transition-colors"><span class="material-symbols-outlined text-[20px]">format_list_numbered</span></button>
+<div class="h-6 w-px bg-outline-variant mx-1"></div>
+<button class="p-2 hover:bg-surface-container rounded transition-colors"><span class="material-symbols-outlined text-[20px]">image</span></button>
+<button class="p-2 hover:bg-surface-container rounded transition-colors"><span class="material-symbols-outlined text-[20px]">table_chart</span></button>
+<div class="flex-1"></div>
+<button class="flex items-center gap-1 px-3 py-1 bg-primary-fixed text-primary rounded-lg font-bold text-body-sm hover:opacity-80">
+<span class="material-symbols-outlined text-[16px]">auto_awesome</span> AI
+                                </button>
+</div>
+<!-- Content Display -->
+<div class="space-y-6">
+<div class="flex flex-col md:flex-row gap-6 items-center">
+<div class="w-full md:w-1/2">
+<img alt="Lesson Photosynthesis Diagram" class="w-full h-auto rounded-xl shadow-sm border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEbKt7QxvEeMZLFYfyCKqojBvRDOmNNMLgt7kYSF00xgBOqddkOGt31tFjYqLXxWz-KBh2_1y1epYw5cHlincoV4ho4qhQPjYogIwfDM41HZS_EQMKjS02lnF4VYZtPFtdL8nbEuQwo9USPeYkwXrmyV4w8dp8trzqTPSA3LcpWHtYXX8SFGxCADXijDvFAXkwqybkgry_r47U0YBfRKobXOUmtuFb5MZDkAPH79OQMbSiFZ4KWpH6ldHRreVnO5tD5wlncDfa2kk"/>
+</div>
+<div class="w-full md:w-1/2">
+<p class="text-body-md text-on-surface leading-relaxed">
+                                            Quang hợp là quá trình cây xanh sử dụng ánh sáng mặt trời để tạo ra chất dinh dưỡng (glucose) từ nước và carbon dioxide, đồng thời giải phóng oxygen.
+                                        </p>
+</div>
+</div>
+<div class="p-6 bg-surface-container-low rounded-xl border border-outline-variant flex justify-center">
+<code class="text-title-sm text-primary font-mono text-center">
+                                        6CO₂ + 6H₂O <span class="inline-block mx-4 relative top-1"><span class="absolute -top-6 left-0 right-0 text-[10px] text-secondary text-center">ánh sáng</span><span class="material-symbols-outlined">trending_flat</span></span> C₆H₁₂O₆ + 6O₂
+                                    </code>
+</div>
+<button class="w-full py-4 border-2 border-dashed border-outline-variant rounded-xl text-secondary hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">add</span>
+<span class="text-body-md font-semibold">Thêm nội dung</span>
+</button>
+</div>
+</div>
+<!-- Suggestions Panel -->
+<div class="p-6 bg-surface-container border-t border-outline-variant">
+<div class="flex gap-6 mb-6">
+<button class="text-primary font-bold border-b-2 border-primary pb-2 text-body-md">Gợi ý cải thiện</button>
+<button class="text-secondary hover:text-primary transition-colors pb-2 text-body-md">Kiểm tra tính chính xác</button>
+<button class="text-secondary hover:text-primary transition-colors pb-2 text-body-md">Phù hợp chương trình</button>
+</div>
+<div class="grid grid-cols-3 gap-4">
+<div class="bg-surface rounded-xl p-4 border border-outline-variant flex flex-col justify-between shadow-sm hover:shadow-md transition-all">
+<p class="text-body-sm text-on-surface mb-4">Bổ sung ví dụ minh họa để giúp học sinh dễ hiểu hơn.</p>
+<button class="self-start text-[11px] font-bold text-primary px-3 py-1.5 border border-primary-fixed rounded-lg hover:bg-primary-fixed transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">auto_fix</span> Áp dụng
+                                    </button>
+</div>
+<div class="bg-surface rounded-xl p-4 border border-outline-variant flex flex-col justify-between shadow-sm hover:shadow-md transition-all">
+<p class="text-body-sm text-on-surface mb-4">Thêm sơ đồ quá trình quang hợp của cây.</p>
+<button class="self-start text-[11px] font-bold text-primary px-3 py-1.5 border border-primary-fixed rounded-lg hover:bg-primary-fixed transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">auto_fix</span> Áp dụng
+                                    </button>
+</div>
+<div class="bg-surface rounded-xl p-4 border border-outline-variant flex flex-col justify-between shadow-sm hover:shadow-md transition-all">
+<p class="text-body-sm text-on-surface mb-4">Giải thích rõ vai trò của diệp lục (chlorophyll).</p>
+<button class="self-start text-[11px] font-bold text-primary px-3 py-1.5 border border-primary-fixed rounded-lg hover:bg-primary-fixed transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">auto_fix</span> Áp dụng
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Sidebar: Contextual Info -->
+<div class="col-span-3 flex flex-col gap-gutter">
+<!-- Citations -->
+<div class="bg-surface rounded-xl border border-outline-variant p-4 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">book</span>
+<h3 class="font-title-sm text-title-sm">Citation</h3>
+</div>
+<span class="w-6 h-6 rounded-full bg-secondary-container text-secondary flex items-center justify-center text-[12px] font-bold">4</span>
+</div>
+<div class="space-y-3 mb-4">
+<div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant flex gap-3 hover:border-primary transition-colors cursor-pointer group">
+<span class="w-6 h-6 shrink-0 rounded bg-primary-fixed text-primary flex items-center justify-center text-[12px] font-bold">1</span>
+<div class="flex-1 overflow-hidden">
+<p class="text-body-sm font-bold truncate">Sách giáo khoa KHTN 6</p>
+<p class="text-[10px] text-secondary truncate">NXB Giáo dục Việt Nam, 2021</p>
+</div>
+<span class="material-symbols-outlined text-secondary text-[16px] group-hover:text-primary transition-colors">open_in_new</span>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant flex gap-3 hover:border-primary transition-colors cursor-pointer group">
+<span class="w-6 h-6 shrink-0 rounded bg-primary-fixed text-primary flex items-center justify-center text-[12px] font-bold">2</span>
+<div class="flex-1 overflow-hidden">
+<p class="text-body-sm font-bold truncate">Campbell Biology</p>
+<p class="text-[10px] text-secondary truncate">Pearson, 11th Edition, 2017</p>
+</div>
+<span class="material-symbols-outlined text-secondary text-[16px] group-hover:text-primary transition-colors">open_in_new</span>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant flex gap-3 hover:border-primary transition-colors cursor-pointer group">
+<span class="w-6 h-6 shrink-0 rounded bg-primary-fixed text-primary flex items-center justify-center text-[12px] font-bold">3</span>
+<div class="flex-1 overflow-hidden">
+<p class="text-body-sm font-bold truncate">Britannica – Photosynthesis</p>
+<p class="text-[10px] text-secondary truncate">britannica.com</p>
+</div>
+<span class="material-symbols-outlined text-secondary text-[16px] group-hover:text-primary transition-colors">open_in_new</span>
+</div>
+</div>
+<button class="w-full py-2 border border-outline-variant rounded-lg text-secondary hover:text-primary hover:border-primary transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span class="text-body-sm font-semibold">Thêm citation</span>
+</button>
+</div>
+<!-- Warnings -->
+<div class="bg-surface rounded-xl border border-outline-variant p-4 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2 text-error">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+<h3 class="font-title-sm text-title-sm text-on-surface">Cảnh báo</h3>
+</div>
+<span class="w-6 h-6 rounded-full bg-error-container text-error flex items-center justify-center text-[12px] font-bold">2</span>
+</div>
+<div class="space-y-3">
+<div class="p-3 bg-error-container/30 rounded-lg border border-error/20 flex gap-3">
+<span class="material-symbols-outlined text-error text-[20px]">image_not_supported</span>
+<div>
+<p class="text-body-sm font-bold text-error">Hình ảnh thiếu nguồn</p>
+<p class="text-[11px] text-error/80">Block 3</p>
+</div>
+</div>
+<div class="p-3 bg-tertiary-container/10 rounded-lg border border-tertiary-container/20 flex gap-3">
+<span class="material-symbols-outlined text-tertiary text-[20px]">bar_chart</span>
+<div>
+<p class="text-body-sm font-bold text-tertiary">Thiếu ví dụ minh họa</p>
+<p class="text-[11px] text-tertiary/80">Block 3</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Status -->
+<div class="bg-surface rounded-xl border border-outline-variant p-4 shadow-sm">
+<h3 class="font-title-sm text-title-sm mb-4">Trạng thái block</h3>
+<div class="relative">
+<button class="w-full flex items-center justify-between p-3 rounded-lg border border-outline-variant bg-surface-container-low text-body-md">
+<div class="flex items-center gap-3">
+<span class="w-3 h-3 rounded-full bg-[#f59e0b]"></span>
+<span>Chờ duyệt</span>
+</div>
+<span class="material-symbols-outlined text-secondary">expand_more</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+<!-- Floating AI Prompt (Contextual) -->
+<div class="fixed bottom-8 right-8 z-50">
+<button class="w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all group overflow-hidden" id="aiFAB">
+<span class="material-symbols-outlined text-[28px] group-hover:rotate-[360deg] transition-transform duration-700">auto_awesome</span>
+<!-- Ripple/Aura Effect -->
+<div class="absolute inset-0 bg-white/20 scale-0 group-hover:scale-150 transition-transform duration-1000 rounded-full"></div>
+</button>
+<!-- Mini AI Tooltip -->
+<div class="absolute bottom-full right-0 mb-4 w-48 bg-inverse-surface text-inverse-on-surface p-3 rounded-xl shadow-xl opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all text-body-sm">
+            Hỏi AI về nội dung này hoặc yêu cầu tạo thêm bài tập.
+        </div>
+</div>
+<script>
+        // Micro-interactions
+        const fab = document.getElementById('aiFAB');
+        fab.addEventListener('click', () => {
+            alert('AI Assistant triggered: Preparing contextual suggestions...');
+        });
+
+        // Toggle dropdowns or other interactions can be added here
+        document.querySelectorAll('.group').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                // Potential for adding dynamic effects
+            });
+        });
+    </script>
+</body></html>

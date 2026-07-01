@@ -1296,12 +1296,12 @@ export function TeacherWorkspace({
 
   return (
     <section
-      className="panel learning-panel v4-teacher-workspace"
+      className={`panel learning-panel v4-teacher-workspace teacher-design-page teacher-design-${activePage}`}
       id={WORKSPACE_SECTION_IDS.teacherSetup}
       tabIndex={-1}
     >
       {showOverview && (
-        <>
+        <div className="teacher-design-overview">
           <div className="v4-teacher-hero">
             <div>
               <p className="section-label">Dashboard</p>
@@ -1456,7 +1456,7 @@ export function TeacherWorkspace({
               </button>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {showOverview && (
@@ -1515,7 +1515,7 @@ export function TeacherWorkspace({
             <span className="status-pill neutral-pill">Thiết lập</span>
           </div>
 
-          <div className="learning-grid">
+          <div className="learning-grid teacher-design-setup-grid">
         <form className="learning-form" onSubmit={handleCourseSubmit}>
           <h2>Tạo khóa học</h2>
           <label className="field">
@@ -1872,12 +1872,14 @@ export function TeacherWorkspace({
       )}
 
       {showJobs && (
-        <JobCenter audience="teacher" token={token} />
+        <section className="teacher-design-jobs" aria-label="Tác vụ xử lý">
+          <JobCenter audience="teacher" token={token} />
+        </section>
       )}
 
       {showDocuments && (
         <section
-        className="knowledge-panel"
+        className="knowledge-panel teacher-design-documents-grid"
         id={WORKSPACE_SECTION_IDS.teacherKnowledge}
         tabIndex={-1}
       >
@@ -2003,7 +2005,9 @@ export function TeacherWorkspace({
 
       {showOutlineOrStudio && (
         <section
-        className="outline-panel"
+        className={`outline-panel teacher-design-outline-builder ${
+          activePage === 'teacher-studio' ? 'teacher-design-studio-page' : ''
+        }`}
         id={WORKSPACE_SECTION_IDS.teacherOutline}
         tabIndex={-1}
       >
@@ -2217,7 +2221,7 @@ export function TeacherWorkspace({
                   )}
 
                   {lessonResult && (
-                    <div className="v4-lesson-studio-grid">
+                    <div className="v4-lesson-studio-grid teacher-design-studio-grid">
                       <aside className="v4-block-rail" aria-label="Danh sách khối nội dung">
                         <div className="v4-panel-title">
                           <span>Danh sách khối nội dung</span>

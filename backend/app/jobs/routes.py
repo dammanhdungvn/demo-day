@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 
 from ..auth.dependencies import require_roles
 from ..auth.schemas import UserProfile
@@ -29,12 +29,17 @@ def generation_jobs_route(
 )
 def retry_generation_job_route(
     job_id: str,
+    background_tasks: BackgroundTasks,
     current_user: Annotated[
         UserProfile,
         Depends(require_roles("teacher", "admin")),
     ],
 ) -> GenerationJobActionResponse:
-    return retry_generation_job(job_id, current_user)
+    return retry_generation_job(
+        job_id,
+        current_user,
+        background_tasks=background_tasks,
+    )
 
 
 @router.post(

@@ -218,6 +218,21 @@ h3 {
   margin-top: 12px;
 }
 
+.real-account-shortcuts {
+  display: grid;
+  gap: 10px;
+}
+
+.real-account-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .account-button,
 .primary-button,
 .ghost-button {
@@ -247,6 +262,18 @@ h3 {
   border-color: var(--teal);
   background: var(--surface-tint);
   outline: 0;
+}
+
+.real-role-admin svg {
+  color: var(--blue);
+}
+
+.real-role-teacher svg {
+  color: var(--green);
+}
+
+.real-role-student svg {
+  color: var(--teal);
 }
 
 .account-button span {
@@ -5062,6 +5089,41 @@ body {
   background: #fbfcfe;
 }
 
+.admin-user-bulk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid #dbe4f0;
+  border-radius: var(--radius);
+  background: #ffffff;
+}
+
+.admin-user-bulk-bar .settings-checkbox {
+  margin-top: 0;
+}
+
+.admin-user-bulk-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.admin-user-select-cell {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+}
+
+.admin-user-select-cell input,
+.admin-user-page-select input {
+  width: 18px;
+  height: 18px;
+  accent-color: #5046e5;
+}
+
 .admin-document-title-cell,
 .admin-user-cell {
   display: grid;
@@ -5655,10 +5717,20 @@ body {
 
   .admin-user-summary-grid,
   .admin-user-toolbar,
+  .admin-user-bulk-bar,
   .v4-metric-grid,
   .v4-teacher-hero,
   .v4-admin-hero {
     grid-template-columns: 1fr;
+  }
+
+  .admin-user-bulk-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-user-bulk-actions {
+    justify-content: flex-start;
   }
 
   .table-action-group {
@@ -7521,5 +7593,1447 @@ body {
     left: clamp(80px, 13vw, 150px);
     width: min(430px, 68%);
     height: min(230px, 30vh);
+  }
+}
+
+/* V4-048: desktop conversion from images/frontend-login-design.html and images/admin/html. */
+.app-shell:has(.login-layout) {
+  min-height: 100svh;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 12% 18%, rgb(80 70 229 / 10%), transparent 28%),
+    radial-gradient(circle at 86% 80%, rgb(78 222 163 / 14%), transparent 30%),
+    #fdfdff;
+}
+
+.login-layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(560px, 1fr) minmax(420px, 480px);
+  gap: 64px;
+  align-items: center;
+  max-width: 1240px;
+  min-height: calc(100svh - 48px);
+  padding: 8px;
+}
+
+.login-layout::before,
+.login-layout::after {
+  position: fixed;
+  z-index: 0;
+  display: block;
+  content: "";
+  pointer-events: none;
+}
+
+.login-layout::before {
+  top: 13%;
+  left: 10%;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: rgb(80 70 229 / 10%);
+  transform: rotate(12deg);
+}
+
+.login-layout::after {
+  right: 15%;
+  bottom: 12%;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  background: rgb(224 226 239 / 48%);
+  transform: rotate(-8deg);
+}
+
+.login-layout .product-panel,
+.login-layout .auth-panel-stack {
+  position: relative;
+  z-index: 1;
+}
+
+.login-layout .product-panel {
+  min-height: 0;
+  height: auto;
+  max-height: none;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  gap: 34px;
+}
+
+.login-layout .product-panel::before,
+.login-layout .product-panel::after {
+  display: none;
+}
+
+.login-layout .product-panel-copy {
+  display: grid;
+  gap: 24px;
+}
+
+.login-layout .brand-lockup {
+  margin: 0;
+  gap: 14px;
+  color: #0b1c30;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.login-layout .brand-mark {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: #5046e5;
+  color: #ffffff;
+  box-shadow: 0 18px 36px rgb(80 70 229 / 24%);
+}
+
+.login-layout .brand-mark svg {
+  width: 32px;
+  height: 32px;
+}
+
+.login-layout .product-panel h1 {
+  max-width: 560px;
+  color: #0b1c30;
+  font-size: clamp(48px, 4.4vw, 64px);
+  font-weight: 900;
+  line-height: 1.06;
+  letter-spacing: 0;
+}
+
+.login-layout .product-panel h1::first-line {
+  color: #0b1c30;
+}
+
+.login-layout .login-feature-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(92px, 1fr));
+  gap: 18px;
+  max-width: 620px;
+  margin: 8px 0 0;
+}
+
+.login-layout .login-feature-chip {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: #464555;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.login-layout .login-feature-chip svg {
+  width: 64px;
+  height: 64px;
+  padding: 18px;
+  border: 1px solid rgb(199 196 216 / 36%);
+  border-radius: 18px;
+  background: #ffffff;
+  color: #5046e5;
+  box-shadow: 0 14px 30px rgb(15 32 54 / 7%);
+}
+
+.login-layout .login-feature-chip:nth-child(2) svg {
+  color: #005338;
+  background: #effaf4;
+}
+
+.login-layout .login-feature-chip:nth-child(3) svg {
+  color: #5b5e69;
+  background: #f7f8fc;
+}
+
+.login-layout .product-hero-visual {
+  position: relative;
+  inset: auto;
+  width: min(100%, 590px);
+  height: 300px;
+  border: 1px solid rgb(255 255 255 / 78%);
+  border-radius: 28px;
+  background: rgb(255 255 255 / 56%);
+  box-shadow: 0 38px 82px rgb(80 70 229 / 10%);
+  overflow: hidden;
+}
+
+.login-layout .product-hero-visual::before {
+  position: absolute;
+  inset: -20%;
+  z-index: 0;
+  display: block;
+  content: "";
+  background: radial-gradient(circle, rgb(80 70 229 / 18%), transparent 58%);
+  filter: blur(24px);
+}
+
+.login-layout .product-hero-visual img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.login-layout .auth-panel-stack {
+  width: 100%;
+  max-width: 480px;
+  justify-self: end;
+}
+
+.login-layout .login-card {
+  gap: 22px;
+  padding: 40px;
+  border: 1px solid rgb(199 196 216 / 28%);
+  border-radius: 32px;
+  background: #ffffff;
+  box-shadow: 0 42px 86px rgb(15 32 54 / 8%);
+}
+
+.login-card-heading {
+  display: grid;
+  gap: 12px;
+}
+
+.login-card-heading h2 {
+  color: #0b1c30;
+  font-size: 24px;
+  font-weight: 850;
+}
+
+.login-layout .login-system-status {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 34px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid #dce9ff;
+  background: #f6f9ff;
+  color: #464555;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.login-layout .login-system-status.ready {
+  border-color: rgb(78 222 163 / 36%);
+  background: #effaf4;
+  color: #005338;
+}
+
+.login-layout .login-system-status.error {
+  border-color: rgb(186 26 26 / 24%);
+  background: #fff2f0;
+  color: #93000a;
+}
+
+.login-layout .login-card .account-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.login-layout .login-card .account-button {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  gap: 10px;
+  min-height: 118px;
+  padding: 14px 8px;
+  border: 2px solid transparent;
+  border-radius: 18px;
+  background: #ffffff;
+  color: #464555;
+  text-align: center;
+  box-shadow: none;
+}
+
+.login-layout .login-card .account-button:hover,
+.login-layout .login-card .account-button:focus-visible,
+.login-layout .login-card .account-button.selected {
+  border-color: rgb(80 70 229 / 22%);
+  background: #f6f5ff;
+  outline: 0;
+}
+
+.login-layout .login-card .account-button svg {
+  width: 56px;
+  height: 56px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #e5eeff;
+  color: #464555;
+}
+
+.login-layout .login-card .account-button.login-role-teacher svg,
+.login-layout .login-card .account-button.selected svg {
+  background: #5046e5;
+  color: #ffffff;
+  box-shadow: 0 18px 30px rgb(80 70 229 / 20%);
+}
+
+.login-layout .login-card .account-button strong {
+  color: currentColor;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.login-divider {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  color: rgb(70 69 85 / 66%);
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.login-divider::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgb(199 196 216 / 46%);
+  content: "";
+}
+
+.login-divider span {
+  position: relative;
+  z-index: 1;
+  padding: 0 16px;
+  background: #ffffff;
+}
+
+.login-layout .login-field {
+  gap: 8px;
+}
+
+.login-layout .login-field-label {
+  color: #0b1c30;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.login-layout .login-input-frame {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 58px;
+  padding: 0 14px;
+  border: 1px solid #c7c4d8;
+  border-radius: 18px;
+  background: #fdfdff;
+  color: #777587;
+}
+
+.login-layout .login-input-frame:focus-within {
+  border-color: #5046e5;
+  outline: 4px solid rgb(80 70 229 / 8%);
+}
+
+.login-layout .login-input-frame input {
+  min-height: 54px;
+  border: 0;
+  background: transparent;
+  color: #0b1c30;
+  padding: 0 10px;
+}
+
+.login-layout .login-input-frame input:focus {
+  outline: 0;
+}
+
+.login-layout .password-visibility-button {
+  color: #777587;
+}
+
+.login-layout .primary-button {
+  min-height: 58px;
+  border-radius: 18px;
+  background: #5046e5;
+  box-shadow: 0 22px 38px rgb(80 70 229 / 26%);
+  font-size: 16px;
+}
+
+.login-layout .primary-button:hover,
+.login-layout .primary-button:focus-visible {
+  background: #4338ca;
+}
+
+.login-layout .invite-entry {
+  justify-content: center;
+  padding: 0;
+}
+
+.login-layout .invite-toggle-button {
+  width: 100%;
+  min-height: 54px;
+  border: 2px solid rgb(80 70 229 / 12%);
+  border-radius: 18px;
+  color: #5046e5;
+  font-size: 15px;
+}
+
+.workspace-admin,
+.workspace-system_admin {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.app-shell:has(.workspace-admin),
+.app-shell:has(.workspace-system_admin) {
+  padding: 0;
+  background: #f8f9ff;
+}
+
+.workspace-admin .workspace-grid,
+.workspace-system_admin .workspace-grid {
+  grid-template-columns: 260px minmax(0, 1fr);
+  min-height: 100svh;
+  gap: 0;
+}
+
+.workspace-admin .sidebar,
+.workspace-system_admin .sidebar {
+  position: sticky;
+  top: 0;
+  min-height: 100svh;
+  height: 100svh;
+  border: 0;
+  border-right: 1px solid #e5e7eb;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+  padding: 24px 16px;
+}
+
+.workspace-admin .sidebar-brand,
+.workspace-system_admin .sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  color: #5046e5;
+  font-size: 19px;
+  font-weight: 900;
+}
+
+.workspace-admin .sidebar .brand-mark,
+.workspace-system_admin .sidebar .brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #5046e5;
+  color: #ffffff;
+}
+
+.workspace-admin .sidebar > .section-label,
+.workspace-system_admin .sidebar > .section-label {
+  color: #64748b;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.workspace-admin .sidebar > strong,
+.workspace-system_admin .sidebar > strong {
+  margin-bottom: 10px;
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.workspace-admin .workspace-nav,
+.workspace-system_admin .workspace-nav {
+  gap: 6px;
+}
+
+.workspace-admin .workspace-nav button,
+.workspace-system_admin .workspace-nav button {
+  min-height: 46px;
+  border-radius: 10px;
+  color: #64748b;
+  padding: 8px 12px;
+}
+
+.workspace-admin .workspace-nav button span,
+.workspace-system_admin .workspace-nav button span {
+  display: grid;
+  gap: 1px;
+}
+
+.workspace-admin .workspace-nav button small,
+.workspace-system_admin .workspace-nav button small {
+  display: none;
+}
+
+.workspace-admin .workspace-nav button.active,
+.workspace-admin .workspace-nav button:hover,
+.workspace-admin .workspace-nav button:focus-visible,
+.workspace-system_admin .workspace-nav button.active,
+.workspace-system_admin .workspace-nav button:hover,
+.workspace-system_admin .workspace-nav button:focus-visible {
+  background: #f0f3ff;
+  color: #5046e5;
+}
+
+.workspace-admin .workspace-content,
+.workspace-system_admin .workspace-content {
+  min-width: 0;
+  background: #f8f9ff;
+}
+
+.workspace-admin .workspace-content::after,
+.workspace-system_admin .workspace-content::after {
+  display: none;
+}
+
+.workspace-admin .workspace-header,
+.workspace-system_admin .workspace-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  min-height: 72px;
+  padding: 0 32px;
+  border: 0;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 0;
+  background: rgb(255 255 255 / 86%);
+  backdrop-filter: blur(16px);
+  box-shadow: none;
+}
+
+.workspace-admin .workspace-title-group h1,
+.workspace-system_admin .workspace-title-group h1 {
+  color: #0f172a;
+  font-size: 22px;
+  font-weight: 850;
+}
+
+.workspace-admin .workspace-header-actions,
+.workspace-system_admin .workspace-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.workspace-admin .workspace-header-actions .ui-switch-control,
+.workspace-system_admin .workspace-header-actions .ui-switch-control,
+.workspace-admin .workspace-taskbar,
+.workspace-system_admin .workspace-taskbar {
+  display: none;
+}
+
+.workspace-admin .workspace-quick-actions,
+.workspace-system_admin .workspace-quick-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.workspace-admin .workspace-quick-actions .primary-button,
+.workspace-system_admin .workspace-quick-actions .primary-button {
+  background: #5046e5;
+}
+
+.workspace-admin .identity,
+.workspace-system_admin .identity {
+  padding-left: 14px;
+  border-left: 1px solid #e5e7eb;
+}
+
+.workspace-admin .workspace-main,
+.workspace-system_admin .workspace-main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.workspace-admin .workspace-main > *,
+.workspace-admin .admin-management-surface,
+.workspace-admin .admin-user-management-panel,
+.workspace-system_admin .workspace-main > * {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+
+.workspace-admin .page-heading,
+.workspace-system_admin .page-heading {
+  display: none;
+}
+
+.workspace-admin .panel,
+.workspace-admin .state-panel,
+.workspace-system_admin .panel,
+.workspace-system_admin .state-panel {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgb(15 23 42 / 5%);
+}
+
+.workspace-admin .v4-admin-workspace,
+.workspace-system_admin .system-admin-workspace {
+  gap: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.workspace-admin .v4-admin-hero,
+.workspace-system_admin .v4-teacher-hero {
+  position: relative;
+  min-height: 220px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 18px;
+  background:
+    linear-gradient(90deg, rgb(80 70 229 / 88%), rgb(80 70 229 / 20)),
+    url("./assets/teachflow-login-education-hero-asset-v2.png") center / cover;
+  color: #ffffff;
+  padding: 44px 48px;
+  box-shadow: 0 18px 38px rgb(80 70 229 / 16%);
+}
+
+.workspace-admin .v4-admin-hero::after,
+.workspace-system_admin .v4-teacher-hero::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgb(15 23 42 / 42%), transparent 70%);
+  content: "";
+}
+
+.workspace-admin .v4-admin-hero > *,
+.workspace-system_admin .v4-teacher-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.workspace-admin .v4-admin-hero .section-label,
+.workspace-system_admin .v4-teacher-hero .section-label,
+.workspace-admin .v4-admin-hero h2,
+.workspace-system_admin .v4-teacher-hero h2,
+.workspace-admin .v4-admin-hero .muted,
+.workspace-system_admin .v4-teacher-hero .muted {
+  color: #ffffff;
+}
+
+.workspace-admin .v4-admin-hero h2,
+.workspace-system_admin .v4-teacher-hero h2 {
+  max-width: 620px;
+  font-size: 34px;
+  font-weight: 900;
+}
+
+.workspace-admin .v4-admin-hero .muted,
+.workspace-system_admin .v4-teacher-hero .muted {
+  max-width: 560px;
+  opacity: 0.9;
+}
+
+.system-admin-quick-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(96px, 1fr));
+  gap: 12px;
+  align-self: end;
+  width: min(420px, 100%);
+}
+
+.system-admin-quick-stats span {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 16%);
+  color: rgb(255 255 255 / 86%);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.system-admin-quick-stats strong {
+  color: #ffffff;
+  font-size: 24px;
+}
+
+.workspace-admin .v4-metric-grid,
+.workspace-admin .admin-user-summary-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.workspace-admin .v4-metric-card {
+  min-height: 112px;
+  border-color: #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 22px rgb(15 23 42 / 5%);
+}
+
+.workspace-admin .v4-metric-card strong {
+  color: #5046e5;
+}
+
+.workspace-admin .v4-admin-review-grid {
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 20px;
+}
+
+.workspace-admin .v4-admin-queue,
+.workspace-admin .v4-admin-review-detail,
+.workspace-admin .v4-admin-action-panel,
+.workspace-admin .v4-admin-block-card,
+.workspace-admin .v4-citation-panel,
+.workspace-admin .admin-management-surface,
+.workspace-admin .admin-user-management-panel,
+.workspace-admin .admin-add-panel,
+.workspace-admin .job-center-shell,
+.workspace-admin .job-table-panel,
+.workspace-admin .job-detail-panel,
+.workspace-system_admin .system-admin-form,
+.workspace-system_admin .system-organization-list {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgb(15 23 42 / 5%);
+}
+
+.workspace-admin .v4-admin-queue-item,
+.workspace-admin .v4-admin-block-rail button,
+.workspace-admin .job-summary-strip button {
+  border-color: #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.workspace-admin .v4-admin-queue-item:hover,
+.workspace-admin .v4-admin-queue-item:focus-visible,
+.workspace-admin .v4-admin-queue-item.selected,
+.workspace-admin .v4-admin-block-rail button:hover,
+.workspace-admin .v4-admin-block-rail button:focus-visible,
+.workspace-admin .v4-admin-block-rail button.selected {
+  border-color: rgb(80 70 229 / 28%);
+  background: #f0f3ff;
+  color: #5046e5;
+}
+
+.workspace-admin .v4-admin-block-review {
+  grid-template-columns: 190px minmax(360px, 1fr) 280px;
+  gap: 16px;
+}
+
+.workspace-admin .v4-admin-detail-header {
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.workspace-admin .review-stats span,
+.workspace-admin .status-pill,
+.workspace-system_admin .status-pill {
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #5046e5;
+  font-weight: 850;
+}
+
+.workspace-admin .status-pill.neutral-pill,
+.workspace-system_admin .status-pill.neutral-pill {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.workspace-admin .management-header,
+.workspace-admin .job-center-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0 0 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.workspace-admin .admin-management-surface,
+.workspace-admin .admin-user-management-panel,
+.workspace-admin .job-center-shell {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+}
+
+.workspace-admin .admin-user-toolbar,
+.workspace-admin .job-center-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 180px 180px;
+  gap: 14px;
+  align-items: end;
+}
+
+.workspace-admin .ui-table-wrap,
+.workspace-system_admin .ui-table-wrap {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.workspace-admin .ui-table,
+.workspace-system_admin .ui-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.workspace-admin .ui-table th,
+.workspace-system_admin .ui-table th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.workspace-admin .ui-table th,
+.workspace-admin .ui-table td,
+.workspace-system_admin .ui-table th,
+.workspace-system_admin .ui-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.workspace-admin .ui-table tr:hover,
+.workspace-system_admin .ui-table tr:hover {
+  background: #f8fafc;
+}
+
+.workspace-admin .table-action-group,
+.workspace-admin .job-action-group {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.workspace-admin .icon-table-action,
+.workspace-admin .management-icon-button,
+.workspace-system_admin .icon-button {
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  border-radius: 10px;
+}
+
+.workspace-admin .danger-action {
+  color: #ba1a1a;
+}
+
+.workspace-admin .primary-button,
+.workspace-system_admin .primary-button {
+  background: #5046e5;
+  border-radius: 10px;
+  box-shadow: 0 12px 22px rgb(80 70 229 / 18%);
+}
+
+.workspace-admin .ghost-button,
+.workspace-system_admin .ghost-button {
+  border-color: #e5e7eb;
+  border-radius: 10px;
+}
+
+.workspace-admin .field input,
+.workspace-admin .field select,
+.workspace-admin .field textarea,
+.workspace-system_admin .field input,
+.workspace-system_admin .field select,
+.workspace-system_admin .field textarea,
+.workspace-admin .job-search-field,
+.workspace-admin .job-filter-field select {
+  border-color: #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.workspace-admin .job-center-grid {
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 18px;
+}
+
+.workspace-admin .job-table-panel,
+.workspace-admin .job-detail-panel {
+  padding: 16px;
+}
+
+.workspace-admin .job-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.workspace-admin .job-summary-strip button {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 70px;
+  padding: 14px;
+}
+
+.workspace-admin .job-summary-strip button.selected {
+  border-color: rgb(80 70 229 / 34%);
+  background: #f0f3ff;
+  color: #5046e5;
+}
+
+.workspace-system_admin .system-admin-grid {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.workspace-system_admin .system-admin-form,
+.workspace-system_admin .system-organization-list {
+  padding: 24px;
+}
+
+.workspace-system_admin .system-admin-form {
+  display: grid;
+  gap: 18px;
+}
+
+.workspace-system_admin .system-organization-list {
+  display: grid;
+  gap: 14px;
+}
+
+.workspace-system_admin .system-invite-result {
+  border-radius: 12px;
+  border: 1px solid rgb(78 222 163 / 30%);
+  background: #effaf4;
+  color: #005338;
+}
+
+.workspace-teacher,
+.workspace-student {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.app-shell:has(.workspace-teacher),
+.app-shell:has(.workspace-student) {
+  padding: 0;
+  background: #f8f9ff;
+}
+
+.workspace-teacher .workspace-grid,
+.workspace-student .workspace-grid {
+  grid-template-columns: 260px minmax(0, 1fr);
+  min-height: 100svh;
+  gap: 0;
+}
+
+.workspace-teacher .sidebar,
+.workspace-student .sidebar {
+  position: sticky;
+  top: 0;
+  min-height: 100svh;
+  height: 100svh;
+  padding: 24px 16px;
+  border: 0;
+  border-right: 1px solid #e5e7eb;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.workspace-teacher .workspace-content,
+.workspace-student .workspace-content {
+  min-width: 0;
+  background: #f8f9ff;
+}
+
+.workspace-teacher .workspace-content::after,
+.workspace-student .workspace-content::after {
+  display: none;
+}
+
+.workspace-teacher .workspace-header,
+.workspace-student .workspace-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  min-height: 72px;
+  padding: 0 32px;
+  border: 0;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 0;
+  background: rgb(255 255 255 / 86%);
+  backdrop-filter: blur(16px);
+  box-shadow: none;
+}
+
+.workspace-teacher .workspace-header-actions .ui-switch-control,
+.workspace-student .workspace-header-actions .ui-switch-control,
+.workspace-teacher .workspace-taskbar,
+.workspace-student .workspace-taskbar {
+  display: none;
+}
+
+.workspace-teacher .workspace-main,
+.workspace-student .workspace-main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.workspace-teacher .page-heading,
+.workspace-student .page-heading {
+  display: none;
+}
+
+.workspace-teacher .panel,
+.workspace-student .panel {
+  border-color: #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgb(15 23 42 / 5%);
+}
+
+.teacher-design-page,
+.student-design-page {
+  gap: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.teacher-design-overview,
+.student-design-classes {
+  display: grid;
+  gap: 24px;
+}
+
+.teacher-design-overview .v4-teacher-hero,
+.student-design-classes .v4-student-hero {
+  min-height: 172px;
+  align-items: center;
+  padding: 28px;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background:
+    linear-gradient(120deg, rgb(80 70 229 / 94%), rgb(80 70 229 / 58)),
+    #5046e5;
+  color: #ffffff;
+  box-shadow: 0 18px 38px rgb(80 70 229 / 16%);
+}
+
+.teacher-design-overview .v4-teacher-hero .section-label,
+.teacher-design-overview .v4-teacher-hero h2,
+.teacher-design-overview .v4-teacher-hero .muted,
+.student-design-classes .v4-student-hero .section-label,
+.student-design-classes .v4-student-hero h2,
+.student-design-classes .v4-student-hero .muted {
+  color: #ffffff;
+}
+
+.teacher-design-overview .v4-system-status {
+  border-color: rgb(255 255 255 / 24%);
+  background: rgb(255 255 255 / 18%);
+  color: #ffffff;
+}
+
+.teacher-design-overview .v4-system-status strong,
+.teacher-design-overview .v4-system-status small {
+  color: #ffffff;
+}
+
+.teacher-dashboard-showcase {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 20px;
+}
+
+.teacher-create-panel,
+.teacher-ai-panel,
+.teacher-compact-insights,
+.teacher-design-setup-grid,
+.teacher-design-documents-grid,
+.teacher-design-outline-builder,
+.teacher-design-jobs,
+.student-design-documents,
+.student-design-practice,
+.student-design-reader-grid {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgb(15 23 42 / 5%);
+}
+
+.teacher-create-panel,
+.teacher-ai-panel,
+.teacher-compact-insights {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+}
+
+.teacher-create-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.teacher-create-card {
+  min-height: 126px;
+  border-radius: 16px;
+}
+
+.teacher-ai-panel {
+  align-content: start;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+}
+
+.teacher-design-setup-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding: 18px;
+}
+
+.teacher-class-edit-panel {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgb(15 23 42 / 5%);
+}
+
+.teacher-design-documents-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.55fr);
+  gap: 18px;
+  padding: 24px;
+}
+
+.teacher-design-documents-grid > .panel-heading,
+.teacher-design-documents-grid > .rag-form,
+.teacher-design-documents-grid > .state-panel,
+.teacher-design-documents-grid > .chunk-list {
+  grid-column: 1 / -1;
+}
+
+.teacher-design-documents-grid .knowledge-upload-panel {
+  min-height: 220px;
+}
+
+.teacher-design-outline-builder {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.36fr) minmax(0, 1fr);
+  gap: 18px;
+  padding: 24px;
+}
+
+.teacher-design-outline-builder > .panel-heading,
+.teacher-design-outline-builder > .outline-actions,
+.teacher-design-outline-builder > .state-panel {
+  grid-column: 1 / -1;
+}
+
+.teacher-design-outline-builder .outline-workspace {
+  grid-column: 1 / -1;
+}
+
+.teacher-design-outline-builder .outline-editor {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.42fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.teacher-design-outline-builder .lesson-block-panel {
+  grid-column: 1 / -1;
+}
+
+.teacher-design-studio-page .outline-editor > .field,
+.teacher-design-studio-page .outline-editor > .primary-button,
+.teacher-design-studio-page .outline-editor > .chunk-list {
+  display: none;
+}
+
+.teacher-design-studio-grid {
+  grid-template-columns: 280px minmax(0, 1fr) 320px;
+  gap: 16px;
+}
+
+.teacher-design-studio-grid .v4-block-rail,
+.teacher-design-studio-grid .v4-block-editor,
+.teacher-design-studio-grid .v4-citation-panel {
+  border-color: #e5e7eb;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.teacher-design-jobs {
+  padding: 24px;
+}
+
+.workspace-teacher .job-center-shell {
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.student-design-classes .v4-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.student-design-classes + .v4-student-review-hub {
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.student-design-practice {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 18px;
+  padding: 24px;
+}
+
+.student-design-practice > .panel-heading,
+.student-design-practice > .state-panel {
+  grid-column: 1 / -1;
+}
+
+.student-design-practice .v4-student-review-list {
+  grid-column: 1 / -1;
+}
+
+.student-design-documents {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  padding: 24px;
+}
+
+.student-design-reader-grid {
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px;
+}
+
+.student-design-reader-grid .v4-student-sidebar,
+.student-design-reader-grid .v4-student-reader {
+  border: 0;
+  box-shadow: none;
+}
+
+.student-design-reader-grid .v4-student-reader {
+  background: #ffffff;
+}
+
+.student-design-reader-grid .v4-student-reading-grid {
+  grid-template-columns: 220px minmax(0, 1fr) 300px;
+  gap: 16px;
+}
+
+.student-design-reader-grid .presentation-panel {
+  border-radius: 18px;
+  border-color: #e5e7eb;
+  background: #ffffff;
+}
+
+.student-design-tutor-panel {
+  border-color: rgb(80 70 229 / 24%);
+  background: #fbfcff;
+}
+
+.workspace-teacher .field input,
+.workspace-teacher .field select,
+.workspace-teacher .field textarea,
+.workspace-student .field input,
+.workspace-student .field select,
+.workspace-student .field textarea {
+  border-color: #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.workspace-teacher .primary-button,
+.workspace-student .primary-button {
+  border-radius: 10px;
+  background: #5046e5;
+  box-shadow: 0 12px 22px rgb(80 70 229 / 18%);
+}
+
+.workspace-teacher .ghost-button,
+.workspace-student .ghost-button {
+  border-color: #e5e7eb;
+  border-radius: 10px;
+}
+
+.admin-design-page {
+  width: 100%;
+  max-width: min(100%, 1180px);
+  margin-inline: auto;
+  display: grid;
+  gap: 18px;
+}
+
+.admin-design-page .management-header,
+.admin-design-page .v4-admin-hero {
+  min-height: 132px;
+}
+
+.admin-design-page .ui-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-design-overview .v4-admin-review-grid,
+.admin-design-settings .v4-admin-review-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-design-overview .v4-admin-review-detail {
+  grid-column: span 2;
+}
+
+.admin-design-overview .v4-admin-queue {
+  min-width: 0;
+}
+
+.admin-design-overview .v4-citation-list article {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.admin-design-page .v4-admin-queue-item {
+  min-height: 76px;
+}
+
+.admin-design-settings .v4-admin-block-card {
+  min-height: 220px;
+}
+
+.admin-report-breakdown,
+.admin-settings-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-report-breakdown section,
+.admin-settings-form .v4-admin-block-card {
+  min-width: 0;
+}
+
+.admin-report-breakdown section {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 16px;
+}
+
+.admin-report-breakdown h4 {
+  margin: 0 0 12px;
+  color: #111827;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.admin-report-breakdown span {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid #f1f5f9;
+  color: #334155;
+  font-size: 0.88rem;
+}
+
+.admin-report-breakdown span:first-of-type {
+  border-top: 0;
+}
+
+.admin-report-breakdown small {
+  color: #111827;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.admin-settings-form {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-settings-form .field {
+  margin-top: 14px;
+}
+
+.settings-checkbox {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.settings-checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: #5046e5;
+}
+
+.admin-settings-save-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+@media (max-width: 1100px) {
+  .login-layout {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .login-layout .auth-panel-stack {
+    justify-self: center;
+  }
+
+  .workspace-admin .v4-admin-block-review,
+  .admin-design-overview .v4-admin-review-grid,
+  .admin-design-settings .v4-admin-review-grid,
+  .admin-report-breakdown,
+  .admin-settings-form,
+  .workspace-admin .job-center-grid,
+  .workspace-system_admin .system-admin-grid,
+  .teacher-dashboard-showcase,
+  .teacher-design-setup-grid,
+  .teacher-design-documents-grid,
+  .teacher-design-outline-builder,
+  .teacher-design-outline-builder .outline-editor,
+  .teacher-design-studio-grid,
+  .student-design-reader-grid,
+  .student-design-reader-grid .v4-student-reading-grid,
+  .student-design-practice {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-design-overview .v4-admin-review-detail {
+    grid-column: auto;
   }
 }

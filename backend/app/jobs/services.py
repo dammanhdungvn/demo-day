@@ -1,4 +1,6 @@
-from fastapi import HTTPException, status
+from collections.abc import Callable
+
+from fastapi import BackgroundTasks, HTTPException, status
 
 from ..auth.schemas import UserProfile
 from ..auth.services import require_role
@@ -13,6 +15,28 @@ from .schemas import GenerationJobActionResponse, GenerationJobResponse
 _CANCELLABLE_STATUSES = {"queued", "processing", "retrying"}
 _RETRYABLE_SOURCE_JOB_STATUSES = {"failed"}
 _NON_DURABLE_DOCUMENT_JOB_TYPES = {"document_upload"}
+_TEACHER_CONTEXT_RETRY_JOB_TYPES = {
+    "outline_generation",
+    "lesson_generation",
+    "block_regeneration",
+}
+RetryDispatcher = Callable[
+    [
+        GenerationJobResponse,
+        UserProfile,
+        GenerationJobRepository,
+        BackgroundTasks | None,
+    ],
+    str | None,
+]
+_retry_dispatcher: RetryDispatcher | None = None
+
+
+def configure_generation_job_retry_dispatcher(
+    dispatcher: RetryDispatcher | None,
+) -> None:
+    global _retry_dispatcher
+    _retry_dispatcher = dispatcher
 
 
 def _job_conflict(message: str) -> HTTPException:
@@ -93,12 +117,18 @@ def retry_generation_job(
     job_id: str,
     current_user: UserProfile,
     repository: GenerationJobRepository | None = None,
+    background_tasks: BackgroundTasks | None = None,
 ) -> GenerationJobActionResponse:
     actor = _require_action_actor(current_user)
     repository = repository or get_generation_job_repository()
     job = _get_visible_job(job_id, actor, repository)
     if job.status not in _RETRYABLE_SOURCE_JOB_STATUSES:
         raise _job_conflict("Chi co the thu lai tac vu dang loi.")
+    if actor.role == "admin" and job.job_type in _TEACHER_CONTEXT_RETRY_JOB_TYPES:
+        raise _job_conflict(
+            "Tac vu AI nay can ngu canh Giang vien goc de thu lai an toan. "
+            "Hay de Giang vien so huu tac vu thu lai."
+        )
     if (
         job.job_type in _NON_DURABLE_DOCUMENT_JOB_TYPES
         and not _document_job_has_durable_retry_input(job)
@@ -120,7 +150,17 @@ def retry_generation_job(
         output=updated_output,
         error_message=None,
     )
+    dispatch_message = None
+    if _retry_dispatcher is not None:
+        dispatch_message = _retry_dispatcher(
+            updated,
+            actor,
+            repository,
+            background_tasks,
+        )
+        if background_tasks is None:
+            updated = repository.get_job(updated.id)
     return GenerationJobActionResponse(
         generation_job=updated,
-        message="Da dua tac vu vao hang cho thu lai.",
+        message=dispatch_message or "Da dua tac vu vao hang cho thu lai.",
     )

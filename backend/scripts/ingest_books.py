@@ -49,7 +49,10 @@ def parse_env_file(path: Path) -> dict[str, str]:
 
 def database_conninfo() -> str:
     root = Path(__file__).resolve().parents[2]
-    values = parse_env_file(root / ".env")
+    values = {
+        **parse_env_file(root / ".env"),
+        **parse_env_file(root / ".env.local"),
+    }
     conninfo = (
         values.get("SUPABASE_POOLER_CONNECTING_STRING")
         or values.get("DATABASE_URL")

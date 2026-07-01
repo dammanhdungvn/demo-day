@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import HTTPException
 from pydantic import ValidationError
 import pytest
@@ -9,6 +11,8 @@ from main import (
     InMemoryAuthRepository,
     InviteCreateRequest,
     LoginRequest,
+    ManagedUserBulkPasswordResetRequest,
+    ManagedUserBulkStatusUpdateRequest,
     ManagedUserStatusUpdateRequest,
     ManagedUserUpdateRequest,
     RefreshSessionRequest,
@@ -21,6 +25,8 @@ from main import (
     authenticate_demo_account,
     authenticate_demo_user,
     authenticate_user,
+    bulk_request_managed_user_password_resets,
+    bulk_update_managed_user_status,
     create_session_token,
     create_system_admin_invite,
     create_system_organization,
@@ -63,6 +69,35 @@ def test_demo_quick_login_is_explicitly_gated(monkeypatch: pytest.MonkeyPatch) -
         authenticate_demo_account(DemoLoginRequest(account_id="demo-teacher"))
 
     assert exc_info.value.status_code == 404
+
+
+def test_demo_quick_login_is_disabled_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("AUTH_PROVIDER", "supabase")
+    monkeypatch.delenv("ENABLE_DEMO_LOGIN", raising=False)
+
+    assert list_public_demo_accounts() == []
+    with pytest.raises(HTTPException) as exc_info:
+        authenticate_demo_account(DemoLoginRequest(account_id="demo-admin"))
+
+    assert exc_info.value.status_code == 404
+
+
+def test_env_example_defaults_to_real_account_auth() -> None:
+    env_example = Path(__file__).resolve().parents[2] / ".env.example"
+    values: dict[str, str] = {}
+    for raw_line in env_example.read_text().splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        values[key.strip()] = value.strip()
+
+    assert values["AUTH_PROVIDER"] == "supabase"
+    assert values["AUTH_REPOSITORY"] == "postgres"
+    assert values["LEARNING_REPOSITORY"] == "postgres"
+    assert values["ENABLE_DEMO_LOGIN"] == "false"
 
 
 def test_demo_quick_login_issues_session_without_frontend_password(
@@ -522,6 +557,59 @@ def test_admin_disables_and_reactivates_managed_teacher_student() -> None:
     assert repository.get_profile("demo-teacher").status == "active"
 
 
+def test_admin_bulk_updates_managed_user_status_org_scoped() -> None:
+    repository = InMemoryAuthRepository()
+    admin = repository.get_profile("demo-admin")
+    assert admin is not None
+    repository.upsert_profile(
+        AuthProfileRecord(
+            id="other-student",
+            email="other.student@example.edu",
+            name="Other Student",
+            role="student",
+            organization_id="org-other",
+            auth_provider="supabase",
+            status="active",
+        )
+    )
+
+    response = bulk_update_managed_user_status(
+        ManagedUserBulkStatusUpdateRequest(
+            user_ids=["demo-teacher", "demo-student", "demo-teacher"],
+            status="disabled",
+        ),
+        admin,
+        repository,
+    )
+
+    assert response.updated_count == 2
+    assert {user.id for user in response.users} == {"demo-teacher", "demo-student"}
+    assert repository.get_profile("demo-teacher").status == "disabled"
+    assert repository.get_profile("demo-student").status == "disabled"
+
+    with pytest.raises(HTTPException) as cross_org_error:
+        bulk_update_managed_user_status(
+            ManagedUserBulkStatusUpdateRequest(
+                user_ids=["other-student"],
+                status="disabled",
+            ),
+            admin,
+            repository,
+        )
+    assert cross_org_error.value.status_code == 404
+
+    with pytest.raises(HTTPException) as admin_target_error:
+        bulk_update_managed_user_status(
+            ManagedUserBulkStatusUpdateRequest(
+                user_ids=["demo-admin"],
+                status="disabled",
+            ),
+            admin,
+            repository,
+        )
+    assert admin_target_error.value.status_code == 403
+
+
 def test_admin_updates_managed_user_profile_fields_without_role_change() -> None:
     repository = InMemoryAuthRepository()
     admin = repository.get_profile("demo-admin")
@@ -624,6 +712,73 @@ def test_admin_user_management_rejects_wrong_role_admin_and_cross_org() -> None:
             repository,
         )
     assert cross_org.value.status_code == 404
+
+
+class FakeSupabasePasswordResetClient:
+    def __init__(self) -> None:
+        self.reset_requests: list[tuple[str, str | None]] = []
+
+    def reset_password_for_email(
+        self,
+        email: str,
+        *,
+        redirect_to: str | None = None,
+    ) -> None:
+        self.reset_requests.append((email, redirect_to))
+
+
+def test_admin_bulk_password_reset_sends_only_active_supabase_users() -> None:
+    repository = InMemoryAuthRepository()
+    admin = repository.get_profile("demo-admin")
+    assert admin is not None
+    repository.upsert_profile(
+        AuthProfileRecord(
+            id="supabase-teacher",
+            email="teacher.supabase@example.edu",
+            name="Supabase Teacher",
+            role="teacher",
+            organization_id=admin.organization_id,
+            auth_provider="supabase",
+            status="active",
+        )
+    )
+    repository.upsert_profile(
+        AuthProfileRecord(
+            id="disabled-supabase-student",
+            email="disabled.student@example.edu",
+            name="Disabled Student",
+            role="student",
+            organization_id=admin.organization_id,
+            auth_provider="supabase",
+            status="disabled",
+        )
+    )
+    reset_client = FakeSupabasePasswordResetClient()
+
+    response = bulk_request_managed_user_password_resets(
+        ManagedUserBulkPasswordResetRequest(
+            user_ids=[
+                "supabase-teacher",
+                "demo-teacher",
+                "disabled-supabase-student",
+            ],
+            redirect_to="https://teachflow.example/reset-password",
+        ),
+        admin,
+        repository,
+        reset_client,
+    )
+
+    assert response.requested_count == 3
+    assert response.sent_count == 1
+    assert response.skipped_count == 2
+    assert response.skipped_user_ids == [
+        "demo-teacher",
+        "disabled-supabase-student",
+    ]
+    assert reset_client.reset_requests == [
+        ("teacher.supabase@example.edu", "https://teachflow.example/reset-password")
+    ]
 
 
 def test_accept_invite_registers_user_and_marks_invite_accepted(

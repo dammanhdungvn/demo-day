@@ -8,6 +8,9 @@ import {
   buildAdminReviewSummary,
   buildStudentLearningSummary,
 } from './adminStudentWorkspace'
+import adminWorkspaceSource from './admin/AdminWorkspace.tsx?raw'
+import lessonPresentationSource from '../presentation/LessonPresentation.tsx?raw'
+import studentWorkspaceSource from './student/StudentWorkspace.tsx?raw'
 
 const timestamp = '2026-06-28T00:00:00+00:00'
 
@@ -81,6 +84,48 @@ const classes: StudentClassSummary[] = [
 ]
 
 describe('admin and student workspace helpers', () => {
+  it('keeps admin HTML parity views code-native and normalized', () => {
+    expect(adminWorkspaceSource).toContain('admin-design-overview')
+    expect(adminWorkspaceSource).toContain('admin-design-lesson-library')
+    expect(adminWorkspaceSource).toContain('admin-design-lesson-library-part1')
+    expect(adminWorkspaceSource).toContain('admin-design-knowledge-part2')
+    expect(adminWorkspaceSource).toContain('admin-design-users-part1')
+    expect(adminWorkspaceSource).toContain('admin-design-users-part2')
+    expect(adminWorkspaceSource).toContain('admin-user-bulk-bar')
+    expect(adminWorkspaceSource).toContain('bulkUpdateManagedUserStatus')
+    expect(adminWorkspaceSource).toContain('bulkResetManagedUserPasswords')
+    expect(adminWorkspaceSource).toContain('admin-design-reports')
+    expect(adminWorkspaceSource).toContain('admin-design-reports-part1')
+    expect(adminWorkspaceSource).toContain('admin-design-activity-log')
+    expect(adminWorkspaceSource).toContain('admin-design-activity-log-part2')
+    expect(adminWorkspaceSource).toContain('admin-design-settings')
+    expect(adminWorkspaceSource).toContain('adminDesignStats')
+    expect(adminWorkspaceSource).not.toContain('tailwindcss.com')
+    expect(adminWorkspaceSource).not.toContain('admin-ai-knowledge-library-design-v2.png')
+  })
+
+  it('keeps the student HTML design conversion layout surfaces code-native', () => {
+    expect(studentWorkspaceSource).toContain('student-design-page')
+    expect(studentWorkspaceSource).toContain('student-design-classes')
+    expect(studentWorkspaceSource).toContain('student-design-reader-grid')
+    expect(studentWorkspaceSource).toContain('student-design-practice')
+    expect(studentWorkspaceSource).toContain('student-design-documents')
+    expect(studentWorkspaceSource).toContain('student-design-tutor-panel')
+    expect(studentWorkspaceSource).not.toContain('student-my-classes-dashboard-design-v2.png')
+    expect(studentWorkspaceSource).not.toContain('tailwindcss.com')
+  })
+
+  it('keeps student presentation part1 and part2 mapped into code-native viewer', () => {
+    expect(lessonPresentationSource).toContain('lesson-presentation-design-part1')
+    expect(lessonPresentationSource).toContain('lesson-presentation-design-part2')
+    expect(lessonPresentationSource).toContain('presentation-citations')
+    expect(lessonPresentationSource).toContain('Toàn màn hình')
+    expect(lessonPresentationSource).toContain('Xuất PDF')
+    expect(lessonPresentationSource).not.toContain(
+      'student-lesson-presentation-viewer-design-v2-part1.html',
+    )
+  })
+
   it('summarizes admin review queue from lesson blocks', () => {
     const summary = buildAdminReviewSummary([submittedLesson, publishedLesson], 'lesson-1')
 

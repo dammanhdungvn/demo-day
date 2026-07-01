@@ -430,6 +430,71 @@ export type LessonExportRecord = {
   created_at: string
 }
 
+export type AdminLessonLibrary = {
+  lessons: LessonSession[]
+  total: number
+  published: number
+  pending_review: number
+  warnings: number
+  updated_at: string
+}
+
+export type AdminReportMetric = {
+  key: string
+  label: string
+  value: number
+  detail: string
+  tone: 'default' | 'success' | 'warning' | 'info'
+}
+
+export type AdminReports = {
+  generated_at: string
+  metrics: AdminReportMetric[]
+  lesson_status_counts: Record<string, number>
+  document_status_counts: Record<string, number>
+  job_status_counts: Record<string, number>
+}
+
+export type AdminActivityItem = {
+  id: string
+  type: 'lesson' | 'document' | 'job' | 'audit' | 'user' | 'invite'
+  title: string
+  detail: string
+  organization_id: string
+  actor_id: string | null
+  actor_role: 'admin' | 'teacher' | 'student' | null
+  created_at: string
+  source_id: string
+}
+
+export type AdminActivityFeed = {
+  generated_at: string
+  items: AdminActivityItem[]
+}
+
+export type AdminSettings = {
+  organization_id: string
+  ai_model: string
+  monthly_ai_limit: number
+  email_alerts_enabled: boolean
+  in_app_alerts_enabled: boolean
+  password_min_length: number
+  require_password_rotation: boolean
+  updated_at: string
+}
+
+export type AdminSettingsUpdatePayload = Partial<
+  Pick<
+    AdminSettings,
+    | 'ai_model'
+    | 'monthly_ai_limit'
+    | 'email_alerts_enabled'
+    | 'in_app_alerts_enabled'
+    | 'password_min_length'
+    | 'require_password_rotation'
+  >
+>
+
 function authJsonHeaders(token: string): HeadersInit {
   return {
     Accept: 'application/json',
@@ -929,6 +994,69 @@ export async function fetchDocuments(
   })
 
   return readJson<SourceDocument[]>(response, 'Documents')
+}
+
+export async function fetchAdminLessonLibrary(
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<AdminLessonLibrary> {
+  const response = await fetcher(buildApiUrl('/admin/lesson-library', backendUrl), {
+    headers: authHeaders(token),
+  })
+
+  return readJson<AdminLessonLibrary>(response, 'Admin lesson library')
+}
+
+export async function fetchAdminReports(
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<AdminReports> {
+  const response = await fetcher(buildApiUrl('/admin/reports', backendUrl), {
+    headers: authHeaders(token),
+  })
+
+  return readJson<AdminReports>(response, 'Admin reports')
+}
+
+export async function fetchAdminActivity(
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<AdminActivityFeed> {
+  const response = await fetcher(buildApiUrl('/admin/activity', backendUrl), {
+    headers: authHeaders(token),
+  })
+
+  return readJson<AdminActivityFeed>(response, 'Admin activity')
+}
+
+export async function fetchAdminSettings(
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<AdminSettings> {
+  const response = await fetcher(buildApiUrl('/admin/settings', backendUrl), {
+    headers: authHeaders(token),
+  })
+
+  return readJson<AdminSettings>(response, 'Admin settings')
+}
+
+export async function updateAdminSettings(
+  payload: AdminSettingsUpdatePayload,
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<AdminSettings> {
+  const response = await fetcher(buildApiUrl('/admin/settings', backendUrl), {
+    method: 'PATCH',
+    headers: authJsonHeaders(token),
+    body: JSON.stringify(payload),
+  })
+
+  return readJson<AdminSettings>(response, 'Update admin settings')
 }
 
 export async function uploadDocument(

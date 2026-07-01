@@ -21,6 +21,10 @@ from .schemas import (
     InviteCreateRequest,
     LoginRequest,
     LoginResponse,
+    ManagedUserBulkPasswordResetRequest,
+    ManagedUserBulkPasswordResetResponse,
+    ManagedUserBulkStatusUpdateRequest,
+    ManagedUserBulkStatusUpdateResponse,
     ManagedUserResponse,
     ManagedUserRole,
     ManagedUserStatusUpdateRequest,
@@ -596,6 +600,39 @@ def _require_user_management_admin(user: UserProfile) -> AuthProfileRecord:
     )
 
 
+def _unique_managed_user_ids(user_ids: list[str]) -> list[str]:
+    unique_ids: list[str] = []
+    for user_id in user_ids:
+        normalized = user_id.strip()
+        if normalized and normalized not in unique_ids:
+            unique_ids.append(normalized)
+    if not unique_ids:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="At least one managed user id is required",
+        )
+    return unique_ids
+
+
+def _managed_profile_for_admin(
+    profile_id: str,
+    admin: AuthProfileRecord,
+    repository: AuthRepository,
+) -> AuthProfileRecord:
+    profile = repository.get_profile(profile_id)
+    if profile is None or profile.organization_id != admin.organization_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Managed user was not found",
+        )
+    if profile.role not in {"teacher", "student"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admins can only manage Teacher or Student profiles",
+        )
+    return profile
+
+
 def list_managed_users(
     current_user: UserProfile,
     auth_repository: AuthRepository | None = None,
@@ -639,17 +676,7 @@ def update_managed_user(
 ) -> ManagedUserResponse:
     admin = _require_user_management_admin(current_user)
     repository = auth_repository or get_auth_repository()
-    profile = repository.get_profile(profile_id)
-    if profile is None or profile.organization_id != admin.organization_id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Managed user was not found",
-        )
-    if profile.role not in {"teacher", "student"}:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admins can only manage Teacher or Student profiles",
-        )
+    profile = _managed_profile_for_admin(profile_id, admin, repository)
 
     updates: dict[str, str] = {}
     if payload.name is not None:
@@ -679,6 +706,59 @@ def update_managed_user(
     )
     saved_profile = repository.upsert_profile(updated_profile)
     return _managed_user_response(saved_profile)
+
+
+def bulk_update_managed_user_status(
+    payload: ManagedUserBulkStatusUpdateRequest,
+    current_user: UserProfile,
+    auth_repository: AuthRepository | None = None,
+) -> ManagedUserBulkStatusUpdateResponse:
+    admin = _require_user_management_admin(current_user)
+    repository = auth_repository or get_auth_repository()
+    updated_users: list[ManagedUserResponse] = []
+    for profile_id in _unique_managed_user_ids(payload.user_ids):
+        profile = _managed_profile_for_admin(profile_id, admin, repository)
+        updated_profile = profile.model_copy(
+            update={
+                "status": payload.status,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+        updated_users.append(_managed_user_response(repository.upsert_profile(updated_profile)))
+    return ManagedUserBulkStatusUpdateResponse(
+        users=updated_users,
+        updated_count=len(updated_users),
+    )
+
+
+def bulk_request_managed_user_password_resets(
+    payload: ManagedUserBulkPasswordResetRequest,
+    current_user: UserProfile,
+    auth_repository: AuthRepository | None = None,
+    auth_client: SupabaseAuthClient | None = None,
+) -> ManagedUserBulkPasswordResetResponse:
+    admin = _require_user_management_admin(current_user)
+    repository = auth_repository or get_auth_repository()
+    client = auth_client or get_supabase_auth_client()
+    skipped_user_ids: list[str] = []
+    sent_count = 0
+    user_ids = _unique_managed_user_ids(payload.user_ids)
+    for profile_id in user_ids:
+        profile = _managed_profile_for_admin(profile_id, admin, repository)
+        if profile.auth_provider != "supabase" or profile.status != "active":
+            skipped_user_ids.append(profile.id)
+            continue
+        client.reset_password_for_email(
+            profile.email,
+            redirect_to=payload.redirect_to,
+        )
+        sent_count += 1
+    return ManagedUserBulkPasswordResetResponse(
+        requested_count=len(user_ids),
+        sent_count=sent_count,
+        skipped_count=len(skipped_user_ids),
+        skipped_user_ids=skipped_user_ids,
+    )
 
 
 def _require_system_admin(user: UserProfile) -> AuthProfileRecord:

@@ -17,7 +17,12 @@ from .schemas import (
     GenerationJobResponse,
     GenerationJobStatus,
 )
-from .services import cancel_generation_job, list_generation_jobs, retry_generation_job
+from .services import (
+    cancel_generation_job,
+    configure_generation_job_retry_dispatcher,
+    list_generation_jobs,
+    retry_generation_job,
+)
 
 __all__ = [
     "GenerationJobRepository",
@@ -29,6 +34,7 @@ __all__ = [
     "PostgresGenerationJobRepository",
     "cancel_generation_job",
     "cancel_generation_job_route",
+    "configure_generation_job_retry_dispatcher",
     "generation_job_schema_sql",
     "generation_jobs_route",
     "get_generation_job_repository",

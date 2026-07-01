@@ -34,6 +34,7 @@
   - Backend targeted tests va OpenAPI tests pass 17.
   - Frontend API client + initial Job Center scaffold da bat dau nhung chua rendered QA/final DoD.
 - Khi resume V2-014: doc lai file nay, tiep tuc tu frontend Job Center hoac cleanup theo yeu cau moi; khong coi feature done cho den khi rendered QA + final `./init.sh` pass.
+- 2026-07-01: Da resume theo goal user va hoan thanh DoD; file nay duoc chuyen sang completed.
 
 ## Test Plan Truoc Khi Code
 
@@ -68,6 +69,15 @@
 - 2026-06-30: Planning/docs verification pass: `python3 -m json.tool feature_list.json`, `git diff --check`, and `./init.sh` with frontend 19 files/95 tests + build and backend 215 tests.
 - 2026-06-30: Backend retry/cancel slice implemented and tested: `cd backend && UV_CACHE_DIR=.uv-cache uv run pytest tests/test_generation_jobs.py tests/test_jobs_module_boundaries.py tests/test_openapi_contract.py -q` pass 17.
 - 2026-06-30: Frontend Job Center paused by user request before rendered QA/final DoD; login/API hotfix handled in `docs/harness/exec-plans/completed/BUG-006-login-backend-api-readiness.md`.
+- 2026-07-01: Resume V2-014. Baseline `./init.sh` pass truoc khi code voi frontend 21 files/104 tests/build va backend 219 tests.
+- 2026-07-01: Frontend Job Center/API/workspace targeted pass: `pnpm --dir frontend exec vitest run src/features/jobs/jobCenterSurface.test.ts src/api/learning.test.ts src/workspacePages.test.ts` = 3 files/38 tests.
+- 2026-07-01: Backend jobs targeted pass truoc khi mo retry worker: `uv run pytest tests/test_generation_jobs.py tests/test_jobs_module_boundaries.py tests/test_openapi_contract.py -q` = 17 pass.
+- 2026-07-01: Fail-first backend re-index retry test `test_retry_embedding_reindex_job_reprocesses_same_generation_job` fail import `retry_embedding_reindex_job`; sau implementation pass.
+- 2026-07-01: Backend retry implementation bo sung dispatcher cho `retry_generation_job`, route retry nhan `BackgroundTasks`, `embedding_reindex` retry chay lai re-index tren cung job, AI outline/lesson/block retry re-run service hien co va cap nhat job goc voi ket qua retry.
+- 2026-07-01: Regression pass: backend targeted retry 2 pass; backend jobs/OpenAPI 17 pass; backend AI/lesson/knowledge/jobs 92 pass; frontend targeted 3 files/38 tests pass.
+- 2026-07-01: Rendered QA Playwright desktop 1440x1000 voi backend/frontend local: Teacher/Admin Job Center fullstack pass issues `[]`, horizontalOverflow false, screenshots `/tmp/v2-014-teacher-jobs-final-2.png`, `/tmp/v2-014-admin-jobs-final-2.png`.
+- 2026-07-01: Mocked action QA de co failed/running rows pass: retry/cancel calls dung endpoint, UI doi status `Thu lai`/`Da huy`, URL/secret trong error duoc sanitize, screenshot `/tmp/v2-014-teacher-jobs-actions.png`.
+- 2026-07-01: Final `./init.sh` pass voi frontend typecheck/lint, 21 files/104 tests, build va backend 221 tests.
 
 ## Files Planned
 
@@ -82,6 +92,28 @@
 - [x] Concept generated and saved in `images/`.
 - [x] User approved concept.
 - [x] Backend retry/cancel tests pass.
-- [ ] Frontend UI/API tests pass.
-- [ ] Rendered QA pass.
-- [ ] `./init.sh` pass.
+- [x] Frontend UI/API tests pass.
+- [x] Rendered QA pass.
+- [x] `./init.sh` pass.
+
+## Manual Validation
+
+Prerequisite:
+- Backend chay `cd backend && ../.local/bin/uv run fastapi dev main.py --host 127.0.0.1 --port 3000`.
+- Frontend chay `pnpm --dir frontend run dev --host 127.0.0.1 --port 5173`.
+
+Steps:
+1. Login Teacher demo, mo sidebar `Hang doi xu ly`.
+2. Login Admin demo, mo sidebar `Tac vu`.
+3. Kiem tra summary status, search/filter, table, detail panel va nut refresh.
+4. Tao mot job failed/running trong workflow upload/re-index/generate, thu retry/cancel tu Job Center.
+
+Expected:
+- Teacher thay job cua minh; Admin thay job trong organization.
+- Retry failed job doi sang retrying/processing hoac completed/failed theo worker.
+- Cancel job queued/processing/retrying doi sang cancelled theo best-effort.
+- UI khong hien secret/API URL raw trong loi.
+
+Negative check:
+- Student khong co page Job Center va API `/api/v1/generation-jobs`/retry/cancel bi backend chan.
+- Teacher khong thao tac duoc job cua actor/org khac; Admin khong thao tac job ngoai organization.

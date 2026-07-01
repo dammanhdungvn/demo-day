@@ -6,6 +6,8 @@ import {
   useState,
 } from 'react'
 import {
+  Activity,
+  BarChart3,
   BookOpen,
   ClipboardCheck,
   Eye,
@@ -21,21 +23,19 @@ import {
   MonitorPlay,
   RefreshCcw,
   ShieldCheck,
+  Settings,
   Ticket,
   UserPlus,
-  UserRound,
   UsersRound,
   X,
 } from 'lucide-react'
 import './App.css'
-import teachflowHeroImage from './assets/teachflow-education-hero.png'
+import teachflowHeroImage from './assets/teachflow-login-education-hero-asset-v2.png'
 import {
   acceptInvite,
   createSystemAdminInvite,
   createSystemOrganization,
-  demoLogin,
   fetchCurrentUser,
-  fetchDemoAccounts,
   fetchRoleDashboard,
   fetchSystemOrganizations,
   getRoleRoute,
@@ -46,14 +46,17 @@ import {
   type InviteAcceptPayload,
   type LoginCredentials,
   type OrganizationInvite,
-  type PublicDemoAccount,
   type RoleDashboard,
   type SystemOrganization,
 } from './api/auth'
 import { fetchHealth } from './api/health'
 import { clearAuthSession, loadAuthSession, saveAuthSession } from './auth/session'
 import { getWorkspaceConfig } from './auth/workspaces'
-import { getBackendUrl } from './config'
+import {
+  getBackendUrl,
+  getRealAccountShortcuts,
+  type RealAccountShortcut,
+} from './config'
 import { getErrorMessage } from './errors'
 import { AdminWorkspace } from './features/admin/AdminWorkspace'
 import { StudentWorkspace } from './features/student/StudentWorkspace'
@@ -81,11 +84,6 @@ import {
   isWorkspacePageForRole,
   type WorkspacePageId,
 } from './workspacePages'
-
-type DemoAccountsState =
-  | { status: 'loading' }
-  | { status: 'ready'; accounts: PublicDemoAccount[] }
-  | { status: 'error'; message: string }
 
 type BackendConnectionState =
   | { status: 'checking'; message: string }
@@ -119,30 +117,25 @@ const LOGIN_FEATURES: Array<{
   { Icon: ClipboardCheck, label: 'Đánh giá dễ dàng' },
 ]
 
-function RoleIcon({ role }: { role: PublicDemoAccount['role'] }) {
-  if (role === 'system_admin') {
-    return <ShieldCheck aria-hidden="true" size={20} />
-  }
-  if (role === 'admin') {
-    return <ShieldCheck aria-hidden="true" size={20} />
-  }
-  if (role === 'teacher') {
-    return <GraduationCap aria-hidden="true" size={20} />
-  }
-  return <UserRound aria-hidden="true" size={20} />
-}
-
-function loginRoleLabel(role: PublicDemoAccount['role']): string {
-  if (role === 'admin') {
-    return 'Admin'
-  }
-  if (role === 'teacher') {
-    return 'Teacher'
-  }
-  if (role === 'student') {
-    return 'Student'
-  }
-  return roleLabel(role)
+const REAL_ACCOUNT_META: Record<
+  RealAccountShortcut['role'],
+  { Icon: typeof FileText; label: string; description: string }
+> = {
+  admin: {
+    Icon: ShieldCheck,
+    label: 'Admin thật',
+    description: 'Quản trị tổ chức và duyệt bài',
+  },
+  teacher: {
+    Icon: GraduationCap,
+    label: 'Teacher thật',
+    description: 'Soạn bài từ tài liệu nội bộ',
+  },
+  student: {
+    Icon: BookOpen,
+    label: 'Student thật',
+    description: 'Học lesson đã xuất bản',
+  },
 }
 
 function workspacePrimaryActions(role: AuthSession['user']['role']) {
@@ -151,7 +144,7 @@ function workspacePrimaryActions(role: AuthSession['user']['role']) {
   }
 
   if (role === 'admin') {
-    return ['Hàng đợi duyệt', 'Tác vụ']
+    return ['Tổng quan', 'Hàng đợi duyệt']
   }
 
   if (role === 'student') {
@@ -163,9 +156,14 @@ function workspacePrimaryActions(role: AuthSession['user']['role']) {
 
 function pageIcon(pageId: WorkspacePageId) {
   const iconMap: Partial<Record<WorkspacePageId, typeof LayoutDashboard>> = {
+    'admin-activity-log': Activity,
     'admin-knowledge': Library,
+    'admin-lesson-library': BookOpen,
     'admin-jobs': MonitorPlay,
+    'admin-overview': LayoutDashboard,
+    'admin-reports': BarChart3,
     'admin-review': ClipboardCheck,
+    'admin-settings': Settings,
     'admin-users': UserPlus,
     'student-classes': UsersRound,
     'student-documents': Library,
@@ -194,7 +192,6 @@ function initialWorkspacePage(role: AuthSession['user']['role']): WorkspacePageI
 }
 
 function LoginPanel({
-  accountsState,
   backendConnection,
   credentials,
   inviteForm,
@@ -203,16 +200,16 @@ function LoginPanel({
   isAcceptingInvite,
   isInvitePanelOpen,
   isSubmitting,
+  realAccountShortcuts,
   onChangeCredentials,
   onChangeInviteForm,
   onAcceptInviteSubmit,
   onCloseInvitePanel,
   onOpenInvitePanel,
   onRetryConnection,
-  onSelectAccount,
+  onSelectRealAccount,
   onSubmit,
 }: {
-  accountsState: DemoAccountsState
   backendConnection: BackendConnectionState
   credentials: LoginCredentials
   inviteForm: InviteAcceptPayload
@@ -221,13 +218,14 @@ function LoginPanel({
   isAcceptingInvite: boolean
   isInvitePanelOpen: boolean
   isSubmitting: boolean
+  realAccountShortcuts: RealAccountShortcut[]
   onChangeCredentials: (credentials: LoginCredentials) => void
   onChangeInviteForm: (payload: InviteAcceptPayload) => void
   onAcceptInviteSubmit: (event: FormEvent<HTMLFormElement>) => void
   onCloseInvitePanel: () => void
   onOpenInvitePanel: () => void
   onRetryConnection: () => void
-  onSelectAccount: (account: PublicDemoAccount) => void
+  onSelectRealAccount: (account: RealAccountShortcut) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }) {
   const canUseAuth = backendConnection.status === 'ready'
@@ -244,7 +242,6 @@ function LoginPanel({
             <strong>TeachFlow AI</strong>
           </div>
           <h1 id="login-title">AI Teaching Assistant</h1>
-          <p className="lead login-tagline">Soạn bài. Dạy tốt.</p>
           <div className="login-feature-strip" aria-label="Điểm mạnh TeachFlow AI">
             {LOGIN_FEATURES.map(({ Icon, label }) => (
               <span className="login-feature-chip" key={label}>
@@ -262,7 +259,10 @@ function LoginPanel({
       <div className="auth-panel-stack">
         <form className="login-card" onSubmit={onSubmit}>
           <div className="login-card-heading">
-            <h2>Chọn vai trò</h2>
+            <div>
+              <p className="section-label">Đăng nhập</p>
+              <h2>Tài khoản TeachFlow</h2>
+            </div>
             <div className={`login-system-status ${backendConnection.status}`}>
               {backendConnection.status === 'checking' ? (
                 <Spinner label="Đang kết nối" />
@@ -284,48 +284,41 @@ function LoginPanel({
             </div>
           </div>
 
-          <div>
-            <div className="account-list" aria-live="polite">
-              {accountsState.status === 'loading' && (
-                <p className="muted">Đang tải...</p>
-              )}
-
-              {accountsState.status === 'error' && (
-                <p className="error-text">{accountsState.message}</p>
-              )}
-
-              {accountsState.status === 'ready' &&
-                accountsState.accounts.length === 0 && (
-                  <p className="muted">
-                    Chưa bật truy cập nhanh.
-                  </p>
-                )}
-
-              {accountsState.status === 'ready' &&
-                accountsState.accounts.map((account) => (
-                  <button
-                    aria-label={`Mở ${loginRoleLabel(account.role)} (${account.email})`}
-                    className={`account-button login-role-${account.role}${
-                      credentials.email === account.email ? ' selected' : ''
-                    }`}
-                    disabled={!canUseAuth || isSubmitting || isAcceptingInvite}
-                    key={account.id}
-                    title={account.email}
-                    type="button"
-                    onClick={() => onSelectAccount(account)}
-                  >
-                    <RoleIcon role={account.role} />
-                    <span>
-                      <strong>{loginRoleLabel(account.role)}</strong>
-                    </span>
-                  </button>
-                ))}
+          {realAccountShortcuts.length > 0 && (
+            <div className="real-account-shortcuts" aria-label="Tài khoản thật">
+              <div className="real-account-header">
+                <p className="section-label">Tài khoản thật</p>
+                <span>Dành cho nhà tuyển dụng truy cập nhanh</span>
+              </div>
+              <div className="account-list">
+                {realAccountShortcuts.map((account) => {
+                  const meta = REAL_ACCOUNT_META[account.role]
+                  const Icon = meta.Icon
+                  const isSelected = credentials.email === account.email
+                  return (
+                    <button
+                      className={`account-button real-account-button real-role-${account.role}${
+                        isSelected ? ' selected' : ''
+                      }`}
+                      disabled={!canUseAuth || isSubmitting || isAcceptingInvite}
+                      key={account.role}
+                      type="button"
+                      onClick={() => onSelectRealAccount(account)}
+                    >
+                      <Icon aria-hidden="true" size={21} />
+                      <span>
+                        <strong>{meta.label}</strong>
+                        <small>{account.email}</small>
+                        <small>
+                          {account.password ? 'Mật khẩu đã điền sẵn' : meta.description}
+                        </small>
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-
-          <div className="login-divider" aria-hidden="true">
-            <span>hoặc</span>
-          </div>
+          )}
 
           <label className="field login-field">
             <span className="login-field-label">Email</span>
@@ -651,8 +644,22 @@ function SystemAdminWorkspace({
           <h2 id="system-owner-title">Thiết lập tổ chức mới</h2>
           <p className="muted">
             Tạo tổ chức và gửi mã mời cho Admin đầu tiên của tổ chức đó. Owner
-            hệ thống không xuất hiện trong truy cập nhanh demo.
+            hệ thống chỉ đăng nhập bằng tài khoản Supabase đã được allowlist.
           </p>
+        </div>
+        <div className="system-admin-quick-stats" aria-label="Tổng quan hệ thống">
+          <span>
+            <strong>{organizations.length}</strong>
+            Tổ chức
+          </span>
+          <span>
+            <strong>{selectedOrganizationId ? '1' : '0'}</strong>
+            Đang chọn
+          </span>
+          <span>
+            <strong>{createdInvite ? '1' : '0'}</strong>
+            Mã vừa tạo
+          </span>
         </div>
       </div>
 
@@ -846,7 +853,10 @@ function DashboardShell({
   }
 
   return (
-    <section className="workspace" aria-labelledby="workspace-title">
+    <section
+      className={`workspace workspace-${session.user.role}`}
+      aria-labelledby="workspace-title"
+    >
       <div className="workspace-grid">
         <aside className="sidebar">
           <div className="sidebar-brand">
@@ -1015,9 +1025,7 @@ function App() {
       return ''
     }
   }, [])
-  const [accountsState, setAccountsState] = useState<DemoAccountsState>({
-    status: 'loading',
-  })
+  const realAccountShortcuts = useMemo(() => getRealAccountShortcuts(), [])
   const [backendConnection, setBackendConnection] =
     useState<BackendConnectionState>({
       status: 'checking',
@@ -1046,10 +1054,6 @@ function App() {
         status: 'error',
         message: 'Chưa cấu hình hệ thống',
       })
-      setAccountsState({
-        status: 'error',
-        message: 'Chưa thể tải truy cập nhanh.',
-      })
       return
     }
 
@@ -1057,14 +1061,9 @@ function App() {
       status: 'checking',
       message: 'Đang kết nối hệ thống',
     })
-    setAccountsState({ status: 'loading' })
 
     try {
-      const [, accounts] = await Promise.all([
-        fetchHealth(),
-        fetchDemoAccounts(),
-      ])
-      setAccountsState({ status: 'ready', accounts })
+      await fetchHealth()
       setBackendConnection({
         status: 'ready',
         message: 'Sẵn sàng',
@@ -1074,10 +1073,6 @@ function App() {
       setBackendConnection({
         status: 'error',
         message,
-      })
-      setAccountsState({
-        status: 'error',
-        message: 'Không tải được truy cập nhanh.',
       })
     }
   }, [backendUrl])
@@ -1196,6 +1191,14 @@ function App() {
     await authenticate(credentials)
   }
 
+  function handleSelectRealAccount(account: RealAccountShortcut) {
+    setCredentials({
+      email: account.email,
+      password: account.password ?? '',
+    })
+    setLoginError(null)
+  }
+
   async function handleAcceptInvite(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (backendConnection.status !== 'ready') {
@@ -1219,31 +1222,6 @@ function App() {
     } finally {
       setIsAcceptingInvite(false)
     }
-  }
-
-  function handleSelectAccount(account: PublicDemoAccount) {
-    if (backendConnection.status !== 'ready') {
-      setLoginError('Hệ thống chưa sẵn sàng.')
-      return
-    }
-    setIsLoggingIn(true)
-    setLoginError(null)
-
-    demoLogin({ account_id: account.id })
-      .then((nextSession) => {
-        saveAuthSession(nextSession)
-        setSession(nextSession)
-        setCredentials(EMPTY_CREDENTIALS)
-        setInviteError(null)
-        setIsInvitePanelOpen(false)
-        window.history.pushState(null, '', getRoleRoute(nextSession.user.role))
-      })
-      .catch((error: unknown) => {
-        setLoginError(getErrorMessage(error, 'Không mở được truy cập nhanh'))
-      })
-      .finally(() => {
-        setIsLoggingIn(false)
-      })
   }
 
   async function handleLogout() {
@@ -1277,7 +1255,6 @@ function App() {
         />
       ) : (
         <LoginPanel
-          accountsState={accountsState}
           backendConnection={backendConnection}
           credentials={credentials}
           inviteError={inviteError}
@@ -1286,13 +1263,14 @@ function App() {
           isInvitePanelOpen={isInvitePanelOpen}
           isSubmitting={isLoggingIn}
           loginError={loginError}
+          realAccountShortcuts={realAccountShortcuts}
           onAcceptInviteSubmit={handleAcceptInvite}
           onChangeCredentials={setCredentials}
           onChangeInviteForm={setInviteForm}
           onCloseInvitePanel={() => setIsInvitePanelOpen(false)}
           onOpenInvitePanel={() => setIsInvitePanelOpen(true)}
           onRetryConnection={() => void refreshLoginConnection()}
-          onSelectAccount={handleSelectAccount}
+          onSelectRealAccount={handleSelectRealAccount}
           onSubmit={handleLogin}
         />
       )}

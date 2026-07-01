@@ -5,8 +5,28 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
 export XDG_CACHE_HOME="$ROOT/.cache"
+export XDG_DATA_HOME="$ROOT/.local/share"
 export UV_CACHE_DIR="$ROOT/.cache/uv"
-mkdir -p "$UV_CACHE_DIR"
+export PNPM_HOME="$XDG_DATA_HOME/pnpm"
+export PATH="$ROOT/.local/bin:$PNPM_HOME:$PATH"
+mkdir -p "$ROOT/.local/bin" "$UV_CACHE_DIR" "$PNPM_HOME"
+
+if ! command -v node >/dev/null 2>&1 && [ -s "$HOME/.nvm/nvm.sh" ]; then
+  # Non-interactive shells do not always load nvm from .bashrc.
+  # shellcheck disable=SC1090
+  . "$HOME/.nvm/nvm.sh"
+fi
+
+if command -v corepack >/dev/null 2>&1; then
+  pnpm() {
+    local cached_pnpm="$HOME/.cache/node/corepack/v1/pnpm/11.9.0/bin/pnpm.mjs"
+    if [ -f "$cached_pnpm" ]; then
+      node "$cached_pnpm" "$@"
+    else
+      corepack pnpm@11.9.0 "$@"
+    fi
+  }
+fi
 
 fail() {
   echo "FAIL: $*" >&2
@@ -115,15 +135,22 @@ for key in "${required_env_keys[@]}"; do
   fi
 done
 
-if [ -f ".env" ]; then
-  info "Tim thay .env local; kiem tra ten bien bat buoc"
+local_env_file=""
+if [ -f ".env.local" ]; then
+  local_env_file=".env.local"
+elif [ -f ".env" ]; then
+  local_env_file=".env"
+fi
+
+if [ -n "$local_env_file" ]; then
+  info "Tim thay ${local_env_file}; kiem tra ten bien bat buoc"
   for key in "${required_env_keys[@]}"; do
-    if ! has_env_key ".env" "$key"; then
-      fail ".env thieu bien ${key}; chi kiem tra ten bien, khong in gia tri secret"
+    if ! has_env_key "$local_env_file" "$key"; then
+      fail "${local_env_file} thieu bien ${key}; chi kiem tra ten bien, khong in gia tri secret"
     fi
   done
 else
-  warn "Chua co .env local; copy tu .env.example khi can chay app"
+  warn "Chua co .env.local/.env; copy tu .env.example khi can chay app"
 fi
 
 info "Kiem tra frontend neu da ton tai"

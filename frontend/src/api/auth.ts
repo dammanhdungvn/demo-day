@@ -87,6 +87,28 @@ export type ManagedUserUpdatePayload = {
   status?: ManagedUserStatus
 }
 
+export type ManagedUserBulkStatusPayload = {
+  user_ids: string[]
+  status: ManagedUserStatus
+}
+
+export type ManagedUserBulkStatusResponse = {
+  users: ManagedUser[]
+  updated_count: number
+}
+
+export type ManagedUserBulkPasswordResetPayload = {
+  user_ids: string[]
+  redirect_to?: string | null
+}
+
+export type ManagedUserBulkPasswordResetResponse = {
+  requested_count: number
+  sent_count: number
+  skipped_count: number
+  skipped_user_ids: string[]
+}
+
 export type RoleDashboard = {
   workspace: UserRole
   title: string
@@ -392,6 +414,51 @@ export async function updateManagedUser(
   })
 
   return readJson<ManagedUser>(response, 'Update managed user')
+}
+
+export async function bulkUpdateManagedUserStatus(
+  payload: ManagedUserBulkStatusPayload,
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<ManagedUserBulkStatusResponse> {
+  const response = await fetcher(buildApiUrl('/auth/users/bulk-status', backendUrl), {
+    method: 'PATCH',
+    headers: {
+      ...authHeaders(token),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  return readJson<ManagedUserBulkStatusResponse>(
+    response,
+    'Bulk update managed users',
+  )
+}
+
+export async function bulkResetManagedUserPasswords(
+  payload: ManagedUserBulkPasswordResetPayload,
+  token: string,
+  fetcher: typeof fetch = fetch,
+  backendUrl = getBackendUrl(),
+): Promise<ManagedUserBulkPasswordResetResponse> {
+  const response = await fetcher(
+    buildApiUrl('/auth/users/bulk-password-reset', backendUrl),
+    {
+      method: 'POST',
+      headers: {
+        ...authHeaders(token),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    },
+  )
+
+  return readJson<ManagedUserBulkPasswordResetResponse>(
+    response,
+    'Bulk password reset',
+  )
 }
 
 export async function acceptInvite(

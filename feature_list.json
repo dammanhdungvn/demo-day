@@ -26,7 +26,7 @@
     "blocked": "Dang bi chan, can user quyet dinh",
     "done": "Da hoan thanh va co evidence"
   },
-  "current_active_feature": "V2-014",
+  "current_active_feature": null,
   "global_rules": [
     "Version 1 P0/P1 da hoan thanh; khi lam version 2/3 phai tao/cap nhat backlog moi theo docs/version2 hoac docs/version3 truoc khi code.",
     "Moi task phai co test hoac test plan truoc khi code.",
@@ -3807,7 +3807,7 @@
       "name": "Reliable job center with retry and cancel",
       "description": "Dong production debt TD-013/TD-015/TD-016 bang job center cho AI/RAG/document jobs: status polling, retry failed jobs va cancel running jobs trong workflow Teacher/Admin, khong hardcode job data.",
       "priority": "V2-P0 Production Reliability",
-      "status": "blocked",
+      "status": "done",
       "dependencies": [
         "V2-005",
         "V2-007",
@@ -3856,7 +3856,7 @@
         "Khong lo secret/API URL trong job input/error UI.",
         "`./init.sh` pass va docs/evidence cap nhat sau implementation."
       ],
-      "evidence": "2026-06-30: Backlog/exec plan duoc mo sau V4-047 de dong debt TD-013/TD-015/TD-016. Da tao concept `images/job-center-design-approval-v1.png` theo UI approval gate; user da duyet concept. Backend retry/cancel service/repository/routes va OpenAPI tests da implement, initial frontend Job Center scaffold da bat dau, nhung frontend Job Center tam dung theo yeu cau user de quay lai uu tien login/backend API connection. Tests da chay cho phan backend/job API: `cd backend && UV_CACHE_DIR=.uv-cache uv run pytest tests/test_generation_jobs.py tests/test_jobs_module_boundaries.py tests/test_openapi_contract.py -q` pass 17. Feature chua done vi Job Center UI/rendered QA/final init chua hoan tat."
+      "evidence": "2026-07-01: Hoan thanh V2-014 Reliable Job Center. Frontend Job Center Teacher/Admin da co table-first UI theo concept duyet, status chips, search/filter, detail panel, polling/refresh, icon-only retry/cancel co aria-label/title va empty/error/loading state. Backend retry/cancel enforce role/actor/organization/status guard; retry khong fake data: document_upload thieu raw durable input tra guidance, embedding_reindex retry thuc thi lai re-index tren cung job, AI outline/lesson/block retry re-run bang service hien co va cap nhat job goc voi ket qua retry. Tests/evidence: fail-first `test_retry_embedding_reindex_job_reprocesses_same_generation_job` fail import truoc implementation; sau fix targeted backend retry/re-index 2 pass, jobs/OpenAPI 17 pass, backend AI/lesson/knowledge/jobs regression 92 pass, frontend Job Center/API/workspace targeted 3 files/38 tests pass; Playwright desktop 1440x1000 fullstack Teacher/Admin Job Center pass issues `[]`, horizontalOverflow false, screenshots `/tmp/v2-014-teacher-jobs-final-2.png`, `/tmp/v2-014-admin-jobs-final-2.png`; mocked action QA pass retry/cancel calls, status update, URL/secret sanitization, screenshot `/tmp/v2-014-teacher-jobs-actions.png`; final `./init.sh` pass frontend typecheck/lint/21 files/104 tests/build va backend 221 tests."
     },
     {
       "id": "BUG-006",
@@ -3903,6 +3903,307 @@
         "Frontend typecheck/lint/test/build pass."
       ],
       "evidence": "2026-06-30: Hoan thanh login backend API readiness hotfix. Frontend `App.tsx` them backend connection state dung `fetchHealth` + `fetchDemoAccounts`, disable auth controls khi backend chua ready, nut retry connection; `api/auth.ts` parse backend JSON detail; `errors.ts` map network/auth errors sang user-facing copy. `.env` that dang dung `URL_BACKEND=/api/v1`, Vite proxy `/api` -> `127.0.0.1:3000`. Smoke: `curl http://127.0.0.1:3000/api/v1/health`, `curl http://127.0.0.1:3000/api/v1/auth/demo-accounts`, `curl http://127.0.0.1:5173/api/v1/health`, `curl http://127.0.0.1:5173/api/v1/auth/demo-accounts` deu 200. Tests/evidence: targeted `pnpm --dir frontend exec vitest run src/api/auth.test.ts src/errors.test.ts src/loginSecurity.test.ts src/config.test.ts` pass 21; frontend typecheck pass; lint pass; full frontend tests pass 20 files/100 tests; build pass; `git diff --check` pass; final `./init.sh` pass frontend 20 files/100 tests + build va backend 219 tests. Rendered QA Playwright fallback vi Browser plugin absent: desktop login status `San sang`, 3 role buttons, click Teacher vao `/teacher` co `Giang vien Demo`, no console issues/no API bad responses, screenshots `/tmp/login-api-ready.png`, `/tmp/login-teacher-connected.png`; mobile login ready screenshot `/tmp/login-api-ready-mobile.png`; backend-error route mock hien `Khong ket noi duoc he thong`, screenshot `/tmp/login-api-error-state.png`."
+    },
+    {
+      "id": "V4-048",
+      "name": "Convert new login and admin HTML designs",
+      "description": "Chuyen design HTML moi trong `images/frontend-login-design.html` va `images/admin/html/` sang frontend React/CSS cua TeachFlow AI, giu API/data that va design system hien co.",
+      "priority": "V4-P0 Frontend Redesign",
+      "status": "done",
+      "dependencies": [
+        "V4-047",
+        "BUG-006",
+        "V4-045",
+        "V4-046"
+      ],
+      "user_stories": [
+        "As a user, I want the login screen to match the approved TeachFlow visual design, so that the product feels polished before I enter a workspace.",
+        "As an Admin, I want review, knowledge, users and jobs pages to follow the new admin portal designs, so that operational work is table-first, scannable and professional.",
+        "As a System Admin, I want organization and admin-invite pages to follow the new admin portal designs, so that tenant setup is clear and production-like."
+      ],
+      "business_goal": "Dong bo frontend runtime voi design moi user da tao trong `images`, nang chat luong demo/san pham ma khong doi backend contract hoac fake data.",
+      "vertical_slice": {
+        "backend": [
+          "Khong doi backend; dung API hien co cho login, admin review, knowledge, users, jobs va system organization/admin invite."
+        ],
+        "frontend": [
+          "Lam lai login theo `images/frontend-login-design.html`, dung asset hop le trong `images/assets/teachflow-login-education-hero-asset-v2.png`, lucide icons va state ket noi backend hien co.",
+          "Lam lai Admin workspace theo `images/admin/html/`: sidebar/topbar/table-first portal, metrics, review queue/detail, knowledge library, user management, job monitoring.",
+          "Lam lai System Admin organization va admin invite pages theo HTML design tu `images/admin/html/`.",
+          "Khong import CDN/Tailwind runtime/remote prototype images; chuyen thanh React/CSS code-native."
+        ],
+        "tests": [
+          "Cap nhat/bo sung frontend tests cho login khong lo API URL/password, 3 role card, invite action va backend-ready gating.",
+          "Cap nhat/bo sung tests cho admin user/knowledge table-first va icon action accessibility neu can.",
+          "Rendered QA desktop/mobile login va Admin/System Admin surfaces khi Node/pnpm kha dung.",
+          "Final `./init.sh` khi Node/pnpm kha dung."
+        ],
+        "manual_validation": [
+          "Mo login, xac nhan layout 2 cot desktop, role cards Admin/Teacher/Student, hero minh hoa, status backend va invite action khop design.",
+          "Login Admin, mo Hang doi/Kho tri thuc/Nguoi dung/Tac vu, xac nhan sidebar/topbar, metrics/table/actions/loading-empty-error state khop design direction.",
+          "Login System Admin, mo To chuc/Moi Admin, xac nhan form + table history khop design direction.",
+          "Mobile login/admin khong overlap hoac cat chu."
+        ]
+      },
+      "acceptance_criteria": [
+        "Login runtime React/CSS bam theo `images/frontend-login-design.html` nhung khong dung CDN/Tailwind runtime/remote prototype image.",
+        "Admin runtime React/CSS bam theo cac design trong `images/admin/html/` va `images/admin/png/`, table-first cho knowledge/users/jobs.",
+        "System Admin organization/admin invite pages bam theo design HTML moi.",
+        "Khong hardcode backend URL, secret, API key hoac fake business data moi.",
+        "UI co loading/empty/error state co ban va icon action co `aria-label`/`title` khi icon-only.",
+        "`./init.sh` pass neu Node/pnpm kha dung; neu toolchain thieu trong shell thi ghi blocker/evidence ro."
+      ],
+      "evidence": "2026-07-01: Hoan thanh chuyen design HTML moi trong `images/frontend-login-design.html` va `images/admin/html/` sang frontend React/CSS desktop-first. Login dung asset local `frontend/src/assets/teachflow-login-education-hero-asset-v2.png`, layout 2 cot desktop, 3 role cards Admin/Teacher/Student, form email/password/icon, backend-ready status va invite action; khong hien API URL/demo password/tagline cu. Admin workspace co portal desktop shell theo design: sidebar/topbar, review hero/metrics, Knowledge table-first + add PDF/URL, Users metrics/filter/table/invite, Jobs monitoring table/detail. System Admin organization/admin-invite surfaces duoc style cung portal desktop; rendered QA truc tiep khong them System Admin demo account vi V4-043 quy dinh Owner khong xuat hien trong public quick demo. Tooling fix: `init.sh` load nvm non-interactive, dat pnpm/uv cache trong workspace va PATH `.local/bin`; `frontend/package.json` pin `packageManager=pnpm@11.9.0`. Verification: final `./init.sh` pass frontend typecheck/lint, 21 test files/102 tests, build; backend 219 tests pass. Rendered QA desktop 1440x1000 qua Playwright pass issues empty cho login va Admin review/knowledge/users/jobs; screenshots `/tmp/v4-048-login-desktop.png`, `/tmp/v4-048-admin-review-desktop.png`, `/tmp/v4-048-admin-knowledge-desktop.png`, `/tmp/v4-048-admin-users-desktop.png`, `/tmp/v4-048-admin-jobs-desktop.png`."
+    },
+    {
+      "id": "V4-049",
+      "name": "Convert teacher and student HTML designs with API gap audit",
+      "description": "Chuyen cac design Teacher/Student trong `images/teacher/html/` va `images/student/html/` sang frontend React/CSS desktop-first responsive, giu data/API that va audit frontend-backend coverage.",
+      "priority": "V4-P0 Frontend Redesign",
+      "status": "done",
+      "dependencies": [
+        "V4-048",
+        "V4-044",
+        "V5-001",
+        "V2-013"
+      ],
+      "user_stories": [
+        "As a Teacher, I want overview, course/class, documents, outline, studio and jobs pages to match the new desktop app designs, so that lesson creation feels like one polished product.",
+        "As a Student, I want classes, lesson reader/tutor, practice/self-check and personal documents pages to match the new desktop app designs, so that learning flows are clear and focused.",
+        "As a product owner, I want an API gap audit after the redesign, so that frontend controls are backed by real backend behavior instead of mock-only UI."
+      ],
+      "business_goal": "Hoan tat dot chuyen design tu `images` cho cac role con lai sau login/Admin, dong bo san pham fullstack theo workflow Teacher -> RAG -> Lesson Studio -> Student learning truoc khi production audit.",
+      "vertical_slice": {
+        "backend": [
+          "Audit frontend page/action hien co voi backend endpoints trong `frontend/src/api/learning.ts` va FastAPI routes.",
+          "Chi them API neu UI runtime can chuc nang that chua co backend contract; khong tao fake endpoint de lam dep giao dien."
+        ],
+        "frontend": [
+          "Chuyen Teacher pages theo `images/teacher/html/*`: overview cards, course/class table-detail, documents upload/source table, outline builder, studio 3 cot, jobs table/detail.",
+          "Chuyen Student pages theo `images/student/html/*`: classes dashboard, lesson reader/tutor, practice self-check, personal documents va presentation viewer direction.",
+          "Desktop webapp la target chinh 1440px; responsive tablet/mobile co layout khong overlap/cat chu.",
+          "Khong import CDN Tailwind/Google Fonts runtime/remote prototype images; dung React/CSS/lucide icons va API data hien co."
+        ],
+        "tests": [
+          "Frontend raw/helper tests cho Teacher/Student surface class, page gating va khong lo API URL/password/secret.",
+          "Frontend typecheck/lint/test/build va backend pytest qua `./init.sh`.",
+          "Rendered QA desktop 1440px cho Teacher overview/setup/documents/outline/studio/jobs va Student classes/lessons/practice/documents.",
+          "API gap checklist ghi endpoint dang dung va gap con lai neu co."
+        ],
+        "manual_validation": [
+          "Login Teacher, mo tung page Tong quan/Khoa hoc/Tai lieu/Dan y/Studio/Tac vu va xac nhan data that van load tu backend.",
+          "Login Student, mo Lop cua toi/Lesson/Luyen tap/Tai lieu ca nhan va xac nhan lesson/progress/tutor/practice/document flows van dung API.",
+          "Thu desktop 1440px va width nho hon, khong overlap, khong cat text quan trong.",
+          "Negative: Student khong thay Teacher/Admin action; Teacher khong truy cap lesson Student ngoai quyen."
+        ]
+      },
+      "acceptance_criteria": [
+        "Teacher runtime React/CSS bam theo design HTML/PNG trong `images/teacher/` cho cac page hien co.",
+        "Student runtime React/CSS bam theo design HTML/PNG trong `images/student/` cho cac page hien co.",
+        "Frontend khong hardcode backend URL, API key, Supabase secret hay OpenAI/NVIDIA key.",
+        "Khong them fake business data moi; cac metric/list/action lay tu state/API/helper hien co.",
+        "Icon-only actions co `aria-label`/`title`; loading/empty/error state co ban van ro.",
+        "API gap audit duoc ghi trong exec plan/progress; backend API moi chi them neu phat hien gap that trong workflow.",
+        "`./init.sh` pass va rendered QA desktop pass truoc khi danh dau done."
+      ],
+      "evidence": "2026-07-01: Hoan thanh Teacher/Student HTML design conversion va API gap audit. Frontend them design contract tests cho Teacher/Student code-native surfaces, them class/layout wrappers `teacher-design-*` va `student-design-*`, CSS desktop portal override cho Teacher/Student shell, Teacher overview/setup/documents/outline/studio/jobs va Student classes/lesson reader/practice/documents. API gap audit xac nhan cac action P0 trong design deu da co endpoint hien huu: Teacher course/class/documents/outline/studio/jobs va Student classes/lesson/progress/study/tutor/practice/documents; backend khong doi. Tests/evidence: baseline `./init.sh` pass truoc code frontend 21 files/102 tests + backend 219; fail-first targeted raw surface tests fail dung ky vong; sau fix targeted `pnpm --dir frontend exec vitest run src/features/teacherWorkspace.test.ts src/features/adminStudentWorkspace.test.ts src/features/jobs/jobCenterSurface.test.ts` pass 3 files/10 tests; final `./init.sh` pass frontend typecheck/lint, 21 test files/104 tests, build va backend 219 tests. Rendered QA desktop 1440x1000 qua Playwright quick-login/sidebar click pass issues empty, horizontalOverflow false va marker present cho Teacher overview/setup/documents/outline/studio/jobs va Student classes/lessons/practice/documents; screenshots `/tmp/v4-049-teacher-overview.png`, `/tmp/v4-049-teacher-setup.png`, `/tmp/v4-049-teacher-documents.png`, `/tmp/v4-049-teacher-outline.png`, `/tmp/v4-049-teacher-studio.png`, `/tmp/v4-049-teacher-jobs.png`, `/tmp/v4-049-student-classes.png`, `/tmp/v4-049-student-lessons.png`, `/tmp/v4-049-student-practice.png`, `/tmp/v4-049-student-documents.png`."
+    },
+    {
+      "id": "V4-050",
+      "name": "Final production readiness audit for design/fullstack goal",
+      "description": "Audit tong the sau khi chuyen design trong `images`, ket noi fullstack/database va dong Job Center, de xac minh goal user da du evidence hay con blocker truoc production.",
+      "priority": "V4-P0 Production Readiness",
+      "status": "done",
+      "dependencies": [
+        "V4-048",
+        "V4-049",
+        "V2-014",
+        "V5-001"
+      ],
+      "user_stories": [
+        "As a product owner, I want a final evidence-based audit of frontend design coverage, fullstack/API coverage, database persistence and production gaps before calling the goal complete.",
+        "As an operator, I want unresolved production risks separated from shipped blockers, so that deployment decisions are explicit.",
+        "As the next agent, I want restartable audit evidence in the repository, so that completion is not only in chat history."
+      ],
+      "business_goal": "Chung minh bang evidence repo/runtime rang TeachFlow AI da bam design `images`, co API/backend/database cho cac flow chinh, va con lai chi la debt/future enhancement ro rang truoc production.",
+      "vertical_slice": {
+        "backend": [
+          "Audit FastAPI route/API coverage cho frontend pages va critical workflows.",
+          "Audit repository/database path cho auth, learning, content, knowledge, jobs, audit, progress, study va exports.",
+          "Khong them API moi neu audit khong phat hien gap blocker."
+        ],
+        "frontend": [
+          "Audit design manifest `images/frontend-design-manifest-v2.md` voi runtime pages login/system/admin/teacher/student/presentation.",
+          "Audit frontend source khong hardcode backend URL/secrets va khong dung prototype HTML/CDN runtime.",
+          "Audit desktop-first responsive evidence tu tests/rendered QA."
+        ],
+        "tests": [
+          "Baseline va final `./init.sh`.",
+          "`python3 -m json.tool feature_list.json` va `git diff --check`.",
+          "Targeted rg/static checks cho secret/backend URL/prototype runtime/design page markers.",
+          "Neu co backend/frontend gap blocker thi viet test fail-first va fix trong feature nay."
+        ],
+        "manual_validation": [
+          "Doc audit report va xem status tung requirement cua user goal.",
+          "Chay backend/frontend local, login Admin/Teacher/Student va kiem tra cac page da map design.",
+          "Mo `/api/v1/docs` de xem Swagger contract va thu protected endpoints voi bearer token."
+        ]
+      },
+      "acceptance_criteria": [
+        "Co audit report trong repo map 4 yeu cau user goal sang evidence hien tai.",
+        "Audit design coverage gom login, System Admin, Admin, Teacher, Student va presentation/job center.",
+        "Audit fullstack/API/database coverage gom routes, frontend clients, repository/database path va tests.",
+        "Neu con production blocker P0 thi tao feature/blocker ro; neu chi la future enhancement thi ghi debt.",
+        "`./init.sh`, JSON validation va diff check pass.",
+        "feature_list.json, progress.md, session-handoff.md va exec plan duoc cap nhat."
+      ],
+      "evidence": "2026-07-01: Hoan thanh V4-050 final production readiness audit. Tao `docs/version5/PRODUCTION_READINESS_AUDIT.md` map 4 yeu cau user goal sang evidence repo/runtime: design coverage theo `images/frontend-design-manifest-v2.md`, fullstack/API coverage qua frontend API clients va FastAPI `/api/v1` routes, database/persistence coverage qua Postgres/Supabase repositories cho auth/learning/content/knowledge/jobs/audit/progress/study/exports, va production gap classification. Audit khong phat hien backend/API gap P0 moi; V4-049 da dong Teacher/Student API gap audit va V2-014 da dong Job Center retry/cancel. Static evidence: JSON validation pass; `git diff --check` pass; frontend secret/backend URL rg no match; prototype/CDN runtime rg no runtime match, chi co negative assertions trong tests; runtime markers present cho login, Teacher, Student, Job Center va LessonPresentation. Baseline va final `./init.sh` pass frontend typecheck/lint, 21 files/104 tests, build va backend 221 tests. Production gaps con lai duoc phan loai accepted debt/future enhancement: durable external worker, raw file durable retry, org-wide token/cost accounting, password reset/MFA/email verification/session inventory, scheduled cleanup, OTel/metrics, server-side PDF renderer va production deployment smoke."
+    },
+    {
+      "id": "V4-051",
+      "name": "Production real-account login only",
+      "description": "Tat luong demo login tren UI/runtime local, chuyen default env sang Supabase/Postgres va huong user dung account that trong auth/profile database.",
+      "priority": "V4-P0 Auth Production Switch",
+      "status": "done",
+      "dependencies": [
+        "V2-010",
+        "V4-029",
+        "V4-043",
+        "BUG-006"
+      ],
+      "user_stories": [
+        "As an operator, I want login to use real Supabase/Postgres accounts instead of demo shortcuts, so that user testing matches production.",
+        "As a System Admin, I want bootstrap and invite flows to remain the official way to create Admin/Teacher/Student accounts.",
+        "As a user, I should see email/password and invite account creation, not demo role cards."
+      ],
+      "business_goal": "Chuyen TeachFlow AI tu demo-login-first sang real-account-first de user test bang tai khoan that trong database that.",
+      "vertical_slice": {
+        "backend": [
+          "Giu Supabase Auth + Postgres profile/invite path lam production auth path.",
+          "Demo quick login van co test opt-in nhung bi tat mac dinh qua env template/local runtime.",
+          "Khong tao fake account moi trong source."
+        ],
+        "frontend": [
+          "Login page bo role quick-access cards va khong goi demo account/demo-login API trong runtime App.",
+          "Giu email/password login, invite acceptance va backend readiness state.",
+          "Copy huong ve tai khoan that/mã mời thay vi truy cap nhanh demo."
+        ],
+        "tests": [
+          "Backend test default demo quick login disabled neu khong set `ENABLE_DEMO_LOGIN=true`.",
+          "Frontend raw/security test dam bao `App.tsx` khong import/goi `fetchDemoAccounts`/`demoLogin` va khong render demo role cards.",
+          "Env template/default check production auth keys."
+        ],
+        "manual_validation": [
+          "Cau hinh `.env` voi `AUTH_PROVIDER=supabase`, `AUTH_REPOSITORY=postgres`, `LEARNING_REPOSITORY=postgres`, `ENABLE_DEMO_LOGIN=false`.",
+          "Dang nhap bang Supabase account da co profile trong Postgres.",
+          "Owner trong `SYSTEM_ADMIN_EMAILS`/`SYSTEM_ADMIN_USER_IDS` login vao `/system`, tao organization va moi Admin dau tien.",
+          "Admin tao invite Teacher/Student, user accept invite de tao tai khoan that."
+        ]
+      },
+      "acceptance_criteria": [
+        "Login UI khong con demo role quick-access cards.",
+        "Frontend runtime `App.tsx` khong goi `/auth/demo-accounts` hoac `/auth/demo-login`.",
+        "`.env.example` default production auth la Supabase/Postgres va `ENABLE_DEMO_LOGIN=false`.",
+        "Local `.env` duoc chuyen sang `ENABLE_DEMO_LOGIN=false` ma khong in/doi secret values.",
+        "Backend van co demo tests opt-in de regression local, nhung default service helper disabled khi thieu env.",
+        "`./init.sh`, JSON validation va diff check pass."
+      ],
+      "evidence": "2026-07-01: Hoan thanh V4-051 production real-account login only. Local `.env` da chuyen `ENABLE_DEMO_LOGIN=false` giu Supabase/Postgres real auth; `.env.example` default production-first `AUTH_PROVIDER=supabase`, `AUTH_REPOSITORY=postgres`, `LEARNING_REPOSITORY=postgres`, `ENABLE_DEMO_LOGIN=false`. Frontend `App.tsx` bo demo quick-access role cards, bo state/handler/import `fetchDemoAccounts` va `demoLogin`; login runtime chi con email/password, backend readiness health va invite acceptance. Backend giu demo service opt-in cho regression nhung them test default disabled khi thieu env va test `.env.example` production auth. Docs/runbook cap nhat bootstrap account that: Supabase Owner allowlist -> System Admin -> tao organization -> invite Admin -> Admin invite Teacher/Student. Tests/evidence: targeted frontend `vitest run src/loginSecurity.test.ts src/api/auth.test.ts` pass 2 files/16 tests; targeted backend `pytest tests/test_auth.py -q` pass 33; final `./init.sh` pass frontend typecheck/lint, 21 files/105 tests, build va backend 223 tests; JSON validation va `git diff --check` pass. Runtime smoke tren servers dang chay: `/api/v1/health` ok, `/api/v1/auth/demo-accounts` tra `[]`, `POST /api/v1/auth/demo-login` tra 404 `Demo login is disabled`, frontend `/` 200."
+    },
+    {
+      "id": "V4-052",
+      "name": "Full HTML design parity and real navigation",
+      "description": "Dung toan bo HTML trong `images/` lam source-of-truth bat buoc, map moi file sang trang React/router/menu va lap gap API backend cho cac function frontend chua co.",
+      "priority": "V4-P0 Frontend Parity Fix",
+      "status": "done",
+      "dependencies": [
+        "V4-048",
+        "V4-049",
+        "V4-051"
+      ],
+      "user_stories": [
+        "As an Admin, I want all admin HTML-designed pages linked from the workspace menu, so that I can move across overview, review, content, users, jobs, reports, activity and settings without missing screens.",
+        "As a product owner, I want every selected HTML file in `images/` represented in the React app or explicitly tracked as an API/product gap, so that no designed function is silently omitted.",
+        "As an operator, I want frontend pages backed by real backend/database data, so that production testing does not depend on mock or hardcoded business data."
+      ],
+      "business_goal": "Sua sai lech sau dot chuyen design: khong tu y bo noi dung HTML, khong tach roi menu, va dung frontend design inventory de keo backend/API theo san pham fullstack that.",
+      "vertical_slice": {
+        "backend": [
+          "Audit API coverage theo tung HTML page/action va tao gap list trong repo.",
+          "Chi them endpoint khi page/action React can data that chua co API hien co; khong tao endpoint fake."
+        ],
+        "frontend": [
+          "Tao inventory map tat ca file `images/**/*.html` sang role/page id/API status.",
+          "Mo Admin navigation theo cac HTML admin dang thieu: Tong quan, Kho bai giang mau/Content Library, Bao cao, Nhat ky hoat dong, Cai dat.",
+          "Giup cac trang admin moi render tu state/API that san co, co loading/empty/error state va khong hardcode business data.",
+          "Giu login real-account-only; khong khoi phuc demo role login cards."
+        ],
+        "tests": [
+          "Fail-first frontend test cho admin workspace page list phai co du page id moi.",
+          "Raw source/inventory test dam bao cac marker admin parity ton tai va khong import prototype HTML/CDN runtime.",
+          "Sau slice dau tien chay targeted frontend tests roi `./init.sh` neu thoi gian cho phep."
+        ],
+        "manual_validation": [
+          "Login Admin bang account that, menu trai/taskbar phai co cac trang admin moi va click duoc.",
+          "Mo Tong quan/Kho bai giang mau/Bao cao/Nhat ky hoat dong/Cai dat va xac nhan khong hien mock data; empty state dung khi database chua co du lieu.",
+          "Doc `docs/version5/HTML_DESIGN_PARITY_INVENTORY.md` de thay moi HTML file da duoc map/gap."
+        ]
+      },
+      "acceptance_criteria": [
+        "Co inventory trong repo liet ke toan bo `images/**/*.html`, role/page id, frontend status va API gap.",
+        "Admin menu link du cac page admin tu HTML design hoac gap duoc lock ro.",
+        "Admin pages moi khong dung mock/hardcoded business dataset; chi tinh tu API state hien co hoac hien empty/error state.",
+        "Login van real-account-only, frontend khong goi demo auth.",
+        "Frontend/backend secret/backend URL guard van pass.",
+        "Exec plan, progress va handoff duoc cap nhat neu con viec tiep."
+      ],
+      "evidence": "2026-07-01: Hoan thanh V4-052 Full HTML design parity and real navigation. Inventory docs/version5/HTML_DESIGN_PARITY_INVENTORY.md da liet ke toan bo images/**/*.html, normalize tieng Viet/lucide/desktop 1440px/responsive/no fake data/no demo login va map dung cac file part1/part2 nhu multi-part page. Frontend Admin nav da co Tong quan, Hang doi duyet, Bai giang mau, Kho tri thuc, Nguoi dung, Tac vu, Bao cao, Nhat ky, Cai dat; cac page render React/CSS code-native, khong import prototype HTML/CDN/PNG runtime. Backend gap da dong bang API org-scoped that: GET /api/v1/admin/lesson-library, GET /api/v1/admin/reports, GET /api/v1/admin/activity, GET/PATCH /api/v1/admin/settings; Admin Users part2 co bulk lock/unlock/soft-delete va bulk Supabase password reset email an toan. Added bootstrap_real_accounts.py de tao account Supabase Auth + Postgres profiles that va admin-real-account QA runner. Bootstrap --apply da tao/bao dam system_admin owner.qa@example.edu (profile e6caeccf-1dad-47da-8117-f2158d527677), admin admin.qa@example.edu (profile 86b14901-9135-42e7-9cca-a6bcdf837226), teacher teacher.qa@example.edu (profile 85799404-bb59-48aa-ac0f-32092f080753), student student.qa@example.edu (profile 9cf0769d-f43e-4211-b3d1-090652f85bbf) trong Supabase Auth/Postgres; khong in password/secret. Real Admin rendered QA pass: pnpm --dir frontend run qa:admin-real tren backend 127.0.0.1:3001 va frontend 127.0.0.1:5174 login bang /auth/login that, click 9 Admin pages, khong API 4xx/5xx, console error, horizontal overflow hoac secret text; screenshots /tmp/teachflow-admin-real-qa/admin-overview-tong-quan.png, admin-review-hang-doi-duyet.png, admin-lesson-library-bai-giang-mau.png, admin-knowledge-kho-tri-thuc.png, admin-users-nguoi-dung.png, admin-jobs-tac-vu.png, admin-reports-bao-cao.png, admin-activity-log-nhat-ky.png, admin-settings-cai-dat.png. Automated evidence: backend auth/openapi/core 45 pass; bootstrap/auth/openapi 43 pass; bootstrap unit 8 pass; frontend auth/admin parity 2 files/19 tests pass; frontend/backend OpenAPI contract 1 pass; node --check admin-real-account-qa.mjs pass; final ./init.sh pass frontend typecheck/lint/21 files/109 tests/build va backend 239 tests; python3 -m json.tool feature_list.json va git diff --check pass."
+    },
+    {
+      "id": "BUG-007",
+      "name": "Review fixes and real account shortcuts",
+      "description": "Fix review findings around clean-checkout assets/scripts, AI retry status safety, and expose real database accounts on login for recruiter access without demo auth.",
+      "priority": "BUG P0 Review Fix",
+      "status": "done",
+      "dependencies": [
+        "V4-051",
+        "V4-052",
+        "V2-014"
+      ],
+      "user_stories": [
+        "As an operator, clean checkout/build should include every asset and QA script referenced by frontend source/package scripts.",
+        "As an Admin, retrying AI generation jobs from the org Job Center should not leave jobs stuck in retrying.",
+        "As a recruiter, I want to pick real Admin, Teacher and Student database accounts from the login page for easy access."
+      ],
+      "business_goal": "Close review findings and make real-account product evaluation easy without restoring demo auth shortcuts.",
+      "vertical_slice": {
+        "backend": [
+          "Reject Admin retry of Teacher AI generation jobs before mutating job status, unless a future slice implements retry using original teacher context."
+        ],
+        "frontend": [
+          "Keep referenced hero asset and QA script in patch.",
+          "Add env-driven real account cards for Admin/Teacher/Student that fill the normal email/password login form.",
+          "Do not call demo auth endpoints from runtime App."
+        ],
+        "tests": [
+          "Backend retry guard test checks Admin retry returns 409 and job remains failed.",
+          "Frontend raw/security tests check real account cards, no demo login runtime, and referenced files exist.",
+          "./init.sh pass."
+        ],
+        "manual_validation": [
+          "Open login page and click Admin/Teacher/Student real account cards.",
+          "Confirm credentials fill from env and login uses /auth/login.",
+          "Confirm Admin retry of AI failed jobs does not get stuck in retrying."
+        ]
+      },
+      "acceptance_criteria": [
+        "Clean checkout has the referenced hero image and admin QA script.",
+        "Admin AI-generation retry is rejected before job status changes or uses safe teacher context; no stuck retrying state.",
+        "Login UI shows Admin/Teacher/Student real-account shortcuts from env and no demo quick login.",
+        "Frontend secret/backend URL guards pass.",
+        "Exec plan, progress and handoff updated."
+      ],
+      "evidence": "2026-07-01: Hoan thanh BUG-007 review fixes and real account shortcuts. Fixed P1 asset finding by keeping frontend/src/assets/teachflow-login-education-hero-asset-v2.png in patch and adding Vitest ?url guard. Fixed P3 QA script finding by keeping frontend/scripts/admin-real-account-qa.mjs in patch, package script qa:admin-real remains valid, and node --check passes. Fixed P2 Admin AI retry stuck state by rejecting Admin retry of teacher-context AI jobs (outline_generation, lesson_generation, block_regeneration) before status mutation; targeted test confirms 409 and job remains failed. Login now shows env-driven real database account cards for Admin/Teacher/Student from TEACHFLOW_PUBLIC_* values; cards fill normal email/password form and still use /auth/login, not demo endpoints. .env.local was updated from existing bootstrap accounts without printing values; .env.example documents public recruiter shortcut variables. Evidence: baseline ./init.sh pass frontend 109/backend 239; fail-first backend test reproduced issue; backend generation_jobs targeted 8 pass; frontend login/config targeted 2 files/10 tests pass; frontend typecheck/lint pass; final ./init.sh pass frontend typecheck/lint/21 files/112 tests/build va backend 240 tests; tech debt TD-021 records public recruiter credential risk and rotation guidance."
     }
   ]
 }

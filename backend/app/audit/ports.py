@@ -15,3 +15,9 @@ class AuditRepository(Protocol):
         self,
         lesson_id: str,
     ) -> list[LessonAuditEventResponse]: ...
+
+    def list_events(
+        self,
+        *,
+        limit: int = 100,
+    ) -> list[LessonAuditEventResponse]: ...

@@ -104,7 +104,10 @@ export function LessonPresentation({
   }
 
   return (
-    <section className="presentation-panel presentation-print-area" ref={panelRef}>
+    <section
+      className="presentation-panel presentation-print-area lesson-presentation-design-part1 lesson-presentation-design-part2"
+      ref={panelRef}
+    >
       <div className="presentation-controls">
         <button
           className="ghost-button"

@@ -60,6 +60,17 @@ class InMemoryAuditEventRepository:
     ) -> list[LessonAuditEventResponse]:
         return [event for event in self.events if event.lesson_id == lesson_id]
 
+    def list_events(
+        self,
+        *,
+        limit: int = 100,
+    ) -> list[LessonAuditEventResponse]:
+        return sorted(
+            self.events,
+            key=lambda event: event.created_at,
+            reverse=True,
+        )[:limit]
+
 
 class PostgresAuditEventRepository:
     def __init__(self, conninfo: str) -> None:
@@ -141,6 +152,44 @@ class PostgresAuditEventRepository:
                     order by created_at asc
                     """,
                     (lesson_id,),
+                )
+                return [
+                    LessonAuditEventResponse(
+                        id=row["id"],
+                        lesson_id=row["lesson_id"],
+                        block_id=row["block_id"],
+                        actor_id=row["actor_id"],
+                        actor_role=row["actor_role"],
+                        action=row["action"],
+                        details=row["details"],
+                        created_at=row["created_at"],
+                    )
+                    for row in cur.fetchall()
+                ]
+
+    def list_events(
+        self,
+        *,
+        limit: int = 100,
+    ) -> list[LessonAuditEventResponse]:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    select
+                      id,
+                      lesson_id,
+                      block_id,
+                      actor_id,
+                      actor_role,
+                      action,
+                      details,
+                      created_at::text
+                    from audit_events
+                    order by created_at desc
+                    limit %s
+                    """,
+                    (limit,),
                 )
                 return [
                     LessonAuditEventResponse(

@@ -5,6 +5,10 @@ import {
   cancelGenerationJob,
   createClassProfile,
   createCourse,
+  fetchAdminActivity,
+  fetchAdminLessonLibrary,
+  fetchAdminReports,
+  fetchAdminSettings,
   fetchAdminReviewQueue,
   fetchClassOutlines,
   fetchCourses,
@@ -41,6 +45,7 @@ import {
   setLessonBlockStatus,
   submitLesson,
   updateClassProfile,
+  updateAdminSettings,
   updateDocumentMetadata,
   updateLessonSession,
   updateLessonBlock,
@@ -1253,6 +1258,97 @@ describe('learning API client', () => {
       `${backendUrl}/student/lessons/lesson-1/practice-attempts/block-2`,
       expect.objectContaining({
         method: 'PUT',
+        body: JSON.stringify(payload),
+      }),
+    )
+  })
+
+  it('loads admin fullstack parity surfaces and updates settings', async () => {
+    const lessonLibrary = {
+      lessons: [],
+      total: 0,
+      published: 0,
+      pending_review: 0,
+      warnings: 0,
+      updated_at: '2026-07-01T00:00:00+00:00',
+    }
+    const reports = {
+      generated_at: '2026-07-01T00:00:00+00:00',
+      metrics: [],
+      lesson_status_counts: {},
+      document_status_counts: {},
+      job_status_counts: {},
+    }
+    const activity = {
+      generated_at: '2026-07-01T00:00:00+00:00',
+      items: [],
+    }
+    const settings = {
+      organization_id: 'org-demo',
+      ai_model: 'gpt-4o-mini',
+      monthly_ai_limit: 1000,
+      email_alerts_enabled: false,
+      in_app_alerts_enabled: true,
+      password_min_length: 8,
+      require_password_rotation: false,
+      updated_at: '2026-07-01T00:00:00+00:00',
+    }
+    const payload = {
+      ai_model: 'gpt-4.1-mini',
+      monthly_ai_limit: 2000,
+    }
+    const responses = [lessonLibrary, reports, activity, settings, settings]
+    const fetcher = vi.fn(async () => Response.json(responses.shift()))
+
+    await expect(
+      fetchAdminLessonLibrary('admin-token', fetcher, backendUrl),
+    ).resolves.toEqual(lessonLibrary)
+    await expect(
+      fetchAdminReports('admin-token', fetcher, backendUrl),
+    ).resolves.toEqual(reports)
+    await expect(
+      fetchAdminActivity('admin-token', fetcher, backendUrl),
+    ).resolves.toEqual(activity)
+    await expect(
+      fetchAdminSettings('admin-token', fetcher, backendUrl),
+    ).resolves.toEqual(settings)
+    await expect(
+      updateAdminSettings(payload, 'admin-token', fetcher, backendUrl),
+    ).resolves.toEqual(settings)
+
+    expect(fetcher).toHaveBeenNthCalledWith(
+      1,
+      `${backendUrl}/admin/lesson-library`,
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer admin-token' }),
+      }),
+    )
+    expect(fetcher).toHaveBeenNthCalledWith(
+      2,
+      `${backendUrl}/admin/reports`,
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer admin-token' }),
+      }),
+    )
+    expect(fetcher).toHaveBeenNthCalledWith(
+      3,
+      `${backendUrl}/admin/activity`,
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer admin-token' }),
+      }),
+    )
+    expect(fetcher).toHaveBeenNthCalledWith(
+      4,
+      `${backendUrl}/admin/settings`,
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer admin-token' }),
+      }),
+    )
+    expect(fetcher).toHaveBeenNthCalledWith(
+      5,
+      `${backendUrl}/admin/settings`,
+      expect.objectContaining({
+        method: 'PATCH',
         body: JSON.stringify(payload),
       }),
     )

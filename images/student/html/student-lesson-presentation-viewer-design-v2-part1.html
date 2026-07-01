@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Presentation Viewer - Quang hợp</title>
+<!-- Tailwind CSS v3 CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="typography">
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+<style data-purpose="custom-layout">
+    .sidebar-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+    .sidebar-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 10px;
+    }
+    .active-slide {
+      border: 2px solid #5046e5;
+      background-color: #f5f3ff;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col overflow-hidden">
+<!-- BEGIN: NavigationBar -->
+<header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0" data-purpose="main-navigation">
+<div class="flex items-center gap-6">
+<button class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+<svg class="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
+<svg class="h-5 w-5" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<span class="font-semibold text-gray-900 text-lg">Presentation</span>
+</div>
+</div>
+<!-- Progress and Slide Title -->
+<div class="flex items-center gap-4 flex-1 max-w-xl mx-8">
+<div class="flex items-center gap-2">
+<svg class="h-5 w-5 text-green-600" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M4.16 4.16l1.42 1.42A6.99 6.99 0 0110 4c3.87 0 7 3.13 7 7s-3.13 7-7 7-7-3.13-7-7c0-1.04.23-2.01.63-2.88l1.42 1.42A4.99 4.99 0 005 11c0 2.76 2.24 5 5 5s5-2.24 5-5-2.24-5-5-5a4.99 4.99 0 00-4.37 2.58l-1.47-1.42z" fill-rule="evenodd"></path>
+</svg>
+<span class="font-medium text-gray-700">Quang hợp</span>
+</div>
+<span class="text-gray-400 text-sm">3 / 18</span>
+<div class="flex-1 bg-gray-100 h-1.5 rounded-full overflow-hidden">
+<div class="bg-indigo-400 h-full w-[16%]"></div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded-lg font-medium transition-colors">
+<svg class="h-5 w-5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" fill-rule="evenodd"></path>
+</svg>
+        Trình chiếu
+      </button>
+<button class="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition-colors">
+<svg class="h-5 w-5" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+        Xuất
+      </button>
+<button class="p-2 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg">
+<svg class="h-5 w-5" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<button class="p-2 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg">
+<svg class="h-5 w-5" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<button class="p-2 text-gray-400">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</header>
+<!-- END: NavigationBar -->
+<main class="flex-1 flex overflow-hidden">
+<!-- BEGIN: LeftSidebar (Thumbnails) -->
+<aside class="w-36 bg-white border-r border-gray-200 flex flex-col items-center py-6 gap-6 sidebar-scroll overflow-y-auto shrink-0" data-purpose="thumbnail-sidebar">
+<!-- Thumbnail 1 -->
+<div class="flex flex-col items-center gap-2 w-full px-4">
+<div class="flex items-center gap-2 w-full">
+<span class="text-sm font-medium text-gray-500">1</span>
+<div class="flex-1 aspect-[4/3] rounded-lg border border-gray-200 p-2 overflow-hidden bg-gray-50">
+<p class="text-[8px] font-bold text-indigo-900 mb-1">Kết nối</p>
+<div class="h-12 w-full bg-contain bg-no-repeat bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBWTcaicftiXCLPzoRNT7QIEgcl_OFp-Zq9D7DO2FzXro2BgMhbIy0Z2hkUtKfMhP9fU2GRWrz4kJDtYHOoWw1soAjvcxgT1-ajSSyN2E41MsG6BRFHJtsi2gaehXvopi1YDm9gPWZpbRdGIL89hWJjDqhdiN9L0tHJB9NuadRw9WOAAzYzCI1V_BQJ8SA3XpvSsujCod-i_rwS6gt973yMs-XVt3HVwEAyoWEoDjkT3EoVZYlcwuAkpO2Z83J-10erzCUt87liIz0')"></div>
+</div>
+</div>
+</div>
+<!-- Thumbnail 2 -->
+<div class="flex flex-col items-center gap-2 w-full px-4">
+<div class="flex items-center gap-2 w-full">
+<span class="text-sm font-medium text-gray-500">2</span>
+<div class="flex-1 aspect-[4/3] rounded-lg border border-gray-200 p-2 overflow-hidden bg-gray-50">
+<p class="text-[8px] font-bold text-indigo-900 mb-1">Mục tiêu</p>
+<div class="h-12 w-full bg-contain bg-no-repeat bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDunoBYdyEkADGqbGu9vZwvgRcreb3j6Y6KP-EpqAebzhvHbm48SP1G__FBV6_2CBhbx7fb0WIWtH5UQNWLTWxXHQmFVkX8Mlip4pnQh6NR5v-fKgKFrIjG8vLzu4UWC7QGmdLhXRqN-qvZdBlO3gv_xDocyltxcQl_kmGe3u-89K2YBhuaCoiqGXjfe9ldMVBLz0cClORivI1dA9E2uhhD0Uh0Kw_Glnm4BAdIY3dg5X5yWp0otGcDuoal7FcybpYoAra4W9J_-ao')"></div>
+</div>
+</div>
+</div>
+<!-- Thumbnail 3 (Active) -->
+<div class="flex flex-col items-center gap-2 w-full px-4">
+<div class="flex items-center gap-2 w-full">
+<span class="text-sm font-bold text-indigo-600">3</span>
+<div class="flex-1 aspect-[4/3] rounded-lg active-slide p-2 overflow-hidden">
+<p class="text-[8px] font-bold text-indigo-900 mb-1">Quang hợp</p>
+<div class="h-12 w-full bg-contain bg-no-repeat bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA5XWErhs1StBRdvE-rzgjXtxCohnTgwA-QIApuSXcwCsybeP-mfFHvYUyaieTLb32VBUMyy6lHntwpXnkGpdi_VcJ-Y_YM38htUz-a6luZnmYTJit-r6OP5TS8UW-Ye4bi5E7TjFLtZe_nzdQNvRRSZNb_KsPqMFKViQmoQ18qWrX7Q10AxnsSGUmucBjHTGKXpBn7YY_c970Zqrn7gx6t3A_Ix-E5ajDjpHR1bJqxtMBEIPx0iVW-RljkYDVbhL9VXdLzaUpmHWk')"></div>
+</div>
+</div>
+</div>
+<!-- Thumbnail 4 -->
+<div class="flex flex-col items-center gap-2 w-full px-4">
+<div class="flex items-center gap-2 w-full">
+<span class="text-sm font-medium text-gray-500">4</span>
+<div class="flex-1 aspect-[4/3] rounded-lg border border-gray-200 p-2 overflow-hidden bg-gray-50">
+<p class="text-[8px] font-bold text-indigo-900 mb-1 text-center">Năng lượng ánh sáng</p>
+<div class="h-10 w-full bg-contain bg-no-repeat bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCwu7cd7Tdp_ppWyJNtuOWbz42B0QtxZ_Zuf0u0-edL4uNw1JLIaDEAq6mgpMQbvfm58jbNFgmqvrGX_Vw8AzodAeRmfs6K2h4RuPjGP3ohxjiVnVMWGmz3bbfV7mczMlUIdZu0wkFg0i-_w8W2sTpP1gjt72WvQCSBXNQhTu4KlISBnEEb_0Gjl9Rm1PqW1EwH27pT-zlDsRCwC_2unEumq9eY7UvQB4VwkjwcCxhtEh3eg-TviqECyp5_abViEmjfGDhmDFrqJKQ')"></div>
+</div>
+</div>
+</div>
+<!-- Additional Thumbnails for visual -->
+<div class="flex flex-col items-center gap-2 w-full px-4">
+<div class="flex items-center gap-2 w-full opacity-60">
+<span class="text-sm font-medium text-gray-500">5</span>
+<div class="flex-1 aspect-[4/3] rounded-lg border border-gray-200 p-2 overflow-hidden bg-gray-50">
+<p class="text-[8px] font-bold text-indigo-900 mb-1">Diệp lục</p>
+</div>
+</div>
+</div>
+<button class="mt-auto mb-4 p-2 text-gray-400 hover:text-gray-600">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</aside>
+<!-- END: LeftSidebar -->
+<!-- BEGIN: MainSlideArea -->
+<section class="flex-1 flex flex-col p-8 overflow-hidden bg-white" data-purpose="presentation-viewport">
+<div class="flex-1 relative border border-gray-100 rounded-3xl overflow-hidden shadow-sm flex flex-col">
+<!-- Content Container -->
+<div class="flex-1 p-12 overflow-y-auto">
+<div class="max-w-4xl mx-auto flex">
+<!-- Left Text Content -->
+<div class="w-1/2 flex flex-col pt-8">
+<h1 class="text-6xl font-bold text-indigo-950 mb-6">Quang hợp</h1>
+<div class="w-24 h-1.5 bg-indigo-500 mb-8 rounded-full"></div>
+<p class="text-xl text-gray-700 leading-relaxed max-w-sm">
+                Quang hợp là quá trình thực vật sử dụng ánh sáng để tạo ra chất dinh dưỡng.
+              </p>
+</div>
+<!-- Right Diagram Content -->
+<div class="w-1/2 relative">
+<img alt="Photosynthesis Diagram" class="w-full h-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJ2UYPFi_TXbQltfUGwsrK9IOVMx_CnsmSnlNTJfvvdMFxjW3JqtyiBxVGPdmsbPS3Pw3DQQBqizy4sPBKv6t4EXADjXlnyqkvD4LGSB-Jq5ATMyw4mGbvSgrPQxG7onFG2XzJR2merQcRtF9ECip_zqbAytgp7ZAfLDm9E3SaZDbprKiJvbpg62J68D-vs2s_-5uUov1XCWDosTX8kDglt-1aSiv4o1m9JBHs1r7yqh44B2NkXGLwqe_voQTxfmAzBbm9rKSVdOQ"/>
+</div>
+</div>
+<!-- BEGIN: CitationSection -->
+<div class="mt-16 border-t pt-8" data-purpose="citations">
+<h3 class="text-lg font-bold text-gray-800 mb-4">Citation</h3>
+<div class="grid grid-cols-3 gap-4">
+<!-- Citation Card 1 -->
+<div class="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-start gap-3 relative">
+<div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+<svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<p class="font-semibold text-sm text-gray-900 leading-tight">Sách giáo khoa KHTN 6</p>
+<p class="text-xs text-gray-500 mt-1 uppercase tracking-wider">NXB Giáo dục Việt Nam, 2021</p>
+</div>
+<span class="absolute top-4 right-4 w-5 h-5 flex items-center justify-center bg-gray-200 rounded-full text-[10px] font-bold">1</span>
+</div>
+<!-- Citation Card 2 -->
+<div class="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-start gap-3 relative">
+<div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center shrink-0">
+<svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<p class="font-semibold text-sm text-gray-900 leading-tight">Campbell Biology</p>
+<p class="text-xs text-gray-500 mt-1 uppercase tracking-wider">Pearson, 11th Edition, 2017</p>
+</div>
+<span class="absolute top-4 right-4 w-5 h-5 flex items-center justify-center bg-gray-200 rounded-full text-[10px] font-bold">2</span>
+</div>
+<!-- Citation Card 3 -->
+<div class="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-start gap-3 relative">
+<div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+<svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<p class="font-semibold text-sm text-gray-900 leading-tight">Britannica – Photosynthesis</p>
+<p class="text-xs text-blue-500 mt-1">britannica.com</p>
+</div>
+<span class="absolute top-4 right-4 w-5 h-5 flex items-center justify-center bg-gray-200 rounded-full text-[10px] font-bold">3</span>
+</div>
+</div>
+</div>
+<!-- END: CitationSection -->
+</div>
+<!-- BEGIN: SlideNavigationControls -->
+<div class="h-20 border-t border-gray-100 flex items-center justify-center relative px-12 shrink-0">
+<div class="flex items-center gap-12">
+<button class="flex items-center gap-2 px-8 py-3 border border-gray-200 rounded-2xl font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors">
+<svg class="h-5 w-5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" fill-rule="evenodd"></path>
+</svg>
+              Trước
+            </button>
+<div class="flex items-center gap-2 font-medium text-gray-600">
+<span class="text-xl">3</span>
+<span class="text-gray-400">/</span>
+<span class="text-xl">18</span>
+</div>
+<button class="flex items-center gap-2 px-10 py-3 bg-indigo-600 rounded-2xl font-bold text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">
+              Tiếp
+              <svg class="h-5 w-5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" fill-rule="evenodd"></path>
+</svg>
+</button>
+</div>
+</div>
+<!-- END: SlideNavigationControls -->
+</div>
+</section>
+<!-- END: MainSlideArea -->
+<!-- BEGIN: RightSidebar (Notes) -->
+<aside class="w-80 bg-white border-l border-gray-200 p-6 flex flex-col gap-6 overflow-y-auto shrink-0" data-purpose="notes-sidebar">
+<div class="flex items-center justify-between">
+<h2 class="text-xl font-bold text-gray-900">Ghi chú</h2>
+<button class="p-2 text-gray-400 hover:text-gray-600">
+<svg class="h-5 w-5" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<!-- Notes List -->
+<div class="space-y-6">
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
+<span class="text-yellow-600">☀️</span>
+</div>
+<p class="text-sm text-gray-600 leading-relaxed">
+            Ánh sáng mặt trời cung cấp năng lượng cho quang hợp.
+          </p>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+<span class="text-xs font-bold text-blue-600">CO₂</span>
+</div>
+<p class="text-sm text-gray-600 leading-relaxed">
+            CO₂ từ không khí đi vào lá qua khí khổng.
+          </p>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+<span class="text-xs font-bold text-blue-600">H₂O</span>
+</div>
+<p class="text-sm text-gray-600 leading-relaxed">
+            Nước được hấp thụ từ rễ và di chuyển lên lá.
+          </p>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+<span class="text-xs font-bold text-green-600">O₂</span>
+</div>
+<p class="text-sm text-gray-600 leading-relaxed">
+            Oxy được giải phóng ra môi trường.
+          </p>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+<span class="text-[8px] font-bold text-white">C₆H₁₂O₆</span>
+</div>
+<p class="text-sm text-gray-600 leading-relaxed">
+            Đường (glucose) được tạo ra và nuôi cây.
+          </p>
+</div>
+</div>
+<!-- Suggestion Card -->
+<div class="mt-auto p-5 bg-indigo-50 rounded-2xl border border-indigo-100" data-purpose="presentation-suggestion">
+<div class="flex items-center gap-2 mb-3">
+<svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="font-bold text-indigo-700 text-sm">Gợi ý trình bày</span>
+</div>
+<p class="text-sm text-indigo-900 leading-relaxed">
+          Có thể minh họa bằng thí nghiệm lá bạc màu hoặc video ngắn.
+        </p>
+</div>
+</aside>
+<!-- END: RightSidebar -->
+</main>
+</body></html>

@@ -14,6 +14,10 @@ from .schemas import (
     InviteCreateRequest,
     LoginRequest,
     LoginResponse,
+    ManagedUserBulkPasswordResetRequest,
+    ManagedUserBulkPasswordResetResponse,
+    ManagedUserBulkStatusUpdateRequest,
+    ManagedUserBulkStatusUpdateResponse,
     ManagedUserResponse,
     ManagedUserRole,
     ManagedUserUpdateRequest,
@@ -30,6 +34,8 @@ from .services import (
     accept_user_invite,
     authenticate_demo_account,
     authenticate_user,
+    bulk_request_managed_user_password_resets,
+    bulk_update_managed_user_status,
     create_system_admin_invite,
     create_system_organization,
     create_user_invite,
@@ -118,6 +124,28 @@ def auth_managed_users(
         role_filter=role,
         status_filter=status_filter,
     )
+
+
+@router.patch(
+    "/auth/users/bulk-status",
+    response_model=ManagedUserBulkStatusUpdateResponse,
+)
+def bulk_update_auth_managed_users_status(
+    payload: ManagedUserBulkStatusUpdateRequest,
+    current_user: Annotated[UserProfile, Depends(require_roles("admin"))],
+) -> ManagedUserBulkStatusUpdateResponse:
+    return bulk_update_managed_user_status(payload, current_user)
+
+
+@router.post(
+    "/auth/users/bulk-password-reset",
+    response_model=ManagedUserBulkPasswordResetResponse,
+)
+def bulk_reset_auth_managed_users_password(
+    payload: ManagedUserBulkPasswordResetRequest,
+    current_user: Annotated[UserProfile, Depends(require_roles("admin"))],
+) -> ManagedUserBulkPasswordResetResponse:
+    return bulk_request_managed_user_password_resets(payload, current_user)
 
 
 @router.patch(

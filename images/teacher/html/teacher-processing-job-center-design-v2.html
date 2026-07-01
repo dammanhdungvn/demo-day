@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TeachFlow AI - Tác vụ</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-tertiary-fixed": "#002113",
+                        "on-primary-fixed-variant": "#3422cc",
+                        "surface": "#f8f9ff",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#cbdbf5",
+                        "primary-container": "#5046e5",
+                        "on-tertiary": "#ffffff",
+                        "background": "#f8f9ff",
+                        "on-surface-variant": "#464555",
+                        "on-tertiary-container": "#67f4b7",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-secondary-fixed": "#181b24",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#006e4b",
+                        "secondary": "#5b5e69",
+                        "on-secondary-container": "#61646f",
+                        "tertiary": "#005338",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#dce9ff",
+                        "secondary-container": "#e0e2ef",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-surface": "#0b1c30",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#213145",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container": "#e5eeff",
+                        "on-background": "#0b1c30",
+                        "primary": "#3625cd",
+                        "outline": "#777587",
+                        "surface-bright": "#f8f9ff",
+                        "on-primary-fixed": "#0f0069",
+                        "secondary-fixed": "#e0e2ef",
+                        "surface-variant": "#d3e4fe",
+                        "outline-variant": "#c7c4d8",
+                        "primary-fixed": "#e2dfff",
+                        "on-secondary-fixed-variant": "#434751",
+                        "on-primary-container": "#dbd8ff",
+                        "secondary-fixed-dim": "#c3c6d2",
+                        "inverse-primary": "#c3c0ff",
+                        "surface-tint": "#4e44e3",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-gap": "12px",
+                        "container-padding": "24px",
+                        "gutter": "16px",
+                        "sidebar-width": "260px",
+                        "topbar-height": "72px"
+                    },
+                    "fontFamily": {
+                        "title-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-uppercase": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "title-sm": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-uppercase": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "700"}],
+                        "display-lg": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-active {
+            background-color: #e2dfff;
+            color: #3625cd;
+            font-weight: 700;
+            border-radius: 0.5rem;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e0e2ef;
+            border-radius: 10px;
+        }
+        .status-pill {
+            padding: 2px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- SideNavBar -->
+<aside class="w-sidebar-width h-screen sticky top-0 left-0 border-r border-outline-variant bg-surface flex flex-col py-container-padding px-4">
+<div class="flex items-center gap-3 mb-8 px-2">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div>
+<h1 class="font-display-lg text-display-lg font-bold text-primary">TeachFlow AI</h1>
+<p class="text-[10px] text-secondary font-semibold uppercase tracking-wider">Educational AI Platform</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-title-sm text-title-sm">Tổng quan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">school</span>
+<span class="font-title-sm text-title-sm">Khóa học</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-title-sm text-title-sm">Tài liệu</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">format_list_bulleted</span>
+<span class="font-title-sm text-title-sm">Dàn ý</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-title-sm text-title-sm">Studio</span>
+</a>
+<a class="sidebar-active flex items-center gap-3 px-4 py-3 transition-all opacity-90" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">assignment_turned_in</span>
+<span class="font-title-sm text-title-sm">Tác vụ</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-outline-variant pt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-title-sm text-title-sm">Cài đặt</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col min-w-0">
+<!-- TopAppBar -->
+<header class="h-topbar-height w-full flex items-center justify-between px-container-padding bg-surface/80 backdrop-blur-md z-40 sticky top-0">
+<div class="flex items-center gap-4 flex-1">
+<h2 class="font-headline-md text-headline-md text-on-surface">Tác vụ</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative group">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:bg-surface-container-highest/50 p-2 rounded-full transition-colors">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-error text-on-error text-[10px] flex items-center justify-center rounded-full font-bold">3</span>
+</div>
+<div class="flex items-center gap-3 cursor-pointer group">
+<img class="w-10 h-10 rounded-full object-cover border-2 border-outline-variant group-hover:border-primary transition-all" data-alt="A professional headshot of a female educator smiling warmly, set against a soft blurred office background. The lighting is natural and flattering, reflecting a high-quality light mode interface. She wears professional attire, and her expression conveys confidence and approachability in an educational technology environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCl1kd8wOWuMvBPYEYLjklTcDAE1uBEHBNSTiMC7prkip0oz1lMY_2uWSRzGdaPb6D-QjuSwssfa2wEgODNgZJbRe1S6LZxFiXqpdJ1lvZb8PD5Rbfx4BC5H9DjrxdXEIoHNvcqQWV1nSrTMV3eeqlz3jHkatwKNvQxRHaFjEnqbSpP3fcRR_c6IjWF3evEgB9NkLU-UAvSW3F4H9hgemxtQ2vzHNQgSuYehN02b54-eWtvuGkGf1YpMIeLkclkleRxznYCFLLaaPY"/>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:scale-95 transition-transform">keyboard_arrow_down</span>
+</div>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 flex min-h-0">
+<!-- Data Center View -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+<!-- Status Cards -->
+<div class="grid grid-cols-3 gap-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow flex items-center gap-5">
+<div class="w-14 h-14 rounded-full border-4 border-dashed border-primary flex items-center justify-center animate-[spin_10s_linear_infinite]">
+<span class="material-symbols-outlined text-primary text-2xl">sync</span>
+</div>
+<div>
+<p class="text-secondary font-semibold text-body-sm">Đang xử lý</p>
+<p class="text-4xl font-bold text-on-surface">3</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow flex items-center gap-5">
+<div class="w-14 h-14 rounded-full bg-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary text-3xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<p class="text-secondary font-semibold text-body-sm">Xong</p>
+<p class="text-4xl font-bold text-on-surface">28</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow flex items-center gap-5">
+<div class="w-14 h-14 rounded-full bg-error-container flex items-center justify-center">
+<span class="material-symbols-outlined text-error text-3xl" style="font-variation-settings: 'FILL' 1;">error</span>
+</div>
+<div>
+<p class="text-secondary font-semibold text-body-sm">Lỗi</p>
+<p class="text-4xl font-bold text-on-surface">2</p>
+</div>
+</div>
+</div>
+<!-- Table Filters -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="p-4 border-b border-outline-variant flex items-center justify-between">
+<div class="flex gap-2">
+<button class="px-5 py-2 rounded-lg bg-primary text-on-primary text-body-sm font-semibold">Tất cả</button>
+<button class="px-5 py-2 rounded-lg text-secondary hover:bg-surface-container-low text-body-sm transition-colors">Đang xử lý</button>
+<button class="px-5 py-2 rounded-lg text-secondary hover:bg-surface-container-low text-body-sm transition-colors">Xong</button>
+<button class="px-5 py-2 rounded-lg text-secondary hover:bg-surface-container-low text-body-sm transition-colors">Lỗi</button>
+</div>
+<div class="flex gap-3">
+<div class="relative">
+<select class="appearance-none pl-4 pr-10 py-2 border border-outline-variant rounded-lg bg-surface-container-low text-body-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer">
+<option>Tất cả loại</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2 text-secondary pointer-events-none">expand_more</span>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2 text-secondary">search</span>
+<input class="pl-10 pr-4 py-2 border border-outline-variant rounded-lg bg-surface-container-low text-body-sm w-64 focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Tìm kiếm tài liệu..." type="text"/>
+</div>
+</div>
+</div>
+<!-- Data Table -->
+<table class="w-full text-left">
+<thead class="bg-surface-container-low text-secondary font-semibold text-[12px] uppercase tracking-wider">
+<tr>
+<th class="px-6 py-4">Tài liệu</th>
+<th class="px-6 py-4">Loại</th>
+<th class="px-6 py-4">Tiến độ</th>
+<th class="px-6 py-4 text-center">Trạng thái</th>
+<th class="px-6 py-4">Thời gian</th>
+<th class="px-6 py-4 text-center">Hành động</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-primary/5 transition-colors cursor-pointer group bg-primary-fixed/20">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container/20 flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-primary">description</span>
+</div>
+<div>
+<p class="font-semibold text-on-surface text-body-md">Bài giảng Quang hợp</p>
+<p class="text-[11px] text-secondary">docx • 2.1 MB</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-sm">auto_awesome</span>
+<span class="text-body-sm">Tạo bài giảng</span>
+</div>
+</td>
+<td class="px-6 py-4 w-40">
+<div class="flex items-center gap-3">
+<div class="flex-1 h-2 bg-outline-variant rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-fixed-dim w-[100%] rounded-full"></div>
+</div>
+<span class="text-[12px] font-bold text-secondary">100%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="status-pill bg-tertiary-fixed text-tertiary">Xong</span>
+</td>
+<td class="px-6 py-4 text-secondary text-body-sm whitespace-nowrap">20/05/2024 09:30</td>
+<td class="px-6 py-4">
+<div class="flex justify-center gap-3 text-secondary">
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">refresh</span></button>
+<button class="hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors cursor-pointer">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary-container/30 flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-secondary">present_to_all</span>
+</div>
+<div>
+<p class="font-semibold text-on-surface text-body-md">Ôn tập Toán 12 – Chương 3</p>
+<p class="text-[11px] text-secondary">pptx • 4.5 MB</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-sm">branding_watermark</span>
+<span class="text-body-sm">Tạo slide</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="flex-1 h-2 bg-outline-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary-container w-[60%] rounded-full"></div>
+</div>
+<span class="text-[12px] font-bold text-secondary">60%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="status-pill bg-primary-fixed text-primary">Đang xử lý</span>
+</td>
+<td class="px-6 py-4 text-secondary text-body-sm whitespace-nowrap">20/05/2024 09:28</td>
+<td class="px-6 py-4 text-center">
+<div class="flex justify-center gap-3 text-secondary">
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">refresh</span></button>
+<button class="hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors cursor-pointer">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-error-container/30 flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-error">assignment_late</span>
+</div>
+<div>
+<p class="font-semibold text-on-surface text-body-md">Tài liệu Sinh học 11</p>
+<p class="text-[11px] text-secondary">pdf • 3.7 MB</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+<span class="text-body-sm">Tạo tài liệu</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="flex-1 h-2 bg-error-container rounded-full overflow-hidden">
+<div class="h-full bg-error w-[5%] rounded-full"></div>
+</div>
+<span class="text-[12px] font-bold text-error">!</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="status-pill bg-error-container text-error">Lỗi</span>
+</td>
+<td class="px-6 py-4 text-secondary text-body-sm whitespace-nowrap">20/05/2024 09:15</td>
+<td class="px-6 py-4 text-center">
+<div class="flex justify-center gap-3 text-secondary">
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">refresh</span></button>
+<button class="hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-4 border-t border-outline-variant flex items-center justify-between bg-surface-container-low/30">
+<p class="text-secondary text-body-sm italic">Hiển thị 1–7 của 33 tác vụ</p>
+<div class="flex gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-on-primary font-bold text-body-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-high text-secondary text-body-sm">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-high text-secondary text-body-sm">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-high text-secondary text-body-sm">...</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Details Sidebar -->
+<aside class="w-[380px] bg-surface-container-lowest border-l border-outline-variant overflow-y-auto custom-scrollbar p-6 space-y-8">
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-headline-md text-headline-md text-on-surface">Chi tiết</h3>
+<button class="text-secondary hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 bg-primary-fixed flex items-center justify-center rounded-xl">
+<span class="material-symbols-outlined text-primary text-2xl">description</span>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-on-surface text-body-md">Bài giảng Quang hợp</h4>
+<p class="text-secondary text-body-sm">docx • 2.1 MB</p>
+<div class="mt-2 flex gap-3">
+<span class="status-pill bg-tertiary-fixed text-tertiary">Xong</span>
+<div class="flex items-center gap-1 text-[11px] text-secondary">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                                        20/05/2024 09:30
+                                    </div>
+</div>
+</div>
+</div>
+<div class="pt-6 border-t border-outline-variant">
+<h5 class="text-secondary font-bold text-[12px] uppercase mb-6">Tiến trình</h5>
+<div class="relative pl-8 space-y-6">
+<div class="absolute left-[11px] top-2 bottom-2 w-0.5 bg-tertiary-fixed-dim/40"></div>
+<div class="relative flex items-center justify-between">
+<div class="absolute -left-8 w-6 h-6 bg-tertiary rounded-full border-4 border-surface-container-lowest flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-on-tertiary text-[14px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<p class="text-on-surface text-body-sm font-medium">Tiếp nhận tài liệu</p>
+<span class="text-secondary text-[11px]">09:30:05</span>
+</div>
+<div class="relative flex items-center justify-between">
+<div class="absolute -left-8 w-6 h-6 bg-tertiary rounded-full border-4 border-surface-container-lowest flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-on-tertiary text-[14px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<p class="text-on-surface text-body-sm font-medium">Phân tích nội dung</p>
+<span class="text-secondary text-[11px]">09:30:12</span>
+</div>
+<div class="relative flex items-center justify-between">
+<div class="absolute -left-8 w-6 h-6 bg-tertiary rounded-full border-4 border-surface-container-lowest flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-on-tertiary text-[14px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<p class="text-on-surface text-body-sm font-medium">Sinh dàn ý</p>
+<span class="text-secondary text-[11px]">09:30:25</span>
+</div>
+<div class="relative flex items-center justify-between">
+<div class="absolute -left-8 w-6 h-6 bg-tertiary rounded-full border-4 border-surface-container-lowest flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-on-tertiary text-[14px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<p class="text-on-surface text-body-sm font-medium">Tạo nội dung</p>
+<span class="text-secondary text-[11px]">09:30:40</span>
+</div>
+<div class="relative flex items-center justify-between">
+<div class="absolute -left-8 w-6 h-6 bg-tertiary-fixed-dim rounded-full border-4 border-surface-container-lowest flex items-center justify-center z-10">
+<div class="w-1.5 h-1.5 bg-tertiary rounded-full"></div>
+</div>
+<p class="text-on-surface text-body-sm font-bold">Hoàn tất</p>
+<span class="text-secondary text-[11px]">09:31:02</span>
+</div>
+</div>
+</div>
+<div class="pt-6">
+<h5 class="text-secondary font-bold text-[12px] uppercase mb-3">Gợi ý khắc phục</h5>
+<div class="p-4 bg-tertiary-fixed/10 border border-tertiary-fixed-dim/20 rounded-xl flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">verified</span>
+<p class="text-tertiary font-semibold text-body-sm">Không có vấn đề</p>
+</div>
+</div>
+<div class="pt-6">
+<h5 class="text-secondary font-bold text-[12px] uppercase mb-4">Thao tác nhanh</h5>
+<div class="grid grid-cols-3 gap-3">
+<button class="flex flex-col items-center justify-center p-4 rounded-xl border border-outline-variant hover:border-primary hover:bg-primary-fixed/30 transition-all gap-2 group">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">visibility</span>
+<span class="text-[11px] font-bold text-primary">Chi tiết</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 rounded-xl border border-outline-variant hover:border-primary hover:bg-primary-fixed/30 transition-all gap-2 group">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">refresh</span>
+<span class="text-[11px] font-bold text-primary">Thử lại</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 rounded-xl border border-outline-variant hover:border-error hover:bg-error-container/30 transition-all gap-2 group">
+<span class="material-symbols-outlined text-error group-hover:scale-110 transition-transform">delete</span>
+<span class="text-[11px] font-bold text-error">Hủy</span>
+</button>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</div>
+<script>
+        // Simple micro-interactions
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.querySelector('.material-symbols-outlined').style.transform = 'scale(1.1)';
+            });
+            row.addEventListener('mouseleave', () => {
+                row.querySelector('.material-symbols-outlined').style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

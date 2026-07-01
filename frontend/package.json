@@ -3,11 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "pnpm@11.9.0",
   "scripts": {
     "dev": "vite",
     "typecheck": "tsc -b --noEmit",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "qa:admin-real": "node scripts/admin-real-account-qa.mjs",
     "test": "vitest run",
     "preview": "vite preview"
   },

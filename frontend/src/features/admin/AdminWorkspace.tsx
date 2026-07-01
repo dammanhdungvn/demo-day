@@ -6,16 +6,22 @@ import {
   useState,
 } from 'react'
 import {
+  Activity,
   AlertTriangle,
+  BarChart3,
   CheckCircle2,
   ClipboardCheck,
+  Database,
   Edit3,
   FileText,
+  KeyRound,
   Link2,
   RefreshCcw,
   Save,
   Send,
   Search,
+  Settings,
+  ShieldCheck,
   Trash2,
   UploadCloud,
   UserCheck,
@@ -25,6 +31,8 @@ import {
   XCircle,
 } from 'lucide-react'
 import {
+  bulkResetManagedUserPasswords,
+  bulkUpdateManagedUserStatus,
   createInvite,
   fetchInvites,
   fetchManagedUsers,
@@ -39,13 +47,23 @@ import {
 } from '../../api/auth'
 import {
   archiveDocument,
+  fetchAdminActivity,
+  fetchAdminLessonLibrary,
+  fetchAdminReports,
   fetchAdminReviewQueue,
+  fetchAdminSettings,
   fetchDocuments,
   publishLesson,
   reindexDocument,
   rejectLesson,
   requestLessonChanges,
+  updateAdminSettings,
   updateDocumentMetadata,
+  type AdminActivityFeed,
+  type AdminLessonLibrary,
+  type AdminReports,
+  type AdminSettings,
+  type AdminSettingsUpdatePayload,
   type DocumentUploadResponse,
   type LessonSession,
   type SourceDocument,
@@ -81,6 +99,21 @@ import {
 } from '../knowledge/knowledgeHelpers'
 import { JobCenter } from '../jobs/JobCenter'
 
+type AdminDesignStat = {
+  detail: string
+  label: string
+  tone?: 'default' | 'success' | 'warning' | 'info'
+  value: string
+}
+
+type AdminActivityItem = {
+  createdAt: string | null
+  detail: string
+  id: string
+  title: string
+  type: string
+}
+
 function managedUserStatusLabel(status: ManagedUserStatus): string {
   return status === 'active' ? 'Đang hoạt động' : 'Đã tạm khóa'
 }
@@ -89,12 +122,121 @@ function formatDateTime(value?: string | null): string {
   return value ? new Date(value).toLocaleString('vi-VN') : 'Chưa có'
 }
 
+function formatStatusCountLabel(value: string): string {
+  return value
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function parseNonNegativeNumber(value: string, fallback: number): number {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback
+}
+
 function sourceTypeLabel(document: SourceDocument): string {
   if (document.source_type === 'url' || document.source_type === 'web_url') {
     return 'URL'
   }
 
   return 'PDF'
+}
+
+function adminDesignStats({
+  adminSummary,
+  documents,
+  invites,
+  managedUserSummary,
+}: {
+  adminSummary: ReturnType<typeof buildAdminReviewSummary>
+  documents: SourceDocument[]
+  invites: OrganizationInvite[]
+  managedUserSummary: ReturnType<typeof buildManagedUserSummary>
+}): AdminDesignStat[] {
+  const usableDocuments = documents.filter(isSourceDocumentUsable).length
+  const pendingInvites = invites.filter((invite) => invite.status === 'pending').length
+
+  return [
+    {
+      detail: 'Lesson cần Admin quyết định',
+      label: 'Chờ duyệt',
+      tone: adminSummary.pendingLessons ? 'warning' : 'success',
+      value: String(adminSummary.pendingLessons),
+    },
+    {
+      detail: `${usableDocuments}/${documents.length} tài liệu sẵn sàng cho AI`,
+      label: 'Nguồn tri thức',
+      tone: usableDocuments ? 'success' : 'default',
+      value: String(documents.length),
+    },
+    {
+      detail: `${managedUserSummary.teachers} Teacher / ${managedUserSummary.students} Student`,
+      label: 'Người dùng',
+      tone: managedUserSummary.disabled ? 'warning' : 'info',
+      value: String(managedUserSummary.total),
+    },
+    {
+      detail: 'Invite chưa được kích hoạt',
+      label: 'Mã mời đang chờ',
+      tone: pendingInvites ? 'warning' : 'success',
+      value: String(pendingInvites),
+    },
+  ]
+}
+
+function buildRecentAdminActivity({
+  documents,
+  invites,
+  managedUsers,
+  reviewLessons,
+}: {
+  documents: SourceDocument[]
+  invites: OrganizationInvite[]
+  managedUsers: ManagedUser[]
+  reviewLessons: LessonSession[]
+}): AdminActivityItem[] {
+  const documentItems: AdminActivityItem[] = documents.map((document) => ({
+    createdAt: document.updated_at ?? document.created_at,
+    detail: `${sourceTypeLabel(document)} - ${documentStatusLabel(document)}`,
+    id: `document-${document.id}`,
+    title: document.title,
+    type: 'Tài liệu',
+  }))
+  const inviteItems: AdminActivityItem[] = invites.map((invite) => ({
+    createdAt: invite.accepted_at ?? invite.created_at,
+    detail: `${roleLabel(invite.role)} - ${invite.status}`,
+    id: `invite-${invite.id}`,
+    title: invite.email,
+    type: 'Mã mời',
+  }))
+  const userItems: AdminActivityItem[] = managedUsers.map((user) => ({
+    createdAt: user.updated_at ?? user.created_at ?? null,
+    detail: `${roleLabel(user.role)} - ${managedUserStatusLabel(user.status)}`,
+    id: `user-${user.id}`,
+    title: user.name,
+    type: 'Người dùng',
+  }))
+  const lessonItems: AdminActivityItem[] = reviewLessons.map((lesson) => ({
+    createdAt: lesson.updated_at ?? lesson.created_at,
+    detail: `${lesson.blocks.length} block - ${lessonStatusLabel(lesson.status)}`,
+    id: `lesson-${lesson.id}`,
+    title: lesson.title,
+    type: 'Lesson',
+  }))
+
+  return [
+    ...lessonItems,
+    ...documentItems,
+    ...userItems,
+    ...inviteItems,
+  ]
+    .sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0
+      return bTime - aTime
+    })
+    .slice(0, 12)
 }
 
 export function AdminWorkspace({
@@ -119,6 +261,9 @@ export function AdminWorkspace({
   const [documentPage, setDocumentPage] = useState(1)
   const [invitePage, setInvitePage] = useState(1)
   const [managedUserPage, setManagedUserPage] = useState(1)
+  const [selectedManagedUserIds, setSelectedManagedUserIds] = useState<string[]>(
+    [],
+  )
   const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null)
   const [editingManagedUserId, setEditingManagedUserId] = useState<string | null>(
     null,
@@ -154,6 +299,17 @@ export function AdminWorkspace({
   const [reindexingDocumentId, setReindexingDocumentId] = useState<string | null>(null)
   const [isInviteBusy, setIsInviteBusy] = useState(false)
   const [busyManagedUserId, setBusyManagedUserId] = useState<string | null>(null)
+  const [isBulkManagedUserBusy, setIsBulkManagedUserBusy] = useState(false)
+  const [adminLessonLibrary, setAdminLessonLibrary] =
+    useState<AdminLessonLibrary | null>(null)
+  const [adminReports, setAdminReports] = useState<AdminReports | null>(null)
+  const [adminActivity, setAdminActivity] = useState<AdminActivityFeed | null>(null)
+  const [adminSettings, setAdminSettings] = useState<AdminSettings | null>(null)
+  const [settingsDraft, setSettingsDraft] = useState<AdminSettingsUpdatePayload>({})
+  const [adminSurfaceStatusMessage, setAdminSurfaceStatusMessage] = useState(
+    'Đang tải dữ liệu Admin fullstack...',
+  )
+  const [isSavingSettings, setIsSavingSettings] = useState(false)
   const adminSummary = useMemo(
     () => buildAdminReviewSummary(reviewLessons, selectedReviewLessonId),
     [reviewLessons, selectedReviewLessonId],
@@ -196,6 +352,87 @@ export function AdminWorkspace({
       }),
     [filteredManagedUsers, managedUserPage],
   )
+  const selectedManagedUsers = useMemo(
+    () =>
+      managedUsers.filter((user) => selectedManagedUserIds.includes(user.id)),
+    [managedUsers, selectedManagedUserIds],
+  )
+  const paginatedManagedUserIds = useMemo(
+    () => paginatedManagedUsers.items.map((user) => user.id),
+    [paginatedManagedUsers.items],
+  )
+  const areAllManagedUsersOnPageSelected =
+    paginatedManagedUserIds.length > 0 &&
+    paginatedManagedUserIds.every((id) => selectedManagedUserIds.includes(id))
+  const isManagedUserActionBusy =
+    busyManagedUserId !== null || isBulkManagedUserBusy
+  const adminStats = useMemo(
+    () => {
+      if (adminReports?.metrics.length) {
+        return adminReports.metrics.map((metric) => ({
+          detail: metric.detail,
+          label: metric.label,
+          tone: metric.tone,
+          value: String(metric.value),
+        }))
+      }
+
+      return adminDesignStats({
+        adminSummary,
+        documents,
+        invites,
+        managedUserSummary,
+      })
+    },
+    [adminReports, adminSummary, documents, invites, managedUserSummary],
+  )
+  const lessonLibraryItems = useMemo(
+    () =>
+      (adminLessonLibrary?.lessons ?? reviewLessons)
+        .slice()
+        .sort(
+          (a, b) =>
+            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+        ),
+    [adminLessonLibrary, reviewLessons],
+  )
+  const recentAdminActivity = useMemo(
+    () => {
+      if (adminActivity) {
+        return adminActivity.items.map((item) => ({
+          createdAt: item.created_at,
+          detail: item.detail,
+          id: item.id,
+          title: item.title,
+          type: item.type,
+        }))
+      }
+
+      return buildRecentAdminActivity({
+        documents,
+        invites,
+        managedUsers,
+        reviewLessons,
+      })
+    },
+    [adminActivity, documents, invites, managedUsers, reviewLessons],
+  )
+  const lessonLibraryTotal = adminLessonLibrary?.total ?? lessonLibraryItems.length
+  const lessonLibraryPublished =
+    adminLessonLibrary?.published ??
+    lessonLibraryItems.filter((lesson) => lesson.status === 'published').length
+  const lessonLibraryPendingReview =
+    adminLessonLibrary?.pending_review ?? adminSummary.pendingLessons
+  const lessonLibraryWarnings =
+    adminLessonLibrary?.warnings ?? adminSummary.lessonsWithWarnings
+  const lessonStatusCounts = Object.entries(adminReports?.lesson_status_counts ?? {})
+  const documentStatusCounts = Object.entries(
+    adminReports?.document_status_counts ?? {},
+  )
+  const jobStatusCounts = Object.entries(adminReports?.job_status_counts ?? {})
+  const reportsGeneratedAt = adminReports?.generated_at
+    ? formatDateTime(adminReports.generated_at)
+    : 'Chưa tải'
 
   const loadReviewQueue = useCallback(async () => {
     setStatusMessage('Đang tải hàng đợi Admin...')
@@ -261,16 +498,58 @@ export function AdminWorkspace({
     }
   }, [token])
 
+  const loadAdminSurfaces = useCallback(async () => {
+    setAdminSurfaceStatusMessage('Đang tải dữ liệu Admin fullstack...')
+    try {
+      const [lessonLibrary, reports, activity, settings] = await Promise.all([
+        fetchAdminLessonLibrary(token),
+        fetchAdminReports(token),
+        fetchAdminActivity(token),
+        fetchAdminSettings(token),
+      ])
+      setAdminLessonLibrary(lessonLibrary)
+      setAdminReports(reports)
+      setAdminActivity(activity)
+      setAdminSettings(settings)
+      setSettingsDraft({
+        ai_model: settings.ai_model,
+        monthly_ai_limit: settings.monthly_ai_limit,
+        email_alerts_enabled: settings.email_alerts_enabled,
+        in_app_alerts_enabled: settings.in_app_alerts_enabled,
+        password_min_length: settings.password_min_length,
+        require_password_rotation: settings.require_password_rotation,
+      })
+      setAdminSurfaceStatusMessage('Đã tải dữ liệu Admin từ backend.')
+    } catch (error: unknown) {
+      setAdminSurfaceStatusMessage(
+        getErrorMessage(error, 'Không tải được dữ liệu Admin fullstack'),
+      )
+    }
+  }, [token])
+
   useEffect(() => {
     void loadReviewQueue()
     void loadKnowledgeDocuments()
     void loadInvites()
     void loadManagedUsers()
-  }, [loadInvites, loadKnowledgeDocuments, loadManagedUsers, loadReviewQueue])
+    void loadAdminSurfaces()
+  }, [
+    loadAdminSurfaces,
+    loadInvites,
+    loadKnowledgeDocuments,
+    loadManagedUsers,
+    loadReviewQueue,
+  ])
 
   useEffect(() => {
     setManagedUserPage(1)
   }, [managedUserFilters])
+
+  useEffect(() => {
+    setSelectedManagedUserIds((current) =>
+      current.filter((id) => managedUsers.some((user) => user.id === id)),
+    )
+  }, [managedUsers])
 
   useEffect(() => {
     setDocumentPage(1)
@@ -631,11 +910,135 @@ export function AdminWorkspace({
     }
   }
 
+  function toggleManagedUserSelection(userId: string) {
+    setSelectedManagedUserIds((current) =>
+      current.includes(userId)
+        ? current.filter((id) => id !== userId)
+        : [...current, userId],
+    )
+  }
+
+  function toggleManagedUserPageSelection() {
+    setSelectedManagedUserIds((current) => {
+      const currentSet = new Set(current)
+      const pageSet = new Set(paginatedManagedUserIds)
+      if (
+        paginatedManagedUserIds.length > 0 &&
+        paginatedManagedUserIds.every((id) => currentSet.has(id))
+      ) {
+        return current.filter((id) => !pageSet.has(id))
+      }
+
+      paginatedManagedUserIds.forEach((id) => currentSet.add(id))
+      return [...currentSet]
+    })
+  }
+
+  function replaceManagedUsers(updatedUsers: ManagedUser[]) {
+    const updatedById = new Map(updatedUsers.map((user) => [user.id, user]))
+    setManagedUsers((current) =>
+      current.map((user) => updatedById.get(user.id) ?? user),
+    )
+  }
+
+  async function handleBulkManagedUserStatus(
+    nextStatus: ManagedUserStatus,
+    actionLabel: string,
+  ) {
+    if (!selectedManagedUserIds.length) {
+      setManagedUserStatusMessage('Chọn ít nhất một Teacher/Student trước.')
+      return
+    }
+
+    setIsBulkManagedUserBusy(true)
+    setManagedUserStatusMessage(`Đang ${actionLabel.toLowerCase()}...`)
+    try {
+      const response = await bulkUpdateManagedUserStatus(
+        {
+          user_ids: selectedManagedUserIds,
+          status: nextStatus,
+        },
+        token,
+      )
+      replaceManagedUsers(response.users)
+      setSelectedManagedUserIds([])
+      setManagedUserStatusMessage(
+        `${actionLabel}: đã cập nhật ${response.updated_count} user.`,
+      )
+    } catch (error: unknown) {
+      setManagedUserStatusMessage(
+        getErrorMessage(error, `Không ${actionLabel.toLowerCase()} được user`),
+      )
+    } finally {
+      setIsBulkManagedUserBusy(false)
+    }
+  }
+
+  async function handleBulkManagedUserPasswordReset() {
+    if (!selectedManagedUserIds.length) {
+      setManagedUserStatusMessage('Chọn ít nhất một Teacher/Student trước.')
+      return
+    }
+
+    setIsBulkManagedUserBusy(true)
+    setManagedUserStatusMessage('Đang gửi email đặt lại mật khẩu...')
+    try {
+      const response = await bulkResetManagedUserPasswords(
+        { user_ids: selectedManagedUserIds },
+        token,
+      )
+      setManagedUserStatusMessage(
+        `Đã gửi ${response.sent_count}/${response.requested_count} email đặt lại mật khẩu; bỏ qua ${response.skipped_count} account demo/disabled.`,
+      )
+    } catch (error: unknown) {
+      setManagedUserStatusMessage(
+        getErrorMessage(error, 'Không gửi được email đặt lại mật khẩu'),
+      )
+    } finally {
+      setIsBulkManagedUserBusy(false)
+    }
+  }
+
   const isSelectedReviewBusy = selectedReviewLesson
     ? busyLessonId === selectedReviewLesson.id
     : false
   const canModerateSelected =
     Boolean(selectedReviewMetrics?.canModerate) && !isSelectedReviewBusy
+
+  async function handleRefreshAdminData() {
+    await Promise.all([
+      loadReviewQueue(),
+      loadKnowledgeDocuments(),
+      loadInvites(),
+      loadManagedUsers(),
+      loadAdminSurfaces(),
+    ])
+  }
+
+  async function handleAdminSettingsSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setIsSavingSettings(true)
+    setAdminSurfaceStatusMessage('Đang lưu cài đặt Admin...')
+    try {
+      const updated = await updateAdminSettings(settingsDraft, token)
+      setAdminSettings(updated)
+      setSettingsDraft({
+        ai_model: updated.ai_model,
+        monthly_ai_limit: updated.monthly_ai_limit,
+        email_alerts_enabled: updated.email_alerts_enabled,
+        in_app_alerts_enabled: updated.in_app_alerts_enabled,
+        password_min_length: updated.password_min_length,
+        require_password_rotation: updated.require_password_rotation,
+      })
+      setAdminSurfaceStatusMessage('Đã lưu cài đặt Admin.')
+    } catch (error: unknown) {
+      setAdminSurfaceStatusMessage(
+        getErrorMessage(error, 'Không lưu được cài đặt Admin'),
+      )
+    } finally {
+      setIsSavingSettings(false)
+    }
+  }
 
   return (
     <section
@@ -643,6 +1046,99 @@ export function AdminWorkspace({
       id={WORKSPACE_SECTION_IDS.adminReview}
       tabIndex={-1}
     >
+      {activePage === 'admin-overview' && (
+        <section className="admin-design-page admin-design-overview">
+          <div className="v4-admin-hero">
+            <div>
+              <p className="section-label">Tổng quan</p>
+              <h2>Trung tâm vận hành Admin</h2>
+              <p className="muted">
+                Chuẩn hóa từ HTML overview: theo dõi hàng đợi, nguồn tri thức,
+                người dùng và rủi ro trước khi publish.
+              </p>
+            </div>
+            <button
+              className="primary-button"
+              type="button"
+              onClick={() => void handleRefreshAdminData()}
+            >
+              <RefreshCcw aria-hidden="true" size={17} />
+              Tải lại dữ liệu
+            </button>
+          </div>
+
+          <div className="v4-metric-grid v4-admin-metrics">
+            {adminStats.map((metric) => (
+              <MetricCard
+                detail={metric.detail}
+                key={metric.label}
+                label={metric.label}
+                tone={metric.tone}
+                value={metric.value}
+              />
+            ))}
+          </div>
+
+          <p className="state-panel compact-state">{adminSurfaceStatusMessage}</p>
+
+          <div className="v4-admin-review-grid">
+            <section className="v4-admin-review-detail">
+              <div className="v4-panel-title">
+                <span>Ưu tiên hôm nay</span>
+                <strong>{adminSummary.pendingLessons}</strong>
+              </div>
+              <div className="v4-citation-list">
+                <article>
+                  <Activity aria-hidden="true" size={18} />
+                  <div>
+                    <strong>Hàng đợi duyệt</strong>
+                    <p>{statusMessage}</p>
+                  </div>
+                </article>
+                <article>
+                  <Database aria-hidden="true" size={18} />
+                  <div>
+                    <strong>Kho tri thức</strong>
+                    <p>{knowledgeStatusMessage}</p>
+                  </div>
+                </article>
+                <article>
+                  <ShieldCheck aria-hidden="true" size={18} />
+                  <div>
+                    <strong>Người dùng</strong>
+                    <p>{managedUserStatusMessage}</p>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <aside className="v4-admin-queue" aria-label="Hoạt động gần đây">
+              <div className="v4-panel-title">
+                <span>Hoạt động gần đây</span>
+                <strong>{recentAdminActivity.length}</strong>
+              </div>
+              {recentAdminActivity.length ? (
+                recentAdminActivity.slice(0, 5).map((item) => (
+                  <div className="v4-admin-queue-item" key={item.id}>
+                    <FileText aria-hidden="true" size={18} />
+                    <span>
+                      <strong>{item.title}</strong>
+                      <small>{item.type}</small>
+                    </span>
+                    <small>{item.detail}</small>
+                  </div>
+                ))
+              ) : (
+                <div className="v4-empty-inline">
+                  <Activity aria-hidden="true" size={16} />
+                  Chưa có hoạt động từ dữ liệu backend.
+                </div>
+              )}
+            </aside>
+          </div>
+        </section>
+      )}
+
       {activePage === 'admin-review' && (
         <>
           <div className="v4-admin-hero">
@@ -889,9 +1385,110 @@ export function AdminWorkspace({
         </>
       )}
 
+      {activePage === 'admin-lesson-library' && (
+        <section className="knowledge-panel admin-design-page admin-design-lesson-library admin-design-lesson-library-part1 admin-management-surface">
+          <div className="management-header">
+            <div>
+              <p className="section-label">Bài giảng mẫu</p>
+              <h3>Kho bài giảng organization</h3>
+              <p className="muted">
+                Chuẩn hóa từ HTML lesson library và dùng dữ liệu thật từ
+                endpoint Admin, không dùng số liệu mẫu trong prototype.
+              </p>
+            </div>
+            <button
+              className="ghost-button"
+              type="button"
+              onClick={() => void loadAdminSurfaces()}
+            >
+              <RefreshCcw aria-hidden="true" size={16} />
+              Tải lại
+            </button>
+          </div>
+
+          <p className="state-panel compact-state">{adminSurfaceStatusMessage}</p>
+
+          <div className="v4-metric-grid admin-user-summary-grid">
+            <MetricCard
+              detail="Lesson thuộc organization"
+              label="Tổng bài giảng"
+              value={String(lessonLibraryTotal)}
+            />
+            <MetricCard
+              detail="Đã được publish cho Student"
+              label="Đã publish"
+              tone={lessonLibraryPublished ? 'success' : 'default'}
+              value={String(lessonLibraryPublished)}
+            />
+            <MetricCard
+              detail="Cần Admin quyết định"
+              label="Chờ duyệt"
+              tone={lessonLibraryPendingReview ? 'warning' : 'success'}
+              value={String(lessonLibraryPendingReview)}
+            />
+            <MetricCard
+              detail="Lesson có block cần xem lại"
+              label="Cảnh báo"
+              tone={lessonLibraryWarnings ? 'warning' : 'success'}
+              value={String(lessonLibraryWarnings)}
+            />
+          </div>
+
+          <DataTable
+            columns={[
+              {
+                header: 'Bài giảng',
+                key: 'lesson',
+                render: (lesson) => (
+                  <span className="admin-document-title-cell">
+                    <strong>{lesson.title}</strong>
+                    <small>
+                      Session {lesson.outline_session_index} - {lesson.blocks.length}{' '}
+                      block
+                    </small>
+                  </span>
+                ),
+              },
+              {
+                header: 'Trạng thái',
+                key: 'status',
+                render: (lesson) => (
+                  <span className="status-pill">
+                    {lessonStatusLabel(lesson.status)}
+                  </span>
+                ),
+              },
+              {
+                header: 'Citation',
+                key: 'citations',
+                render: (lesson) =>
+                  String(
+                    lesson.blocks.reduce(
+                      (total, block) => total + block.citations.length,
+                      0,
+                    ),
+                  ),
+              },
+              {
+                header: 'Cập nhật',
+                key: 'updated',
+                render: (lesson) => formatDateTime(lesson.updated_at),
+              },
+            ]}
+            emptyState={
+              <p className="muted">
+                Organization chưa có bài giảng trong lesson library backend.
+              </p>
+            }
+            getRowKey={(lesson) => lesson.id}
+            rows={lessonLibraryItems}
+          />
+        </section>
+      )}
+
       {activePage === 'admin-knowledge' && (
         <section
-          className="knowledge-panel admin-knowledge-panel admin-management-surface"
+          className="knowledge-panel admin-knowledge-panel admin-design-knowledge-part2 admin-management-surface"
           id={WORKSPACE_SECTION_IDS.adminKnowledge}
           tabIndex={-1}
         >
@@ -1103,7 +1700,7 @@ export function AdminWorkspace({
 
       {activePage === 'admin-users' && (
         <>
-          <section className="knowledge-panel admin-user-management-panel">
+          <section className="knowledge-panel admin-user-management-panel admin-design-users admin-design-users-part1 admin-design-users-part2">
             <div className="management-header">
               <div>
                 <p className="section-label">Teacher & Student</p>
@@ -1133,7 +1730,7 @@ export function AdminWorkspace({
                 </button>
                 <button
                   className="ghost-button"
-                  disabled={busyManagedUserId !== null}
+                  disabled={isManagedUserActionBusy}
                   type="button"
                   onClick={() => void loadManagedUsers()}
                 >
@@ -1220,10 +1817,108 @@ export function AdminWorkspace({
               </label>
             </div>
 
+            <div className="admin-user-bulk-bar">
+              <label className="settings-checkbox admin-user-page-select">
+                <input
+                  aria-label="Chọn tất cả user trên trang hiện tại"
+                  checked={areAllManagedUsersOnPageSelected}
+                  disabled={
+                    isManagedUserActionBusy || paginatedManagedUserIds.length === 0
+                  }
+                  type="checkbox"
+                  onChange={toggleManagedUserPageSelection}
+                />
+                <span>
+                  Đã chọn {selectedManagedUsers.length} user
+                  {selectedManagedUsers.length > 0
+                    ? ` (${selectedManagedUsers
+                        .map((user) => user.name)
+                        .slice(0, 2)
+                        .join(', ')}${
+                        selectedManagedUsers.length > 2 ? ', ...' : ''
+                      })`
+                    : ''}
+                </span>
+              </label>
+              <div className="admin-user-bulk-actions">
+                <button
+                  className="ghost-button table-action-button"
+                  disabled={
+                    isManagedUserActionBusy || selectedManagedUserIds.length === 0
+                  }
+                  type="button"
+                  onClick={() => void handleBulkManagedUserPasswordReset()}
+                >
+                  {isBulkManagedUserBusy ? (
+                    <Spinner label="Đang xử lý" />
+                  ) : (
+                    <>
+                      <KeyRound aria-hidden="true" size={16} />
+                      Đổi mật khẩu
+                    </>
+                  )}
+                </button>
+                <button
+                  className="ghost-button table-action-button"
+                  disabled={
+                    isManagedUserActionBusy || selectedManagedUserIds.length === 0
+                  }
+                  type="button"
+                  onClick={() =>
+                    void handleBulkManagedUserStatus('disabled', 'Khóa tài khoản')
+                  }
+                >
+                  <UserX aria-hidden="true" size={16} />
+                  Khóa tài khoản
+                </button>
+                <button
+                  className="ghost-button table-action-button"
+                  disabled={
+                    isManagedUserActionBusy || selectedManagedUserIds.length === 0
+                  }
+                  type="button"
+                  onClick={() =>
+                    void handleBulkManagedUserStatus('active', 'Mở lại tài khoản')
+                  }
+                >
+                  <UserCheck aria-hidden="true" size={16} />
+                  Mở lại
+                </button>
+                <button
+                  className="ghost-button table-action-button danger-action"
+                  disabled={
+                    isManagedUserActionBusy || selectedManagedUserIds.length === 0
+                  }
+                  type="button"
+                  onClick={() =>
+                    void handleBulkManagedUserStatus('disabled', 'Xóa khỏi active')
+                  }
+                >
+                  <Trash2 aria-hidden="true" size={16} />
+                  Xóa khỏi active
+                </button>
+              </div>
+            </div>
+
             <p className="state-panel compact-state">{managedUserStatusMessage}</p>
 
             <DataTable
               columns={[
+                {
+                  header: 'Chọn',
+                  key: 'select',
+                  render: (user) => (
+                    <span className="admin-user-select-cell">
+                      <input
+                        aria-label={`Chọn ${user.name}`}
+                        checked={selectedManagedUserIds.includes(user.id)}
+                        disabled={isManagedUserActionBusy}
+                        type="checkbox"
+                        onChange={() => toggleManagedUserSelection(user.id)}
+                      />
+                    </span>
+                  ),
+                },
                 {
                   header: 'Người dùng',
                   key: 'user',
@@ -1308,7 +2003,7 @@ export function AdminWorkspace({
                           <>
                             <button
                               className="ghost-button table-action-button"
-                              disabled={busyManagedUserId !== null}
+                              disabled={isManagedUserActionBusy}
                               type="button"
                               onClick={() => void handleManagedUserSave(user)}
                             >
@@ -1335,7 +2030,7 @@ export function AdminWorkspace({
                           <button
                             aria-label={`Sửa ${user.name}`}
                             className="ghost-button table-action-button icon-table-action"
-                            disabled={busyManagedUserId !== null}
+                            disabled={isManagedUserActionBusy}
                             title="Sửa"
                             type="button"
                             onClick={() => startManagedUserEdit(user)}
@@ -1354,7 +2049,7 @@ export function AdminWorkspace({
                               ? ' icon-table-action danger-action'
                               : ''
                           }`}
-                          disabled={busyManagedUserId !== null}
+                          disabled={isManagedUserActionBusy}
                           title={
                             nextStatus === 'disabled' ? 'Xóa khỏi active' : 'Mở lại'
                           }
@@ -1485,6 +2180,315 @@ export function AdminWorkspace({
 
       {activePage === 'admin-jobs' && (
         <JobCenter audience="admin" token={token} />
+      )}
+
+      {activePage === 'admin-reports' && (
+        <section className="knowledge-panel admin-design-page admin-design-reports admin-design-reports-part1 admin-management-surface">
+          <div className="management-header">
+            <div>
+              <p className="section-label">Báo cáo</p>
+              <h3>Báo cáo vận hành</h3>
+              <p className="muted">
+                Chuẩn hóa từ HTML report và lấy số liệu tổng hợp từ backend
+                theo organization hiện tại.
+              </p>
+            </div>
+            <BarChart3 aria-hidden="true" size={26} />
+          </div>
+
+          <p className="state-panel compact-state">
+            {adminSurfaceStatusMessage} Cập nhật báo cáo: {reportsGeneratedAt}.
+          </p>
+
+          <div className="v4-metric-grid admin-user-summary-grid">
+            {adminStats.map((metric) => (
+              <MetricCard
+                detail={metric.detail}
+                key={metric.label}
+                label={metric.label}
+                tone={metric.tone}
+                value={metric.value}
+              />
+            ))}
+          </div>
+
+          <div className="admin-report-breakdown">
+            <section>
+              <h4>Lesson status</h4>
+              {lessonStatusCounts.length ? (
+                lessonStatusCounts.map(([status, count]) => (
+                  <span key={status}>
+                    <strong>{formatStatusCountLabel(status)}</strong>
+                    <small>{count}</small>
+                  </span>
+                ))
+              ) : (
+                <p className="muted">Chưa có lesson.</p>
+              )}
+            </section>
+            <section>
+              <h4>Document status</h4>
+              {documentStatusCounts.length ? (
+                documentStatusCounts.map(([status, count]) => (
+                  <span key={status}>
+                    <strong>{formatStatusCountLabel(status)}</strong>
+                    <small>{count}</small>
+                  </span>
+                ))
+              ) : (
+                <p className="muted">Chưa có tài liệu.</p>
+              )}
+            </section>
+            <section>
+              <h4>Job status</h4>
+              {jobStatusCounts.length ? (
+                jobStatusCounts.map(([status, count]) => (
+                  <span key={status}>
+                    <strong>{formatStatusCountLabel(status)}</strong>
+                    <small>{count}</small>
+                  </span>
+                ))
+              ) : (
+                <p className="muted">Chưa có job.</p>
+              )}
+            </section>
+          </div>
+
+          <DataTable
+            columns={[
+              {
+                header: 'Chỉ số',
+                key: 'metric',
+                render: (metric) => <strong>{metric.label}</strong>,
+              },
+              {
+                header: 'Giá trị',
+                key: 'value',
+                render: (metric) => metric.value,
+              },
+              {
+                header: 'Diễn giải',
+                key: 'detail',
+                render: (metric) => metric.detail,
+              },
+            ]}
+            emptyState={<p className="muted">Chưa có số liệu báo cáo.</p>}
+            getRowKey={(metric) => metric.label}
+            rows={adminStats}
+          />
+        </section>
+      )}
+
+      {activePage === 'admin-activity-log' && (
+        <section className="knowledge-panel admin-design-page admin-design-activity-log admin-design-activity-log-part2 admin-management-surface">
+          <div className="management-header">
+            <div>
+              <p className="section-label">Nhật ký</p>
+              <h3>Hoạt động gần đây</h3>
+              <p className="muted">
+                Chuẩn hóa từ HTML activity log và đọc audit feed thật theo
+                organization từ backend.
+              </p>
+            </div>
+            <Activity aria-hidden="true" size={26} />
+          </div>
+
+          <p className="state-panel compact-state">{adminSurfaceStatusMessage}</p>
+
+          <DataTable
+            columns={[
+              {
+                header: 'Loại',
+                key: 'type',
+                render: (item) => item.type,
+              },
+              {
+                header: 'Sự kiện',
+                key: 'title',
+                render: (item) => <strong>{item.title}</strong>,
+              },
+              {
+                header: 'Chi tiết',
+                key: 'detail',
+                render: (item) => item.detail,
+              },
+              {
+                header: 'Thời gian',
+                key: 'time',
+                render: (item) => formatDateTime(item.createdAt),
+              },
+            ]}
+            emptyState={
+              <p className="muted">
+                Backend chưa có hoạt động organization để hiển thị.
+              </p>
+            }
+            getRowKey={(item) => item.id}
+            rows={recentAdminActivity}
+          />
+        </section>
+      )}
+
+      {activePage === 'admin-settings' && (
+        <section className="knowledge-panel admin-design-page admin-design-settings admin-management-surface">
+          <div className="management-header">
+            <div>
+              <p className="section-label">Cài đặt</p>
+              <h3>Cấu hình vận hành</h3>
+              <p className="muted">
+                Chuẩn hóa từ HTML settings theo hướng production-safe: lưu
+                policy vận hành trong backend, không lộ API key hoặc provider
+                secret ở frontend.
+              </p>
+            </div>
+            <Settings aria-hidden="true" size={26} />
+          </div>
+
+          <p className="state-panel compact-state">
+            {adminSurfaceStatusMessage}
+            {adminSettings?.updated_at
+              ? ` Cập nhật lần cuối: ${formatDateTime(adminSettings.updated_at)}.`
+              : ''}
+          </p>
+
+          <form className="admin-settings-form" onSubmit={handleAdminSettingsSubmit}>
+            <section className="v4-admin-block-card">
+              <div className="lesson-block-header">
+                <span>AI</span>
+                <strong>Metadata</strong>
+              </div>
+              <label className="field">
+                <span>Model AI mặc định</span>
+                <input
+                  disabled={isSavingSettings || !adminSettings}
+                  placeholder="gpt-4o-mini"
+                  value={settingsDraft.ai_model ?? ''}
+                  onChange={(event) =>
+                    setSettingsDraft((current) => ({
+                      ...current,
+                      ai_model: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+              <label className="field">
+                <span>Quota AI tháng</span>
+                <input
+                  disabled={isSavingSettings || !adminSettings}
+                  min={0}
+                  type="number"
+                  value={settingsDraft.monthly_ai_limit ?? 0}
+                  onChange={(event) =>
+                    setSettingsDraft((current) => ({
+                      ...current,
+                      monthly_ai_limit: parseNonNegativeNumber(
+                        event.target.value,
+                        current.monthly_ai_limit ?? 0,
+                      ),
+                    }))
+                  }
+                />
+              </label>
+            </section>
+
+            <section className="v4-admin-block-card">
+              <div className="lesson-block-header">
+                <span>Alerts</span>
+                <strong>Notification</strong>
+              </div>
+              <label className="settings-checkbox">
+                <input
+                  checked={settingsDraft.email_alerts_enabled ?? false}
+                  disabled={isSavingSettings || !adminSettings}
+                  type="checkbox"
+                  onChange={(event) =>
+                    setSettingsDraft((current) => ({
+                      ...current,
+                      email_alerts_enabled: event.target.checked,
+                    }))
+                  }
+                />
+                <span>Email alert cho Admin</span>
+              </label>
+              <label className="settings-checkbox">
+                <input
+                  checked={settingsDraft.in_app_alerts_enabled ?? false}
+                  disabled={isSavingSettings || !adminSettings}
+                  type="checkbox"
+                  onChange={(event) =>
+                    setSettingsDraft((current) => ({
+                      ...current,
+                      in_app_alerts_enabled: event.target.checked,
+                    }))
+                  }
+                />
+                <span>In-app alert trong dashboard</span>
+              </label>
+            </section>
+
+            <section className="v4-admin-block-card">
+              <div className="lesson-block-header">
+                <span>Security</span>
+                <strong>Policy</strong>
+              </div>
+              <label className="field">
+                <span>Độ dài mật khẩu tối thiểu</span>
+                <input
+                  disabled={isSavingSettings || !adminSettings}
+                  min={8}
+                  type="number"
+                  value={settingsDraft.password_min_length ?? 8}
+                  onChange={(event) =>
+                    setSettingsDraft((current) => ({
+                      ...current,
+                      password_min_length: Math.max(
+                        8,
+                        parseNonNegativeNumber(
+                          event.target.value,
+                          current.password_min_length ?? 8,
+                        ),
+                      ),
+                    }))
+                  }
+                />
+              </label>
+              <label className="settings-checkbox">
+                <input
+                  checked={settingsDraft.require_password_rotation ?? false}
+                  disabled={isSavingSettings || !adminSettings}
+                  type="checkbox"
+                  onChange={(event) =>
+                    setSettingsDraft((current) => ({
+                      ...current,
+                      require_password_rotation: event.target.checked,
+                    }))
+                  }
+                />
+                <span>Bắt buộc đổi mật khẩu định kỳ</span>
+              </label>
+            </section>
+
+            <section className="v4-admin-block-card admin-settings-save-card">
+              <div className="lesson-block-header">
+                <span>Secrets</span>
+                <strong>Không hiển thị</strong>
+              </div>
+              <h3>API keys và provider keys</h3>
+              <p>
+                Frontend không đọc hoặc render OpenAI/NVIDIA/Supabase secret.
+                Backend chỉ trả cấu hình vận hành không nhạy cảm.
+              </p>
+              <button
+                className="primary-button"
+                disabled={isSavingSettings || !adminSettings}
+                type="submit"
+              >
+                <Save aria-hidden="true" size={17} />
+                {isSavingSettings ? <Spinner label="Đang lưu" /> : 'Lưu cài đặt'}
+              </button>
+            </section>
+          </form>
+        </section>
       )}
     </section>
   )

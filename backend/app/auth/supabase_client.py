@@ -165,3 +165,18 @@ class SupabaseAuthRestClient:
             payload={},
             access_token=access_token,
         )
+
+    def reset_password_for_email(
+        self,
+        email: str,
+        *,
+        redirect_to: str | None = None,
+    ) -> None:
+        payload: dict[str, object] = {"email": email}
+        if redirect_to:
+            payload["redirect_to"] = redirect_to
+        self._request_json(
+            path="/recover",
+            method="POST",
+            payload=payload,
+        )

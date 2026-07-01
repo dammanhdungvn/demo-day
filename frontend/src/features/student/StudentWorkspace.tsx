@@ -840,12 +840,12 @@ export function StudentWorkspace({
 
   return (
     <section
-      className="panel learning-panel v4-student-workspace"
+      className={`panel learning-panel v4-student-workspace student-design-page student-design-${activePage}`}
       id={WORKSPACE_SECTION_IDS.studentClasses}
       tabIndex={-1}
     >
       {showClassesPage && (
-        <>
+        <div className="student-design-classes">
           <div className="v4-student-hero">
             <div>
               <p className="section-label">Không gian học tập</p>
@@ -905,7 +905,7 @@ export function StudentWorkspace({
               value={`${learningSummary.completedLessonCount}/${learningSummary.publishedLessonCount}`}
             />
           </div>
-        </>
+        </div>
       )}
 
       {showClassesPage && (
@@ -958,7 +958,7 @@ export function StudentWorkspace({
 
       {showPracticePage && (
         <section
-        className="v4-student-review-hub v4-student-practice-hub"
+        className="v4-student-review-hub v4-student-practice-hub student-design-practice"
         aria-labelledby="student-practice-title"
         id={WORKSPACE_SECTION_IDS.studentPractice}
         tabIndex={-1}
@@ -1018,7 +1018,7 @@ export function StudentWorkspace({
 
       {showDocumentsPage && (
         <section
-        className="knowledge-panel student-context-panel"
+        className="knowledge-panel student-context-panel student-design-documents"
         id={WORKSPACE_SECTION_IDS.studentKnowledge}
         tabIndex={-1}
       >
@@ -1053,7 +1053,7 @@ export function StudentWorkspace({
       )}
 
       {showLessonsPage && (
-        <div className="v4-student-grid">
+        <div className="v4-student-grid student-design-reader-grid">
         <aside className="v4-student-sidebar">
           <div className="v4-panel-title">
             <span>Lớp của tôi</span>
@@ -1236,7 +1236,7 @@ export function StudentWorkspace({
                       )}
                     </article>
 
-                    <aside className="v4-student-study-panel">
+                    <aside className="v4-student-study-panel student-design-tutor-panel">
                       <div className="v4-panel-title">
                         <span>Ghi chú học tập</span>
                         <strong>
@@ -1297,7 +1297,7 @@ export function StudentWorkspace({
                       </div>
                     </aside>
 
-                    <aside className="v4-student-study-panel v4-student-tutor-panel">
+                    <aside className="v4-student-study-panel v4-student-tutor-panel student-design-tutor-panel">
                       <div className="v4-panel-title">
                         <span>AI Tutor có citation</span>
                         <strong>

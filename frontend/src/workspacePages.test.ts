@@ -10,7 +10,20 @@ import {
 describe('workspace page navigation', () => {
   it.each([
     ['teacher', ['Tổng quan', 'Khóa học & lớp', 'Tài liệu', 'Dàn ý', 'Lesson Studio', 'Hàng đợi xử lý']],
-    ['admin', ['Hàng đợi duyệt', 'Kho tri thức', 'Người dùng', 'Tác vụ']],
+    [
+      'admin',
+      [
+        'Tổng quan',
+        'Hàng đợi duyệt',
+        'Bài giảng mẫu',
+        'Kho tri thức',
+        'Người dùng',
+        'Tác vụ',
+        'Báo cáo',
+        'Nhật ký',
+        'Cài đặt',
+      ],
+    ],
     ['student', ['Lớp của tôi', 'Lesson', 'Luyện tập', 'Tài liệu cá nhân']],
     ['system_admin', ['Tổ chức', 'Mời Admin']],
   ] satisfies Array<[UserRole, string[]]>)(
@@ -31,6 +44,10 @@ describe('workspace page navigation', () => {
       'admin-knowledge',
     )
     expect(getWorkspacePageForAction('admin', 'Tác vụ')).toBe('admin-jobs')
+    expect(getWorkspacePageForAction('admin', 'Tổng quan')).toBe(
+      'admin-overview',
+    )
+    expect(getWorkspacePageForAction('admin', 'Báo cáo')).toBe('admin-reports')
     expect(getWorkspacePageForAction('student', 'Luyện tập')).toBe(
       'student-practice',
     )
@@ -38,7 +55,7 @@ describe('workspace page navigation', () => {
 
   it('keeps a stable default page for each role', () => {
     expect(getDefaultWorkspacePage('teacher')).toBe('teacher-overview')
-    expect(getDefaultWorkspacePage('admin')).toBe('admin-review')
+    expect(getDefaultWorkspacePage('admin')).toBe('admin-overview')
     expect(getDefaultWorkspacePage('student')).toBe('student-classes')
     expect(getDefaultWorkspacePage('system_admin')).toBe('system-organizations')
   })

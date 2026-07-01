@@ -161,9 +161,9 @@ def test_retry_generation_job_marks_failed_job_retrying_with_guidance() -> None:
     repository = InMemoryGenerationJobRepository()
     teacher = user_profile()
     job = repository.create_job(
-        job_type="outline_generation",
+        job_type="student_tutor_answer",
         actor=teacher,
-        job_input={"course_id": "course-1", "retry_supported": True},
+        job_input={"lesson_id": "lesson-1", "retry_supported": True},
         status="processing",
     )
     failed = repository.update_job(
@@ -179,6 +179,33 @@ def test_retry_generation_job_marks_failed_job_retrying_with_guidance() -> None:
     assert retry.generation_job.output["retry_requested_by"] == teacher.id
     assert retry.generation_job.output["retry_source_status"] == "failed"
     assert "Da dua tac vu vao hang cho thu lai" in retry.message
+
+
+def test_retry_generation_job_rejects_admin_ai_retry_before_status_update() -> None:
+    repository = InMemoryGenerationJobRepository()
+    teacher = user_profile()
+    admin = user_profile(user_id="admin-test-1", role="admin")
+    job = repository.create_job(
+        job_type="outline_generation",
+        actor=teacher,
+        job_input={"course_id": "course-1", "class_id": "class-1"},
+        status="processing",
+    )
+    failed = repository.update_job(
+        job.id,
+        status="failed",
+        error_message="Provider timeout",
+    )
+
+    with pytest.raises(HTTPException) as retry_error:
+        retry_generation_job(failed.id, admin, repository=repository)
+
+    assert retry_error.value.status_code == 409
+    assert "giang vien" in str(retry_error.value.detail).lower()
+    unchanged = repository.get_job(failed.id)
+    assert unchanged.status == "failed"
+    assert unchanged.output == failed.output
+    assert unchanged.error_message == "Provider timeout"
 
 
 def test_retry_generation_job_rejects_running_jobs_and_non_durable_document_uploads() -> None:

@@ -78,6 +78,28 @@ class ManagedUserStatusUpdateRequest(BaseModel):
     status: ProfileStatus
 
 
+class ManagedUserBulkStatusUpdateRequest(BaseModel):
+    user_ids: list[str] = Field(min_length=1, max_length=100)
+    status: ProfileStatus
+
+
+class ManagedUserBulkStatusUpdateResponse(BaseModel):
+    users: list[ManagedUserResponse]
+    updated_count: int
+
+
+class ManagedUserBulkPasswordResetRequest(BaseModel):
+    user_ids: list[str] = Field(min_length=1, max_length=100)
+    redirect_to: str | None = Field(default=None, max_length=500)
+
+
+class ManagedUserBulkPasswordResetResponse(BaseModel):
+    requested_count: int
+    sent_count: int
+    skipped_count: int
+    skipped_user_ids: list[str]
+
+
 class ManagedUserUpdateRequest(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=160)
     email: str | None = Field(default=None, min_length=3, max_length=320)

@@ -10,6 +10,7 @@ import {
   buildTeacherWorkflowSteps,
   buildTeacherWorkspaceMetrics,
 } from './teacherWorkspace'
+import teacherWorkspaceSource from './teacher/TeacherWorkspace.tsx?raw'
 
 const course: Course = {
   id: 'course-1',
@@ -134,6 +135,18 @@ const lesson: LessonSession = {
 }
 
 describe('teacher workspace helpers', () => {
+  it('keeps the teacher HTML design conversion layout surfaces code-native', () => {
+    expect(teacherWorkspaceSource).toContain('teacher-design-page')
+    expect(teacherWorkspaceSource).toContain('teacher-design-overview')
+    expect(teacherWorkspaceSource).toContain('teacher-design-setup-grid')
+    expect(teacherWorkspaceSource).toContain('teacher-design-documents-grid')
+    expect(teacherWorkspaceSource).toContain('teacher-design-outline-builder')
+    expect(teacherWorkspaceSource).toContain('teacher-design-studio-grid')
+    expect(teacherWorkspaceSource).toContain('teacher-design-jobs')
+    expect(teacherWorkspaceSource).not.toContain('teacher-dashboard-overview-design-v2.png')
+    expect(teacherWorkspaceSource).not.toContain('tailwindcss.com')
+  })
+
   it('builds metrics from lesson and source state without fake data', () => {
     expect(
       buildTeacherWorkspaceMetrics({

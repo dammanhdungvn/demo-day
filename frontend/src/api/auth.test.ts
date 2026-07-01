@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   acceptInvite,
+  bulkResetManagedUserPasswords,
+  bulkUpdateManagedUserStatus,
   createSystemAdminInvite,
   createSystemOrganization,
   demoLogin,
@@ -470,5 +472,85 @@ describe('auth API client', () => {
         status: 'active',
       }),
     })
+  })
+
+  it('supports admin bulk managed user status and password reset actions', async () => {
+    const updatedTeacher = {
+      id: 'demo-teacher',
+      email: 'teacher@teachflow.local',
+      name: 'Teacher Demo',
+      role: 'teacher' as const,
+      status: 'disabled' as const,
+      organization_id: 'org-demo',
+      created_at: '2026-06-30T00:00:00+00:00',
+      updated_at: '2026-06-30T03:00:00+00:00',
+    }
+    const statusResponse = {
+      users: [updatedTeacher],
+      updated_count: 1,
+    }
+    const resetResponse = {
+      requested_count: 2,
+      sent_count: 1,
+      skipped_count: 1,
+      skipped_user_ids: ['demo-teacher'],
+    }
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json(statusResponse))
+      .mockResolvedValueOnce(Response.json(resetResponse))
+
+    await expect(
+      bulkUpdateManagedUserStatus(
+        { user_ids: ['demo-teacher'], status: 'disabled' },
+        'admin-token',
+        fetcher,
+        backendUrl,
+      ),
+    ).resolves.toEqual(statusResponse)
+    await expect(
+      bulkResetManagedUserPasswords(
+        {
+          user_ids: ['demo-teacher', 'supabase-student'],
+          redirect_to: 'https://teachflow.example/reset-password',
+        },
+        'admin-token',
+        fetcher,
+        backendUrl,
+      ),
+    ).resolves.toEqual(resetResponse)
+
+    expect(fetcher).toHaveBeenNthCalledWith(
+      1,
+      `${backendUrl}/auth/users/bulk-status`,
+      {
+        method: 'PATCH',
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer admin-token',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_ids: ['demo-teacher'],
+          status: 'disabled',
+        }),
+      },
+    )
+    expect(fetcher).toHaveBeenNthCalledWith(
+      2,
+      `${backendUrl}/auth/users/bulk-password-reset`,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer admin-token',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_ids: ['demo-teacher', 'supabase-student'],
+          redirect_to: 'https://teachflow.example/reset-password',
+        }),
+      },
+    )
   })
 })

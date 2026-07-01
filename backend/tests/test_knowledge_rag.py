@@ -37,6 +37,7 @@ from main import (
     reindex_source_document,
     reset_demo_sessions_for_tests,
     retrieve_relevant_chunks,
+    retry_embedding_reindex_job,
     upload_source_document,
     validate_web_ingestion_url,
     update_source_document_metadata,
@@ -887,6 +888,45 @@ def test_reindex_source_document_records_generation_job() -> None:
     assert response.embedding.model == "fake-embedding-v1"
     assert response.generation_job.job_type == "embedding_reindex"
     assert response.generation_job.status == "completed"
+    assert repository.reindexed_documents == [
+        {
+            "document_id": "doc-completed",
+            "embedding_model": "fake-embedding-v1",
+            "embedding_provider": "fake",
+            "embedding_dimensions": 384,
+        }
+    ]
+
+
+def test_retry_embedding_reindex_job_reprocesses_same_generation_job() -> None:
+    repository = FakeKnowledgeRepository(sample_documents())
+    job_repository = InMemoryGenerationJobRepository()
+    admin = admin_user()
+    job = job_repository.create_job(
+        job_type="embedding_reindex",
+        actor=admin,
+        job_input={"document_id": "doc-completed", "retry_supported": True},
+        status="processing",
+    )
+    failed = job_repository.update_job(
+        job.id,
+        status="failed",
+        error_message="Embedding provider unavailable",
+    )
+
+    retried = retry_embedding_reindex_job(
+        failed,
+        admin,
+        repository,
+        job_repository,
+        FakeEmbeddingProvider(),
+    )
+
+    assert retried.id == job.id
+    assert retried.status == "completed"
+    assert retried.error_message is None
+    assert retried.output["document_id"] == "doc-completed"
+    assert retried.output["retry_source_job_id"] == job.id
     assert repository.reindexed_documents == [
         {
             "document_id": "doc-completed",

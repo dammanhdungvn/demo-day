@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TeachFlow AI - Lesson Presentation Viewer</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary-fixed": "#e2dfff",
+            "outline-variant": "#c7c4d8",
+            "inverse-on-surface": "#eaf1ff",
+            "secondary": "#5b5e69",
+            "on-surface": "#0b1c30",
+            "on-background": "#0b1c30",
+            "on-tertiary": "#ffffff",
+            "surface-bright": "#f8f9ff",
+            "surface": "#f8f9ff",
+            "on-surface-variant": "#464555",
+            "inverse-surface": "#213145",
+            "on-tertiary-fixed": "#002113",
+            "tertiary": "#005338",
+            "background": "#f8f9ff",
+            "on-primary": "#ffffff",
+            "surface-tint": "#4e44e3",
+            "error-container": "#ffdad6",
+            "tertiary-fixed-dim": "#4edea3",
+            "on-primary-fixed": "#0f0069",
+            "tertiary-fixed": "#6ffbbe",
+            "surface-container-highest": "#d3e4fe",
+            "surface-container": "#e5eeff",
+            "error": "#ba1a1a",
+            "on-error-container": "#93000a",
+            "on-secondary": "#ffffff",
+            "secondary-fixed-dim": "#c3c6d2",
+            "surface-container-lowest": "#ffffff",
+            "on-tertiary-container": "#67f4b7",
+            "on-primary-fixed-variant": "#3422cc",
+            "surface-variant": "#d3e4fe",
+            "secondary-container": "#e0e2ef",
+            "on-secondary-container": "#61646f",
+            "secondary-fixed": "#e0e2ef",
+            "primary-fixed-dim": "#c3c0ff",
+            "surface-dim": "#cbdbf5",
+            "on-tertiary-fixed-variant": "#005236",
+            "tertiary-container": "#006e4b",
+            "primary-container": "#5046e5",
+            "on-secondary-fixed-variant": "#434751",
+            "outline": "#777587",
+            "on-error": "#ffffff",
+            "surface-container-high": "#dce9ff",
+            "primary": "#3625cd",
+            "surface-container-low": "#eff4ff",
+            "on-secondary-fixed": "#181b24",
+            "on-primary-container": "#dbd8ff",
+            "inverse-primary": "#c3c0ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "container-padding": "24px",
+            "topbar-height": "72px",
+            "sidebar-width": "260px",
+            "gutter": "16px",
+            "stack-gap": "12px"
+          },
+          "fontFamily": {
+            "headline-md": ["Inter"],
+            "headline-lg-mobile": ["Inter"],
+            "body-md": ["Inter"],
+            "title-sm": ["Inter"],
+            "label-uppercase": ["Inter"],
+            "display-lg": ["Inter"],
+            "body-sm": ["Inter"]
+          },
+          "fontSize": {
+            "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "headline-lg-mobile": ["20px", { "lineHeight": "28px", "fontWeight": "700" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "title-sm": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "label-uppercase": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+            "display-lg": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #f8f9ff;
+      color: #0b1c30;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #c7c4d8;
+      border-radius: 10px;
+    }
+    .active-thumb {
+      box-shadow: 0 0 0 2px #3625cd;
+    }
+  </style>
+</head>
+<body class="bg-background">
+<!-- TopNavBar (Shell Suppression: Not suppressed because it is a primary ecosystem level view) -->
+<header class="bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline w-full h-[72px] flex justify-between items-center px-container-padding fixed top-0 left-0 z-50">
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors cursor-pointer active:scale-95">
+<span class="material-symbols-outlined text-on-surface">arrow_back</span>
+</button>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[28px]">menu_book</span>
+<h1 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim">Presentation</h1>
+</div>
+</div>
+<div class="flex items-center gap-gutter flex-1 justify-center max-w-xl mx-8">
+<div class="flex items-center gap-2 text-on-surface-variant font-body-md text-body-md">
+<span class="material-symbols-outlined text-tertiary">eco</span>
+<span class="font-semibold">Photosynthesis</span>
+<span class="mx-2 opacity-30">|</span>
+<span>Slide 3 / 18</span>
+</div>
+<div class="flex-1 bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary w-1/6 h-full rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 bg-primary-fixed text-primary px-4 py-2 rounded-lg font-semibold cursor-pointer active:scale-95 transition-all">
+<span class="material-symbols-outlined">play_arrow</span>
+<span class="text-body-md font-body-md">Present</span>
+</button>
+<button class="flex items-center gap-2 border border-outline-variant px-4 py-2 rounded-lg text-on-surface font-semibold cursor-pointer active:scale-95 transition-all">
+<span class="material-symbols-outlined">download</span>
+<span class="text-body-md font-body-md">Export</span>
+</button>
+<div class="flex items-center gap-1 border-l border-outline-variant ml-2 pl-3">
+<button class="p-2 hover:bg-surface-container-low rounded-full"><span class="material-symbols-outlined">bookmark</span></button>
+<button class="p-2 hover:bg-surface-container-low rounded-full"><span class="material-symbols-outlined">fullscreen</span></button>
+<button class="p-2 hover:bg-surface-container-low rounded-full"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+</div>
+</header>
+<main class="pt-[72px] h-screen flex overflow-hidden">
+<!-- Left: Slide Thumbnails -->
+<aside class="w-64 border-r border-outline-variant bg-surface-container-lowest overflow-y-auto custom-scrollbar p-4 flex flex-col gap-4">
+<!-- Thumbnail 1 -->
+<div class="cursor-pointer group">
+<div class="flex items-center justify-between mb-1">
+<span class="text-body-sm font-body-sm text-on-secondary-container">1. Intro</span>
+</div>
+<div class="aspect-video bg-surface-container-low rounded-lg border border-outline-variant overflow-hidden p-2 group-hover:border-primary transition-all">
+<img class="w-full h-full object-cover rounded shadow-sm" data-alt="A clean, minimalist presentation slide titled 'Introduction to Biology' with soft light blue and white colors, featuring abstract biological shapes like DNA strands and cells in a modern vector style. The mood is academic and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPEOy6cULZwG98hqWSMmqEKx6aVbYAPH_2WZ5ns93uHR2XE7CYhCXi2YbRzr9rRBJLTh_xQKkUZkAtoBl049rMM6HZvr0ERWR87_DYKEaHoknjrHzEQzdL5zqtUgOpAzkYnlVYyxVNkaAN71hzkPulWldSDi8EDQ6tpLtVhDVICXUDneJU5WIr7PVAafjfE7y5L5uDrIFt_7RZJHb2mYa_Qdj4GEUTfEY5BOmg-MTIvcXZpsrPqw2uQsvzhOOwFI2IfzKwUWMisNQ"/>
+</div>
+</div>
+<!-- Thumbnail 2 -->
+<div class="cursor-pointer group">
+<div class="flex items-center justify-between mb-1">
+<span class="text-body-sm font-body-sm text-on-secondary-container">2. Objectives</span>
+</div>
+<div class="aspect-video bg-surface-container-low rounded-lg border border-outline-variant overflow-hidden p-2 group-hover:border-primary transition-all">
+<img class="w-full h-full object-cover rounded shadow-sm" data-alt="A educational presentation slide showing learning objectives for a photosynthesis lesson, featuring target icons and checkmarks in a soft purple and emerald green palette. The layout is clean and spacious with high legibility." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBH0YOXIW6c5DTt5UXM_06HhLGBwldhiYY6uHOCeM8G__shGyKwpkh51RuTVjmI5lidP7L4IG9_t8tVrWkO6oG-_le_pEpPQpH9WxTxAcpeNoTiFiR1N-zbrvwj0xpuxL0MUDN21K6MA6rS4czNEUs9v-cH2o0SYb-zywcYyGcMGad93YVQF8d1UXTCbR71qeHQKCGLqbzArBnQ08AvJqbh7gcIIoxDtWH9J4v4kWYB2kaeBwYRMjnRuV5XLZ5SK-qGOelJoLiCSp4"/>
+</div>
+</div>
+<!-- Thumbnail 3 (Active) -->
+<div class="cursor-pointer">
+<div class="flex items-center justify-between mb-1">
+<span class="text-body-sm font-body-sm text-primary font-bold">3. Photosynthesis</span>
+</div>
+<div class="aspect-video bg-white rounded-lg border-2 border-primary overflow-hidden p-2 active-thumb">
+<img class="w-full h-full object-cover rounded shadow-sm" data-alt="A detailed scientific diagram of photosynthesis, showcasing a green plant with roots. Arrows indicate energy from the sun, water from the ground, and CO2 from the air, resulting in the production of oxygen and glucose. Modern educational illustration style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjVTWC8x979pN4MOyASPQI3nL8GNN9DswDORf4Su1JG4-L0Do21u_q8GRJj-XVSKbneg1qBa-SPr5F9Zy_5A2JmxxeaIw1RIlAIQZho5PxnEfu0yeofNTJD80_Mv_EKO0POnTo-lsLt5-nF3NnbbGm-e-BLSLMQ6VbCZnIzFHEAuRQfUJQs8YHo6ECNNW0YNHwpvGYI0kUHj-NH_kIRWL4CQAG2e06yjaMU5tsYBoAUGsb9mWl75dYGQlmSV2Hm9BbUsWS1a-4aYU"/>
+</div>
+</div>
+<!-- Thumbnail 4 -->
+<div class="cursor-pointer group opacity-60">
+<div class="flex items-center justify-between mb-1">
+<span class="text-body-sm font-body-sm text-on-secondary-container">4. Light Energy</span>
+</div>
+<div class="aspect-video bg-surface-container-low rounded-lg border border-outline-variant overflow-hidden p-2 group-hover:border-primary transition-all">
+<img class="w-full h-full object-cover rounded shadow-sm" data-alt="A presentation slide focusing on solar energy absorption in plant leaves, featuring a bright sun icon and microscopic leaf structures. The color scheme is warm yellow and vibrant green on a crisp white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4MT1NQ8w5Zo6XUKJQcwIy0Lpb4-B3QtaJIDyFgcMZwhTBptnfhNMk_4dQZvVkmRek1ZtfoIe2h5dS1cusIfbJ6rD0RPpafb13GZbl7CaI0B1a8BYwd9KXnCX34vcAf0tEQKZuIMpGKa5Pv7wwGSswlY9u2NNBOT2w_73cFK0qCo84HXGERnWYlkEocE578gUqezTGu1q0jdeq8gU10Sm21lIf7h_3vfLAs8yG08yUHJF1wG_AzJSHkw4DVGFk1W1UeKV91J-GtYE"/>
+</div>
+</div>
+<!-- Thumbnail 5 -->
+<div class="cursor-pointer group opacity-60">
+<div class="flex items-center justify-between mb-1">
+<span class="text-body-sm font-body-sm text-on-secondary-container">5. Chlorophyll</span>
+</div>
+<div class="aspect-video bg-surface-container-low rounded-lg border border-outline-variant overflow-hidden p-2 group-hover:border-primary transition-all">
+<img class="w-full h-full object-cover rounded shadow-sm" data-alt="Educational diagram of a chloroplast, showing thylakoids and stroma. The illustration is scientific yet artistic, using varying shades of green and subtle 3D depth to explain cell biology in a modern way." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpX2FGkIQI35CauPQL_4F19rn9VlL4Ae-i1npVViR45ts9Aq8O-lbJXxb-XqyqYu7xMpnzY-b3lyp1BW7VfaVNi7YHGBTFbgAYc7I20y-D1zy23BcOho7ozPTwMAQalokbhD0suaBIN5o70CcsM7qMDzT9-Fq9ganssMevQI4Mkt9Dn_Or750FXhnK9NfoserA8oG1v7q_tLFt9pKgruOvKd29wIRH7eGnOAenJt7IFadqzkAwof0jqLpjaXHzq_kuAKDvrUD24GY"/>
+</div>
+</div>
+<!-- Thumbnail 6 -->
+<div class="cursor-pointer group opacity-60">
+<div class="flex items-center justify-between mb-1">
+<span class="text-body-sm font-body-sm text-on-secondary-container">6. Chemical Eq.</span>
+</div>
+<div class="aspect-video bg-surface-container-low rounded-lg border border-outline-variant overflow-hidden p-2 group-hover:border-primary transition-all">
+<img class="w-full h-full object-cover rounded shadow-sm" data-alt="A slide displaying the chemical equation for photosynthesis in a large, clear font with chemical symbols like CO2 and H2O. The design is minimalist, emphasizing the mathematical balance of life on a soft blue background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0__tTYUH5X6zmUJVS4QI8PSlah4Wso_4Q-hISmgScE1tx56G-2rBo_JcsQaJtkLOGytl1P3LeCRqVKXBQq8HOFmeFoorbNf6XGeLmviUmrfkLxtqkXvrI1wgPHTT4ZNkEq93cXCq5byMBZv7lxsG_fGzwVO0Uq3Jut8EIguduq5v6F_kE40L_kEc0gK_b0ujxiwPNEtbOEzSUOLKoPsbTlhmZJsE-t3mF6ZcJ2ByD5MeIo37ppU0kZBdKAPYoQQhyEcazcYWnn8g"/>
+</div>
+</div>
+</aside>
+<!-- Center: Main Slide Area -->
+<section class="flex-1 bg-surface-container-low p-8 flex flex-col items-center gap-6 overflow-y-auto">
+<!-- Main Slide Card -->
+<div class="w-full max-w-5xl bg-white rounded-xl shadow-sm border border-outline-variant p-10 flex flex-col gap-10 relative overflow-hidden">
+<!-- Floating Decoration Shader (Atmospheric Effect) -->
+
+<div class="flex justify-between items-start relative z-10">
+<div class="max-w-md">
+<h2 class="font-display-lg text-[48px] leading-tight text-primary mb-4">Photosynthesis</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              Photosynthesis is the process by which green plants and some other organisms use sunlight to synthesize foods with the help of chlorophyll.
+            </p>
+</div>
+<div class="bg-tertiary/10 p-3 rounded-full">
+<span class="material-symbols-outlined text-tertiary text-4xl" style="font-variation-settings: 'FILL' 1;">eco</span>
+</div>
+</div>
+<!-- Diagram Area -->
+<div class="flex-1 flex items-center justify-center min-h-[400px] relative z-10">
+<img class="w-full max-w-3xl object-contain" data-alt="A high-quality, professional educational diagram of the photosynthesis process. It shows a central green plant in brown soil. Sunlight (yellow) enters from the top left. Carbon Dioxide (CO2) and Water (H2O) molecules are shown entering the leaves and roots. Oxygen (O2) and Glucose (C6H12O6) molecules are shown exiting the plant. Clean vector style with soft shadows and vibrant colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDy6EhyfEeYjhUD7JPnm4_j2WD1Oe0bUclpicPshrI8nncj-wkpHuJdkeCjH3vtVmr-CYEN5nX7xV8D3UlBXb891dpEfZh_ImIZa0CeX4ag1EV0PfpnMwjhgU4d6JzFY79E1YMW1sSMyLJJMvbHHU0F2axxZH94z-9pc_fVhyL9TpNV5x39IBRruUW8RUrT8uNBEbrJ9GYYu_awHdVOe4JFI6c0fYb4284lo9kfO7q-6KumGuj7hYjaqjUpavMyPcKExMcWC-Hkx6g"/>
+</div>
+<!-- Citation / References Footer -->
+<div class="border-t border-outline-variant pt-6 relative z-10">
+<p class="font-label-uppercase text-label-uppercase text-secondary mb-3">CITATIONS &amp; REFERENCES</p>
+<div class="grid grid-cols-3 gap-4">
+<div class="bg-surface-container p-3 rounded-lg flex items-center gap-3 border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary">description</span>
+<div>
+<p class="font-body-sm text-body-sm font-semibold">Campbell Biology</p>
+<p class="text-[11px] text-on-surface-variant">12th Edition, Page 184</p>
+</div>
+</div>
+<div class="bg-surface-container p-3 rounded-lg flex items-center gap-3 border border-outline-variant/30">
+<span class="material-symbols-outlined text-tertiary">language</span>
+<div>
+<p class="font-body-sm text-body-sm font-semibold">National Geographic</p>
+<p class="text-[11px] text-on-surface-variant">Encyclopedia: Photosynthesis</p>
+</div>
+</div>
+<div class="bg-surface-container p-3 rounded-lg flex items-center gap-3 border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary">article</span>
+<div>
+<p class="font-body-sm text-body-sm font-semibold">Britannica Science</p>
+<p class="text-[11px] text-on-surface-variant">Article: Plant Metabolism</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Slide Navigation Controls -->
+<div class="flex items-center gap-4 bg-white p-2 px-4 rounded-full shadow-sm border border-outline-variant">
+<button class="flex items-center gap-2 px-6 py-2 rounded-full hover:bg-surface-container transition-colors font-semibold text-primary">
+<span class="material-symbols-outlined">chevron_left</span>
+<span>Previous</span>
+</button>
+<div class="h-6 w-[1px] bg-outline-variant"></div>
+<span class="font-semibold text-on-surface-variant px-4">3 / 18</span>
+<div class="h-6 w-[1px] bg-outline-variant"></div>
+<button class="flex items-center gap-2 bg-primary text-on-primary px-8 py-2 rounded-full hover:shadow-lg hover:bg-primary-container transition-all active:scale-95 font-semibold">
+<span>Next</span>
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- Right: Notes & AI Suggestions -->
+<aside class="w-[320px] border-l border-outline-variant bg-surface overflow-y-auto custom-scrollbar p-6 flex flex-col gap-8">
+<!-- Instructor Notes Section -->
+<div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-title-sm text-title-sm text-on-surface">Instructor Notes</h3>
+<button class="p-1 hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined text-secondary text-[20px]">edit</span>
+</button>
+</div>
+<div class="space-y-4">
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[18px]">light_mode</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Emphasize that photons from the sun provide the primary energy trigger for the electron transport chain.</p>
+</div>
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary text-[18px]">opacity</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Note the role of water splitting (photolysis) in generating oxygen as a byproduct.</p>
+</div>
+<div class="flex gap-3 border-t border-outline-variant/30 pt-4">
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-tertiary text-[18px]" style="font-variation-settings: 'FILL' 1;">emoji_objects</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Key Concept: The conversion of light energy into chemical energy stored in glucose.</p>
+</div>
+</div>
+</div>
+<!-- AI Tutor Suggestions Card -->
+<div class="bg-primary-container p-5 rounded-xl text-on-primary-container shadow-sm border border-primary/20 relative overflow-hidden group">
+<!-- AI Glow Effect -->
+<div class="absolute -top-12 -right-12 w-32 h-32 bg-on-primary-container/10 rounded-full blur-2xl group-hover:bg-on-primary-container/20 transition-all"></div>
+<div class="flex items-center gap-2 mb-3 relative z-10">
+<span class="material-symbols-outlined text-primary-fixed">auto_awesome</span>
+<span class="font-title-sm text-title-sm">AI Suggestions</span>
+</div>
+<p class="text-body-sm font-body-sm mb-4 leading-snug opacity-90 relative z-10">
+          Try incorporating a short video of real-time leaf transpiration to ground the chemical concepts in visual reality.
+        </p>
+<button class="w-full py-2 bg-on-primary-container text-primary rounded-lg font-semibold text-body-sm flex items-center justify-center gap-2 hover:bg-white transition-colors relative z-10">
+<span class="material-symbols-outlined text-[18px]">smart_toy</span>
+<span>Ask AI Tutor</span>
+</button>
+</div>
+<!-- Presentation Tip -->
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg">
+<div class="flex items-center gap-2 mb-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">psychology</span>
+<span class="font-label-uppercase text-label-uppercase">Teaching Tip</span>
+</div>
+<p class="text-[12px] text-on-surface-variant italic">
+          "Students often confuse the Light-Dependent and Light-Independent reactions. Mention that the Calvin cycle doesn't happen in the dark necessarily."
+        </p>
+</div>
+</aside>
+</main>
+<script>
+    // Micro-interactions for buttons
+    document.querySelectorAll('button').forEach(button => {
+      button.addEventListener('mousedown', () => {
+        button.classList.add('scale-[0.98]');
+      });
+      button.addEventListener('mouseup', () => {
+        button.classList.remove('scale-[0.98]');
+      });
+      button.addEventListener('mouseleave', () => {
+        button.classList.remove('scale-[0.98]');
+      });
+    });
+
+    // Simple fade-in effect for the main slide content on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const mainSlide = document.querySelector('section > div');
+      mainSlide.classList.add('opacity-0', 'translate-y-4');
+      setTimeout(() => {
+        mainSlide.classList.remove('opacity-0', 'translate-y-4');
+        mainSlide.classList.add('transition-all', 'duration-700', 'ease-out', 'opacity-100', 'translate-y-0');
+      }, 100);
+    });
+  </script>
+</body></html>

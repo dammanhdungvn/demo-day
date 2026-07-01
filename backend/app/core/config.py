@@ -45,7 +45,13 @@ def _env_value(name: str) -> str | None:
     if direct_value:
         return direct_value
 
-    for env_path in (Path.cwd() / ".env", Path.cwd().parent / ".env"):
+    env_paths = (
+        Path.cwd() / ".env.local",
+        Path.cwd() / ".env",
+        Path.cwd().parent / ".env.local",
+        Path.cwd().parent / ".env",
+    )
+    for env_path in env_paths:
         file_value = _read_env_file(env_path).get(name)
         if file_value:
             return file_value

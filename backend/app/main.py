@@ -72,6 +72,10 @@ from .auth.schemas import (
     InviteCreateRequest,
     LoginRequest,
     LoginResponse,
+    ManagedUserBulkPasswordResetRequest,
+    ManagedUserBulkPasswordResetResponse,
+    ManagedUserBulkStatusUpdateRequest,
+    ManagedUserBulkStatusUpdateResponse,
     ManagedUserResponse,
     ManagedUserRole,
     ManagedUserStatusUpdateRequest,
@@ -92,6 +96,8 @@ from .auth.services import (
     authenticate_demo_account,
     authenticate_demo_user,
     authenticate_user,
+    bulk_request_managed_user_password_resets,
+    bulk_update_managed_user_status,
     create_session_token,
     create_system_admin_invite,
     create_system_organization,
@@ -195,7 +201,12 @@ from .jobs.routes import (
     retry_generation_job_route,
     router as jobs_router,
 )
-from .jobs.services import cancel_generation_job, list_generation_jobs, retry_generation_job
+from .jobs.services import (
+    cancel_generation_job,
+    configure_generation_job_retry_dispatcher,
+    list_generation_jobs,
+    retry_generation_job,
+)
 from .knowledge.schemas import (
     DocumentIngestionAction,
     DocumentIngestionPlan,
@@ -337,6 +348,63 @@ class DashboardResponse(BaseModel):
     next_step: str
 
 
+class AdminReportMetric(BaseModel):
+    key: str
+    label: str
+    value: int
+    detail: str
+    tone: Literal["default", "success", "warning", "info"] = "default"
+
+
+class AdminReportsResponse(BaseModel):
+    generated_at: str
+    metrics: list[AdminReportMetric]
+    lesson_status_counts: dict[str, int]
+    document_status_counts: dict[str, int]
+    job_status_counts: dict[str, int]
+
+    @property
+    def metrics_by_key(self) -> dict[str, AdminReportMetric]:
+        return {metric.key: metric for metric in self.metrics}
+
+
+class AdminActivityItem(BaseModel):
+    id: str
+    type: Literal["lesson", "document", "job", "audit", "user", "invite"]
+    title: str
+    detail: str
+    organization_id: str
+    actor_id: str | None = None
+    actor_role: Role | None = None
+    created_at: str
+    source_id: str
+
+
+class AdminActivityFeedResponse(BaseModel):
+    generated_at: str
+    items: list[AdminActivityItem]
+
+
+class AdminSettingsResponse(BaseModel):
+    organization_id: str
+    ai_model: str
+    monthly_ai_limit: int
+    email_alerts_enabled: bool
+    in_app_alerts_enabled: bool
+    password_min_length: int
+    require_password_rotation: bool
+    updated_at: str
+
+
+class AdminSettingsUpdateRequest(BaseModel):
+    ai_model: str | None = Field(default=None, min_length=1, max_length=100)
+    monthly_ai_limit: int | None = Field(default=None, ge=0, le=1_000_000)
+    email_alerts_enabled: bool | None = None
+    in_app_alerts_enabled: bool | None = None
+    password_min_length: int | None = Field(default=None, ge=8, le=128)
+    require_password_rotation: bool | None = None
+
+
 class AIRateLimitConfig(BaseModel):
     enabled: bool
     max_requests: int
@@ -471,6 +539,15 @@ class LessonSessionResponse(BaseModel):
     updated_at: str
 
 
+class AdminLessonLibraryResponse(BaseModel):
+    lessons: list[LessonSessionResponse]
+    total: int
+    published: int
+    pending_review: int
+    warnings: int
+    updated_at: str
+
+
 class KnowledgeRepository(Protocol):
     def list_documents(self) -> list[DocumentRecord]: ...
 
@@ -585,6 +662,14 @@ class ContentRepository(Protocol):
     ) -> list[LessonSessionResponse]: ...
 
     def find_lesson_by_block(self, block_id: str) -> LessonSessionResponse | None: ...
+
+
+class AdminSettingsRepository(Protocol):
+    def ensure_schema(self) -> None: ...
+
+    def get_settings(self, organization_id: str) -> AdminSettingsResponse | None: ...
+
+    def save_settings(self, settings: AdminSettingsResponse) -> AdminSettingsResponse: ...
 
 
 class AIProvider(Protocol):
@@ -3707,10 +3792,175 @@ class PostgresContentRepository:
                 return self._load_lesson(cur, str(row["lesson_id"]))
 
 
+def _default_admin_settings(organization_id: str) -> AdminSettingsResponse:
+    return AdminSettingsResponse(
+        organization_id=organization_id,
+        ai_model=_env_value("OPENAI_MODEL") or "gpt-4o-mini",
+        monthly_ai_limit=_env_int(
+            "ADMIN_MONTHLY_AI_LIMIT_DEFAULT",
+            1000,
+            minimum=0,
+        ),
+        email_alerts_enabled=False,
+        in_app_alerts_enabled=True,
+        password_min_length=8,
+        require_password_rotation=False,
+        updated_at=_now_iso(),
+    )
+
+
+def admin_settings_schema_sql() -> str:
+    return """
+    create table if not exists admin_settings (
+      organization_id text primary key,
+      ai_model text not null,
+      monthly_ai_limit integer not null check (monthly_ai_limit >= 0),
+      email_alerts_enabled boolean not null default false,
+      in_app_alerts_enabled boolean not null default true,
+      password_min_length integer not null default 8 check (password_min_length >= 8),
+      require_password_rotation boolean not null default false,
+      updated_at timestamptz not null default now()
+    );
+
+    alter table admin_settings enable row level security;
+
+    revoke all on table admin_settings from anon, authenticated;
+    """
+
+
+class InMemoryAdminSettingsRepository:
+    def __init__(
+        self,
+        *,
+        settings: dict[str, AdminSettingsResponse] | None = None,
+    ) -> None:
+        self.settings = settings if settings is not None else {}
+
+    def reset(self) -> None:
+        self.settings.clear()
+
+    def ensure_schema(self) -> None:
+        return None
+
+    def get_settings(self, organization_id: str) -> AdminSettingsResponse | None:
+        return self.settings.get(organization_id)
+
+    def save_settings(self, settings: AdminSettingsResponse) -> AdminSettingsResponse:
+        self.settings[settings.organization_id] = settings
+        return settings
+
+
+class PostgresAdminSettingsRepository:
+    def __init__(self, conninfo: str) -> None:
+        self.conninfo = conninfo
+
+    def _connect(self) -> psycopg.Connection[dict[str, Any]]:
+        return psycopg.connect(
+            self.conninfo,
+            connect_timeout=20,
+            prepare_threshold=None,
+            row_factory=dict_row,
+        )
+
+    def ensure_schema(self) -> None:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(admin_settings_schema_sql())
+
+    @staticmethod
+    def _row_to_settings(row: dict[str, Any]) -> AdminSettingsResponse:
+        return AdminSettingsResponse(
+            organization_id=row["organization_id"],
+            ai_model=row["ai_model"],
+            monthly_ai_limit=row["monthly_ai_limit"],
+            email_alerts_enabled=row["email_alerts_enabled"],
+            in_app_alerts_enabled=row["in_app_alerts_enabled"],
+            password_min_length=row["password_min_length"],
+            require_password_rotation=row["require_password_rotation"],
+            updated_at=str(row["updated_at"]),
+        )
+
+    def get_settings(self, organization_id: str) -> AdminSettingsResponse | None:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    select
+                      organization_id,
+                      ai_model,
+                      monthly_ai_limit,
+                      email_alerts_enabled,
+                      in_app_alerts_enabled,
+                      password_min_length,
+                      require_password_rotation,
+                      updated_at::text
+                    from admin_settings
+                    where organization_id = %s
+                    """,
+                    (organization_id,),
+                )
+                row = cur.fetchone()
+                return self._row_to_settings(row) if row else None
+
+    def save_settings(self, settings: AdminSettingsResponse) -> AdminSettingsResponse:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    insert into admin_settings (
+                      organization_id,
+                      ai_model,
+                      monthly_ai_limit,
+                      email_alerts_enabled,
+                      in_app_alerts_enabled,
+                      password_min_length,
+                      require_password_rotation,
+                      updated_at
+                    )
+                    values (%s, %s, %s, %s, %s, %s, %s, %s::timestamptz)
+                    on conflict (organization_id) do update
+                    set ai_model = excluded.ai_model,
+                        monthly_ai_limit = excluded.monthly_ai_limit,
+                        email_alerts_enabled = excluded.email_alerts_enabled,
+                        in_app_alerts_enabled = excluded.in_app_alerts_enabled,
+                        password_min_length = excluded.password_min_length,
+                        require_password_rotation = excluded.require_password_rotation,
+                        updated_at = excluded.updated_at
+                    returning
+                      organization_id,
+                      ai_model,
+                      monthly_ai_limit,
+                      email_alerts_enabled,
+                      in_app_alerts_enabled,
+                      password_min_length,
+                      require_password_rotation,
+                      updated_at::text
+                    """,
+                    (
+                        settings.organization_id,
+                        settings.ai_model,
+                        settings.monthly_ai_limit,
+                        settings.email_alerts_enabled,
+                        settings.in_app_alerts_enabled,
+                        settings.password_min_length,
+                        settings.require_password_rotation,
+                        settings.updated_at,
+                    ),
+                )
+                row = cur.fetchone()
+                if row is None:
+                    raise HTTPException(
+                        status_code=500,
+                        detail="Could not save admin settings",
+                    )
+                return self._row_to_settings(row)
+
+
 MEMORY_CONTENT_REPOSITORY = InMemoryContentRepository(
     outlines=COURSE_OUTLINES,
     lessons=LESSON_SESSIONS,
 )
+MEMORY_ADMIN_SETTINGS_REPOSITORY = InMemoryAdminSettingsRepository()
 
 
 def get_content_repository(*, ensure_schema: bool = True) -> ContentRepository:
@@ -3725,6 +3975,24 @@ def get_content_repository(*, ensure_schema: bool = True) -> ContentRepository:
     raise RuntimeError("LEARNING_REPOSITORY must be either 'memory' or 'postgres'")
 
 
+def get_admin_settings_repository(
+    *, ensure_schema: bool = True
+) -> AdminSettingsRepository:
+    mode = os.getenv("LEARNING_REPOSITORY", "memory").strip().lower()
+    if mode == "memory":
+        return MEMORY_ADMIN_SETTINGS_REPOSITORY
+    if mode == "postgres":
+        repository = PostgresAdminSettingsRepository(_database_conninfo())
+        if ensure_schema:
+            repository.ensure_schema()
+        return repository
+    raise RuntimeError("LEARNING_REPOSITORY must be either 'memory' or 'postgres'")
+
+
+def reset_admin_settings_store_for_tests() -> None:
+    MEMORY_ADMIN_SETTINGS_REPOSITORY.reset()
+
+
 def build_dashboard_response(workspace: Role, user: UserProfile) -> DashboardResponse:
     dashboard = DASHBOARD_COPY[workspace]
     return DashboardResponse(
@@ -3735,6 +4003,336 @@ def build_dashboard_response(workspace: Role, user: UserProfile) -> DashboardRes
         hidden_actions=list(dashboard["hidden_actions"]),
         next_step=str(dashboard["next_step"]),
     )
+
+
+ADMIN_LIBRARY_STATUSES: tuple[LessonStatus, ...] = (
+    "published",
+    "submitted_for_admin_review",
+    "changes_requested",
+    "admin_rejected",
+    "teacher_reviewing",
+)
+
+
+def _count_by(values: list[str]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for value in values:
+        counts[value] = counts.get(value, 0) + 1
+    return counts
+
+
+def _admin_org_lessons(
+    admin: UserProfile,
+    *,
+    content_repository: ContentRepository | None = None,
+    learning_repository: LearningRepository | None = None,
+) -> list[LessonSessionResponse]:
+    repository = content_repository or get_content_repository()
+    lessons: list[LessonSessionResponse] = []
+    seen_ids: set[str] = set()
+    for lesson_status in ADMIN_LIBRARY_STATUSES:
+        for lesson in repository.list_lessons_by_status(lesson_status):
+            if lesson.id in seen_ids or not lesson.is_active:
+                continue
+            if _lesson_in_user_organization(lesson, admin, learning_repository):
+                lessons.append(lesson)
+                seen_ids.add(lesson.id)
+    return sorted(
+        lessons,
+        key=lambda lesson: lesson.updated_at,
+        reverse=True,
+    )
+
+
+def list_admin_lesson_library(
+    current_user: UserProfile,
+    content_repository: ContentRepository | None = None,
+    learning_repository: LearningRepository | None = None,
+) -> AdminLessonLibraryResponse:
+    admin = require_role(current_user, {"admin"})
+    lessons = _admin_org_lessons(
+        admin,
+        content_repository=content_repository,
+        learning_repository=learning_repository,
+    )
+    return AdminLessonLibraryResponse(
+        lessons=lessons,
+        total=len(lessons),
+        published=sum(1 for lesson in lessons if lesson.status == "published"),
+        pending_review=sum(
+            1 for lesson in lessons if lesson.status == "submitted_for_admin_review"
+        ),
+        warnings=sum(1 for lesson in lessons if any(block.warning for block in lesson.blocks)),
+        updated_at=_now_iso(),
+    )
+
+
+def _admin_report_metric(
+    key: str,
+    label: str,
+    value: int,
+    detail: str,
+    tone: Literal["default", "success", "warning", "info"] = "default",
+) -> AdminReportMetric:
+    return AdminReportMetric(
+        key=key,
+        label=label,
+        value=value,
+        detail=detail,
+        tone=tone,
+    )
+
+
+def build_admin_reports(
+    current_user: UserProfile,
+    *,
+    auth_repository: AuthRepository | None = None,
+    content_repository: ContentRepository | None = None,
+    knowledge_repository: KnowledgeRepository | None = None,
+    job_repository: GenerationJobRepository | None = None,
+    learning_repository: LearningRepository | None = None,
+) -> AdminReportsResponse:
+    admin = require_role(current_user, {"admin"})
+    auth_repository = auth_repository or get_auth_repository()
+    knowledge_repository = knowledge_repository or get_knowledge_repository()
+    job_repository = job_repository or get_generation_job_repository()
+    lessons = _admin_org_lessons(
+        admin,
+        content_repository=content_repository,
+        learning_repository=learning_repository,
+    )
+    documents = _filter_documents_for_user(knowledge_repository.list_documents(), admin)
+    jobs = list_generation_jobs(admin, repository=job_repository)
+    users = [
+        profile
+        for profile in auth_repository.list_profiles(
+            organization_id=_user_organization_id(admin),
+            status=None,
+        )
+        if profile.role in {"teacher", "student"}
+    ]
+    invites = auth_repository.list_invites(
+        organization_id=_user_organization_id(admin),
+    )
+    pending_lessons = sum(
+        1 for lesson in lessons if lesson.status == "submitted_for_admin_review"
+    )
+    failed_jobs = sum(1 for job in jobs if job.status == "failed")
+    usable_documents = sum(
+        1
+        for document in documents
+        if document.status == "completed" and document.is_active
+    )
+    pending_invites = sum(1 for invite in invites if invite.status == "pending")
+
+    return AdminReportsResponse(
+        generated_at=_now_iso(),
+        metrics=[
+            _admin_report_metric(
+                "lessons_total",
+                "Bai giang",
+                len(lessons),
+                f"{pending_lessons} lesson dang cho duyet",
+                "warning" if pending_lessons else "success",
+            ),
+            _admin_report_metric(
+                "documents_total",
+                "Nguon tri thuc",
+                len(documents),
+                f"{usable_documents} tai lieu san sang cho AI",
+                "success" if usable_documents else "default",
+            ),
+            _admin_report_metric(
+                "users_total",
+                "Nguoi dung",
+                len(users),
+                "Teacher va Student trong organization",
+                "info",
+            ),
+            _admin_report_metric(
+                "jobs_total",
+                "Tac vu AI",
+                len(jobs),
+                f"{failed_jobs} tac vu dang loi",
+                "warning" if failed_jobs else "success",
+            ),
+            _admin_report_metric(
+                "pending_invites",
+                "Ma moi dang cho",
+                pending_invites,
+                "Invite chua duoc kich hoat",
+                "warning" if pending_invites else "success",
+            ),
+        ],
+        lesson_status_counts=_count_by([lesson.status for lesson in lessons]),
+        document_status_counts=_count_by([document.status for document in documents]),
+        job_status_counts=_count_by([job.status for job in jobs]),
+    )
+
+
+def build_admin_activity_feed(
+    current_user: UserProfile,
+    *,
+    auth_repository: AuthRepository | None = None,
+    content_repository: ContentRepository | None = None,
+    knowledge_repository: KnowledgeRepository | None = None,
+    job_repository: GenerationJobRepository | None = None,
+    audit_repository: AuditRepository | None = None,
+    learning_repository: LearningRepository | None = None,
+) -> AdminActivityFeedResponse:
+    admin = require_role(current_user, {"admin"})
+    organization_id = _user_organization_id(admin)
+    auth_repository = auth_repository or get_auth_repository()
+    knowledge_repository = knowledge_repository or get_knowledge_repository()
+    job_repository = job_repository or get_generation_job_repository()
+    audit_repository = audit_repository or get_audit_repository()
+    lessons = _admin_org_lessons(
+        admin,
+        content_repository=content_repository,
+        learning_repository=learning_repository,
+    )
+    lesson_by_id = {lesson.id: lesson for lesson in lessons}
+    documents = _filter_documents_for_user(knowledge_repository.list_documents(), admin)
+    jobs = list_generation_jobs(admin, repository=job_repository)
+    users = [
+        profile
+        for profile in auth_repository.list_profiles(
+            organization_id=organization_id,
+            status=None,
+        )
+        if profile.role in {"teacher", "student"}
+    ]
+    invites = auth_repository.list_invites(organization_id=organization_id)
+    items: list[AdminActivityItem] = []
+    for lesson in lessons:
+        items.append(
+            AdminActivityItem(
+                id=f"lesson-{lesson.id}",
+                type="lesson",
+                title=lesson.title,
+                detail=f"{lesson.status} - {len(lesson.blocks)} block",
+                organization_id=organization_id,
+                actor_id=lesson.teacher_id,
+                actor_role="teacher",
+                created_at=lesson.updated_at,
+                source_id=lesson.id,
+            )
+        )
+    for document in documents:
+        items.append(
+            AdminActivityItem(
+                id=f"document-{document.id}",
+                type="document",
+                title=document.title,
+                detail=f"{document.source_type} - {document.status}",
+                organization_id=organization_id,
+                actor_id=document.owner_user_id,
+                actor_role=None,
+                created_at=document.updated_at,
+                source_id=document.id,
+            )
+        )
+    for job in jobs:
+        items.append(
+            AdminActivityItem(
+                id=f"job-{job.id}",
+                type="job",
+                title=job.job_type,
+                detail=job.status,
+                organization_id=organization_id,
+                actor_id=job.actor_id,
+                actor_role=job.actor_role,
+                created_at=job.updated_at,
+                source_id=job.id,
+            )
+        )
+    for profile in users:
+        items.append(
+            AdminActivityItem(
+                id=f"user-{profile.id}",
+                type="user",
+                title=profile.name,
+                detail=f"{profile.role} - {profile.status}",
+                organization_id=organization_id,
+                actor_id=profile.id,
+                actor_role=profile.role,
+                created_at=profile.updated_at or profile.created_at or _now_iso(),
+                source_id=profile.id,
+            )
+        )
+    for invite in invites:
+        items.append(
+            AdminActivityItem(
+                id=f"invite-{invite.id}",
+                type="invite",
+                title=invite.email,
+                detail=f"{invite.role} - {invite.status}",
+                organization_id=organization_id,
+                actor_id=invite.invited_by,
+                actor_role="admin",
+                created_at=invite.accepted_at or invite.created_at,
+                source_id=invite.id,
+            )
+        )
+    for event in audit_repository.list_events(limit=100):
+        lesson = lesson_by_id.get(event.lesson_id)
+        if lesson is None:
+            continue
+        items.append(
+            AdminActivityItem(
+                id=f"audit-{event.id}",
+                type="audit",
+                title=event.action,
+                detail=event.details or lesson.title,
+                organization_id=organization_id,
+                actor_id=event.actor_id,
+                actor_role=event.actor_role,
+                created_at=event.created_at,
+                source_id=event.id,
+            )
+        )
+
+    return AdminActivityFeedResponse(
+        generated_at=_now_iso(),
+        items=sorted(
+            items,
+            key=lambda item: item.created_at,
+            reverse=True,
+        )[:50],
+    )
+
+
+def get_admin_settings(
+    current_user: UserProfile,
+    repository: AdminSettingsRepository | None = None,
+) -> AdminSettingsResponse:
+    admin = require_role(current_user, {"admin"})
+    organization_id = _user_organization_id(admin)
+    repository = repository or get_admin_settings_repository()
+    existing = repository.get_settings(organization_id)
+    if existing is not None:
+        return existing
+    return repository.save_settings(_default_admin_settings(organization_id))
+
+
+def update_admin_settings(
+    payload: AdminSettingsUpdateRequest,
+    current_user: UserProfile,
+    repository: AdminSettingsRepository | None = None,
+) -> AdminSettingsResponse:
+    admin = require_role(current_user, {"admin"})
+    repository = repository or get_admin_settings_repository()
+    current = get_admin_settings(admin, repository)
+    updates = payload.model_dump(exclude_none=True)
+    if not updates:
+        return current
+    updated = current.model_copy(
+        update={
+            **updates,
+            "updated_at": _now_iso(),
+        }
+    )
+    return repository.save_settings(updated)
 
 
 def list_student_published_lessons(
@@ -5068,6 +5666,207 @@ def reindex_source_document(
         embedding=result.embedding,
         message=f"Re-indexed {result.chunk_count} chunks.",
     )
+
+
+def _job_input_string(job: GenerationJobResponse, key: str) -> str:
+    value = job.input.get(key)
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    raise HTTPException(
+        status_code=status.HTTP_409_CONFLICT,
+        detail=f"Tac vu {job.job_type} thieu {key} de thu lai.",
+    )
+
+
+def _job_input_string_list(job: GenerationJobResponse, key: str) -> list[str]:
+    value = job.input.get(key)
+    if isinstance(value, list) and all(
+        isinstance(item, str) and item.strip() for item in value
+    ):
+        return [item.strip() for item in value]
+    raise HTTPException(
+        status_code=status.HTTP_409_CONFLICT,
+        detail=f"Tac vu {job.job_type} thieu {key} de thu lai.",
+    )
+
+
+def _job_input_int(
+    job: GenerationJobResponse,
+    key: str,
+    *,
+    default: int | None = None,
+) -> int:
+    value = job.input.get(key)
+    if isinstance(value, int):
+        return value
+    if default is not None:
+        return default
+    raise HTTPException(
+        status_code=status.HTTP_409_CONFLICT,
+        detail=f"Tac vu {job.job_type} thieu {key} de thu lai.",
+    )
+
+
+def retry_embedding_reindex_job(
+    job: GenerationJobResponse,
+    current_user: UserProfile,
+    repository: KnowledgeRepository,
+    generation_job_repository: GenerationJobRepository,
+    embedding_provider: EmbeddingProvider,
+) -> GenerationJobResponse:
+    user = require_role(current_user, {"teacher", "admin", "student"})
+    if job.job_type != "embedding_reindex":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Tac vu nay khong phai re-index embedding.",
+        )
+    document_id = job.input.get("document_id")
+    if not isinstance(document_id, str) or not document_id.strip():
+        return generation_job_repository.update_job(
+            job.id,
+            status="failed",
+            error_message="Tac vu re-index thieu document_id de thu lai.",
+        )
+    document_id = document_id.strip()
+    try:
+        documents = repository.get_documents_by_ids([document_id])
+        if not documents or documents[0] not in _filter_documents_for_user(
+            documents,
+            user,
+        ):
+            raise _not_found("Document not found")
+        current_job = generation_job_repository.get_job(job.id)
+        if current_job.status == "cancelled":
+            return current_job
+        embedding = embedding_provider.metadata()
+        log_observability_event(
+            "document.reindex.retry.started",
+            **_observability_actor_fields(user),
+            document_id=document_id,
+            generation_job_id=job.id,
+            embedding_provider=embedding.provider,
+            embedding_model=embedding.model,
+            embedding_dimensions=embedding.dimensions,
+        )
+        result = DocumentReindexResult.model_validate(
+            repository.reindex_document_embeddings(
+                document_id=document_id,
+                embedding_provider=embedding_provider,
+            )
+        )
+        current_job = generation_job_repository.get_job(job.id)
+        if current_job.status == "cancelled":
+            return current_job
+        completed_job = generation_job_repository.update_job(
+            job.id,
+            status="completed",
+            output={
+                **job.output,
+                "document_id": document_id,
+                "chunk_count": result.chunk_count,
+                "embedding_provider": result.embedding.provider,
+                "embedding_model": result.embedding.model,
+                "embedding_dimensions": result.embedding.dimensions,
+                "retry_source_job_id": job.id,
+                "retry_completed_at": _now_iso(),
+            },
+            error_message=None,
+        )
+        log_observability_event(
+            "document.reindex.retry.completed",
+            **_observability_actor_fields(user),
+            document_id=document_id,
+            generation_job_id=job.id,
+            chunk_count=result.chunk_count,
+            embedding_provider=result.embedding.provider,
+            embedding_model=result.embedding.model,
+            embedding_dimensions=result.embedding.dimensions,
+        )
+        return completed_job
+    except Exception as exc:
+        failed_job = generation_job_repository.update_job(
+            job.id,
+            status="failed",
+            output={
+                **job.output,
+                "document_id": document_id,
+                "retry_source_job_id": job.id,
+                "retry_failed_at": _now_iso(),
+            },
+            error_message=_safe_generation_job_error(exc),
+        )
+        log_observability_event(
+            "document.reindex.retry.failed",
+            **_observability_actor_fields(user),
+            document_id=document_id,
+            generation_job_id=job.id,
+            error_class=exc.__class__.__name__,
+        )
+        return failed_job
+
+
+def _retry_embedding_reindex_background_task(
+    job_id: str,
+    current_user: UserProfile,
+) -> None:
+    job_repository = get_generation_job_repository()
+    job = job_repository.get_job(job_id)
+    retry_embedding_reindex_job(
+        job,
+        current_user,
+        get_knowledge_repository(),
+        job_repository,
+        get_embedding_provider(),
+    )
+
+
+def dispatch_generation_job_retry(
+    job: GenerationJobResponse,
+    current_user: UserProfile,
+    job_repository: GenerationJobRepository,
+    background_tasks: BackgroundTasks | None,
+) -> str | None:
+    if job.job_type != "embedding_reindex":
+        if job.job_type in {
+            "outline_generation",
+            "lesson_generation",
+            "block_regeneration",
+        }:
+            if background_tasks is None:
+                retry_ai_generation_job(
+                    job,
+                    current_user,
+                    get_knowledge_repository(),
+                    job_repository,
+                    get_ai_provider(),
+                    get_content_repository(),
+                )
+                return "Da thu lai tac vu AI."
+            background_tasks.add_task(
+                _retry_ai_generation_background_task,
+                job.id,
+                current_user,
+            )
+            return "Da dua tac vu AI vao hang cho thu lai."
+        return None
+    if background_tasks is None:
+        retry_embedding_reindex_job(
+            job,
+            current_user,
+            get_knowledge_repository(),
+            job_repository,
+            get_embedding_provider(),
+        )
+        return "Da thu lai tac vu re-index."
+    background_tasks.add_task(
+        _retry_embedding_reindex_background_task,
+        job.id,
+        current_user,
+    )
+    return "Da dua tac vu re-index vao hang cho thu lai."
+
+
+configure_generation_job_retry_dispatcher(dispatch_generation_job_retry)
 
 
 def _upload_file_name(upload_file: UploadFile) -> str:
@@ -6574,6 +7373,123 @@ Rules:
         raise
 
 
+def retry_ai_generation_job(
+    job: GenerationJobResponse,
+    current_user: UserProfile,
+    repository: KnowledgeRepository,
+    generation_job_repository: GenerationJobRepository,
+    ai_provider: AIProvider,
+    content_repository: ContentRepository,
+) -> GenerationJobResponse:
+    teacher = require_role(current_user, {"teacher"})
+    try:
+        if job.job_type == "outline_generation":
+            outline = generate_course_outline(
+                CourseOutlineGenerateRequest(
+                    course_id=_job_input_string(job, "course_id"),
+                    class_id=_job_input_string(job, "class_id"),
+                    selected_document_ids=_job_input_string_list(
+                        job,
+                        "selected_document_ids",
+                    ),
+                    topic=_job_input_string(job, "topic"),
+                    top_k=_job_input_int(job, "top_k", default=6),
+                ),
+                teacher,
+                repository,
+                ai_provider,
+                content_repository,
+                generation_job_repository,
+            )
+            return generation_job_repository.update_job(
+                job.id,
+                status="completed",
+                output={
+                    **job.output,
+                    "outline_id": outline.id,
+                    "retry_result_job_id": outline.generation_job_id,
+                    "retry_completed_at": _now_iso(),
+                },
+                error_message=None,
+            )
+        if job.job_type == "lesson_generation":
+            lesson = generate_lesson_blocks(
+                LessonGenerateRequest(
+                    outline_id=_job_input_string(job, "outline_id"),
+                    session_index=_job_input_int(job, "session_index"),
+                    top_k=_job_input_int(job, "top_k", default=6),
+                ),
+                teacher,
+                repository,
+                ai_provider,
+                content_repository,
+                generation_job_repository,
+            )
+            return generation_job_repository.update_job(
+                job.id,
+                status="completed",
+                output={
+                    **job.output,
+                    "lesson_id": lesson.id,
+                    "block_count": len(lesson.blocks),
+                    "retry_completed_at": _now_iso(),
+                },
+                error_message=None,
+            )
+        if job.job_type == "block_regeneration":
+            block_id = _job_input_string(job, "block_id")
+            lesson = regenerate_lesson_block(
+                block_id,
+                teacher,
+                ai_provider,
+                content_repository,
+                generation_job_repository,
+            )
+            return generation_job_repository.update_job(
+                job.id,
+                status="completed",
+                output={
+                    **job.output,
+                    "lesson_id": lesson.id,
+                    "block_id": block_id,
+                    "retry_completed_at": _now_iso(),
+                },
+                error_message=None,
+            )
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Tac vu {job.job_type} chua ho tro retry tu dong.",
+        )
+    except Exception as exc:
+        return generation_job_repository.update_job(
+            job.id,
+            status="failed",
+            output={
+                **job.output,
+                "retry_failed_at": _now_iso(),
+            },
+            error_message=_safe_generation_job_error(exc),
+        )
+
+
+def _retry_ai_generation_background_task(
+    job_id: str,
+    current_user: UserProfile,
+) -> None:
+    job_repository = get_generation_job_repository()
+    job = job_repository.get_job(job_id)
+    if job.status == "cancelled":
+        return
+    retry_ai_generation_job(
+        job,
+        current_user,
+        get_knowledge_repository(),
+        job_repository,
+        get_ai_provider(),
+        get_content_repository(),
+    )
+
+
 def submit_lesson_for_admin(
     lesson_id: str,
     current_user: UserProfile,
@@ -7223,6 +8139,57 @@ def submit_lesson_route(
     current_user: Annotated[UserProfile, Depends(require_roles("teacher"))],
 ) -> LessonSessionResponse:
     return submit_lesson_for_admin(lesson_id, current_user)
+
+
+@app.get(
+    f"{API_BASE_PATH}/admin/lesson-library",
+    response_model=AdminLessonLibraryResponse,
+)
+def admin_lesson_library_route(
+    current_user: Annotated[UserProfile, Depends(require_roles("admin"))],
+) -> AdminLessonLibraryResponse:
+    return list_admin_lesson_library(current_user)
+
+
+@app.get(
+    f"{API_BASE_PATH}/admin/reports",
+    response_model=AdminReportsResponse,
+)
+def admin_reports_route(
+    current_user: Annotated[UserProfile, Depends(require_roles("admin"))],
+) -> AdminReportsResponse:
+    return build_admin_reports(current_user)
+
+
+@app.get(
+    f"{API_BASE_PATH}/admin/activity",
+    response_model=AdminActivityFeedResponse,
+)
+def admin_activity_route(
+    current_user: Annotated[UserProfile, Depends(require_roles("admin"))],
+) -> AdminActivityFeedResponse:
+    return build_admin_activity_feed(current_user)
+
+
+@app.get(
+    f"{API_BASE_PATH}/admin/settings",
+    response_model=AdminSettingsResponse,
+)
+def admin_settings_route(
+    current_user: Annotated[UserProfile, Depends(require_roles("admin"))],
+) -> AdminSettingsResponse:
+    return get_admin_settings(current_user)
+
+
+@app.patch(
+    f"{API_BASE_PATH}/admin/settings",
+    response_model=AdminSettingsResponse,
+)
+def admin_settings_update_route(
+    payload: AdminSettingsUpdateRequest,
+    current_user: Annotated[UserProfile, Depends(require_roles("admin"))],
+) -> AdminSettingsResponse:
+    return update_admin_settings(payload, current_user)
 
 
 @app.get(

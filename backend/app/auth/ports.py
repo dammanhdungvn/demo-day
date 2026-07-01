@@ -27,6 +27,13 @@ class SupabaseAuthClient(Protocol):
 
     def logout(self, access_token: str) -> None: ...
 
+    def reset_password_for_email(
+        self,
+        email: str,
+        *,
+        redirect_to: str | None = None,
+    ) -> None: ...
+
 
 class AuthRepository(Protocol):
     def ensure_schema(self) -> None: ...

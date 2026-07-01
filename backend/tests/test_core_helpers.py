@@ -4,6 +4,7 @@ from types import SimpleNamespace
 import pytest
 from fastapi import HTTPException, status
 
+from app.core.config import _database_conninfo, _env_value
 from app.core.errors import (
     _auth_error,
     _extract_bearer_token,
@@ -59,6 +60,32 @@ def test_safe_generation_job_error_does_not_leak_unexpected_exception_detail() -
     assert _safe_generation_job_error(RuntimeError("secret stack detail")) == (
         "Unexpected AI generation error"
     )
+
+
+def test_env_value_prefers_runtime_then_env_local(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+) -> None:
+    backend_dir = tmp_path / "backend"
+    backend_dir.mkdir()
+    (tmp_path / ".env").write_text(
+        "URL_BACKEND=/from-env\n"
+        "SUPABASE_POOLER_CONNECTING_STRING=postgresql://from-env\n"
+    )
+    (tmp_path / ".env.local").write_text(
+        "URL_BACKEND=/from-env-local\n"
+        "SUPABASE_POOLER_CONNECTING_STRING=postgresql://from-env-local\n"
+    )
+
+    monkeypatch.delenv("URL_BACKEND", raising=False)
+    monkeypatch.chdir(backend_dir)
+
+    assert _env_value("URL_BACKEND") == "/from-env-local"
+    assert _database_conninfo() == "postgresql://from-env-local"
+
+    monkeypatch.setenv("URL_BACKEND", "/from-runtime")
+
+    assert _env_value("URL_BACKEND") == "/from-runtime"
 
 
 def test_organization_helpers_keep_demo_fallback() -> None:

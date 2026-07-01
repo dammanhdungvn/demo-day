@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TeachFlow AI - Quản lý Khóa học &amp; Lớp</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-tertiary-fixed": "#002113",
+                        "on-primary-fixed-variant": "#3422cc",
+                        "surface": "#f8f9ff",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#cbdbf5",
+                        "primary-container": "#5046e5",
+                        "on-tertiary": "#ffffff",
+                        "background": "#f8f9ff",
+                        "on-surface-variant": "#464555",
+                        "on-tertiary-container": "#67f4b7",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-secondary-fixed": "#181b24",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#006e4b",
+                        "secondary": "#5b5e69",
+                        "on-secondary-container": "#61646f",
+                        "tertiary": "#005338",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#dce9ff",
+                        "secondary-container": "#e0e2ef",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-surface": "#0b1c30",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#213145",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container": "#e5eeff",
+                        "on-background": "#0b1c30",
+                        "primary": "#3625cd",
+                        "outline": "#777587",
+                        "surface-bright": "#f8f9ff",
+                        "on-primary-fixed": "#0f0069",
+                        "secondary-fixed": "#e0e2ef",
+                        "surface-variant": "#d3e4fe",
+                        "outline-variant": "#c7c4d8",
+                        "primary-fixed": "#e2dfff",
+                        "on-secondary-fixed-variant": "#434751",
+                        "on-primary-container": "#dbd8ff",
+                        "secondary-fixed-dim": "#c3c6d2",
+                        "inverse-primary": "#c3c0ff",
+                        "surface-tint": "#4e44e3",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-gap": "12px",
+                        "container-padding": "24px",
+                        "gutter": "16px",
+                        "sidebar-width": "260px",
+                        "topbar-height": "72px"
+                    },
+                    "fontFamily": {
+                        "title-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-uppercase": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "title-sm": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-uppercase": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "700"}],
+                        "display-lg": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .active-tab { position: relative; }
+        .active-tab::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: #3625cd; border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
+        .card-shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body class="flex min-h-screen text-on-background">
+<!-- Sidebar -->
+<aside class="w-sidebar-width h-screen sticky top-0 left-0 bg-surface border-r border-outline-variant flex flex-col py-container-padding px-4">
+<div class="mb-10 px-2 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div>
+<h1 class="font-display-lg text-display-lg font-bold text-primary">TeachFlow AI</h1>
+<p class="text-[10px] text-secondary font-semibold tracking-wider">EDUCATIONAL PLATFORM</p>
+</div>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:text-primary transition-colors rounded-lg hover:bg-surface-container-low" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-title-sm text-title-sm">Tổng quan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-fixed text-primary font-bold rounded-lg active-tab" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">school</span>
+<span class="font-title-sm text-title-sm">Khóa học</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:text-primary transition-colors rounded-lg hover:bg-surface-container-low" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-title-sm text-title-sm">Tài liệu</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:text-primary transition-colors rounded-lg hover:bg-surface-container-low" href="#">
+<span class="material-symbols-outlined">format_list_bulleted</span>
+<span class="font-title-sm text-title-sm">Dàn ý</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:text-primary transition-colors rounded-lg hover:bg-surface-container-low" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-title-sm text-title-sm">Studio</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:text-primary transition-colors rounded-lg hover:bg-surface-container-low" href="#">
+<span class="material-symbols-outlined">assignment_turned_in</span>
+<span class="font-title-sm text-title-sm">Tác vụ</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-outline-variant pt-6">
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:text-primary transition-colors rounded-lg hover:bg-surface-container-low" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-title-sm text-title-sm">Cài đặt</span>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col">
+<!-- Top App Bar -->
+<header class="h-topbar-height w-full sticky top-0 z-40 bg-surface/80 backdrop-blur-md flex items-center justify-between px-container-padding">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-md text-headline-md text-on-surface">Khóa học &amp; lớp</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">notifications</span>
+<span class="absolute -top-1 -right-1 w-4 h-4 bg-error text-[10px] text-white flex items-center justify-center rounded-full border-2 border-surface">3</span>
+</div>
+<div class="flex items-center gap-3 bg-surface-container rounded-full pl-2 pr-4 py-1 cursor-pointer hover:bg-surface-container-high transition-colors">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A professional headshot of a female teacher in a brightly lit academic setting. She has a warm, confident smile and is wearing professional business casual attire. The lighting is soft and flattering, emphasizing a clean and professional aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzqi8_5yRvhu7xUgtRLVm07cyq-j6XJtEAOBZXNktNfC8TiqH5I7rD67MFPRa9dFIk14DlsWA6hqUkf8YcpdDKqqEPbKLSF57Bs7f94spMpN33L2wf-_R3-ThVDYNI_hme1h5mHWPS4ekaDjJnp7weylxC5Fb1TMImYBoTaubg5ahdh-gM0ne-WmPSrcWuLlR9gyzYQX2OZkyv8MKTLn-wl5Qg-_reWQEsMbh4AakXD-eGTr9chYpOZANBnvA_wSCLwujELTWDEM4"/>
+<span class="font-title-sm text-title-sm text-on-surface">Teacher</span>
+<span class="material-symbols-outlined text-secondary text-sm">expand_more</span>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="p-container-padding grid grid-cols-12 gap-gutter">
+<!-- Left Column: Class List -->
+<div class="col-span-12 lg:col-span-5 flex flex-col gap-gutter">
+<div class="bg-surface-container-lowest p-6 rounded-xl card-shadow flex flex-col gap-6">
+<!-- Filters Row -->
+<div class="flex items-center justify-between gap-4">
+<div class="flex bg-secondary-container p-1 rounded-lg">
+<button class="px-6 py-1.5 font-title-sm text-title-sm text-on-surface-variant">Khóa học</button>
+<button class="px-6 py-1.5 bg-surface-container-lowest text-primary font-bold rounded-md shadow-sm">Lớp</button>
+</div>
+<button class="w-10 h-10 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-surface-tint transition-all active:scale-95">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+<div class="flex gap-3">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-body-md" placeholder="Tìm kiếm lớp..." type="text"/>
+</div>
+<div class="relative">
+<select class="appearance-none pl-4 pr-10 py-2 bg-surface border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-body-md w-40">
+<option>Tất cả trạng thái</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Table List -->
+<div class="overflow-hidden border border-outline-variant rounded-lg">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface border-b border-outline-variant">
+<tr>
+<th class="px-4 py-3 font-label-uppercase text-label-uppercase text-outline uppercase">Tên</th>
+<th class="px-4 py-3 font-label-uppercase text-label-uppercase text-outline uppercase text-center">Trạng thái</th>
+<th class="px-4 py-3 font-label-uppercase text-label-uppercase text-outline uppercase text-right">Hành động</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 Active -->
+<tr class="bg-primary-fixed/30 border-l-4 border-primary group cursor-pointer">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xs">10A</div>
+<div>
+<div class="font-title-sm text-on-surface">10A - Toán học</div>
+<div class="text-xs text-secondary">Khóa: Toán 10 • 32 SV</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-tertiary-fixed text-[10px] font-bold text-tertiary rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Hoạt động
+                                        </span>
+</td>
+<td class="px-4 py-4">
+<div class="flex justify-end gap-1">
+<button class="p-1.5 hover:bg-primary-fixed rounded-md text-primary transition-colors"><span class="material-symbols-outlined text-lg">add</span></button>
+<button class="p-1.5 hover:bg-primary-fixed rounded-md text-primary transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-1.5 hover:bg-error-container rounded-md text-error transition-colors"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface transition-colors cursor-pointer">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-full flex items-center justify-center text-white font-bold text-xs">10B</div>
+<div>
+<div class="font-title-sm text-on-surface">10B - Toán học</div>
+<div class="text-xs text-secondary">Khóa: Toán 10 • 28 SV</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-tertiary-fixed text-[10px] font-bold text-tertiary rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Hoạt động
+                                        </span>
+</td>
+<td class="px-4 py-4">
+<div class="flex justify-end gap-1">
+<button class="p-1.5 hover:bg-surface-container rounded-md text-secondary transition-colors"><span class="material-symbols-outlined text-lg">add</span></button>
+<button class="p-1.5 hover:bg-surface-container rounded-md text-secondary transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-1.5 hover:bg-error-container rounded-md text-error transition-colors"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface transition-colors cursor-pointer">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-tertiary-fixed-dim rounded-full flex items-center justify-center text-tertiary font-bold text-xs">11A</div>
+<div>
+<div class="font-title-sm text-on-surface">11A - Tin học</div>
+<div class="text-xs text-secondary">Khóa: Tin học 11 • 26 SV</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-tertiary-fixed text-[10px] font-bold text-tertiary rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Hoạt động
+                                        </span>
+</td>
+<td class="px-4 py-4">
+<div class="flex justify-end gap-1">
+<button class="p-1.5 hover:bg-surface-container rounded-md text-secondary transition-colors"><span class="material-symbols-outlined text-lg">add</span></button>
+<button class="p-1.5 hover:bg-surface-container rounded-md text-secondary transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-1.5 hover:bg-error-container rounded-md text-error transition-colors"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 4 Paused -->
+<tr class="hover:bg-surface transition-colors cursor-pointer">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-white font-bold text-xs">12B</div>
+<div>
+<div class="font-title-sm text-on-surface">12B - Sinh học</div>
+<div class="text-xs text-secondary">Khóa: Sinh học 12 • 22 SV</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-secondary-container text-[10px] font-bold text-secondary rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Tạm dừng
+                                        </span>
+</td>
+<td class="px-4 py-4">
+<div class="flex justify-end gap-1">
+<button class="p-1.5 hover:bg-surface-container rounded-md text-secondary transition-colors"><span class="material-symbols-outlined text-lg">add</span></button>
+<button class="p-1.5 hover:bg-surface-container rounded-md text-secondary transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-1.5 hover:bg-error-container rounded-md text-error transition-colors"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant">
+<span class="text-body-sm text-secondary">Hiển thị 1-8 của 16 lớp</span>
+<div class="flex items-center gap-2">
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded-lg text-secondary hover:bg-surface transition-colors"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+<button class="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-lg font-bold text-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded-lg text-secondary hover:bg-surface transition-colors font-bold text-sm">2</button>
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded-lg text-secondary hover:bg-surface transition-colors"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Details & Student List -->
+<div class="col-span-12 lg:col-span-7 flex flex-col gap-gutter">
+<!-- Quick Stats Row -->
+<div class="grid grid-cols-4 gap-4">
+<div class="col-span-2 bg-primary-container p-6 rounded-xl text-white card-shadow flex items-center gap-4">
+<div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl font-bold">10A</div>
+<div>
+<h3 class="font-title-sm text-title-sm">10A - Toán học</h3>
+<p class="text-sm opacity-80">Khóa học: Toán 10</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl card-shadow flex flex-col items-center justify-center text-center">
+<div class="flex items-center gap-2 text-primary mb-1">
+<span class="material-symbols-outlined">group</span>
+<span class="font-display-lg text-display-lg">32</span>
+</div>
+<p class="text-xs font-bold text-secondary uppercase tracking-tight">Học sinh</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl card-shadow flex flex-col items-center justify-center text-center">
+<div class="flex items-center gap-2 text-primary mb-1">
+<span class="material-symbols-outlined">description</span>
+<span class="font-display-lg text-display-lg">12</span>
+</div>
+<p class="text-xs font-bold text-secondary uppercase tracking-tight">Tài liệu</p>
+</div>
+</div>
+<!-- Student List Card -->
+<div class="bg-surface-container-lowest p-6 rounded-xl card-shadow flex-1 flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface">Danh sách học sinh</h3>
+<div class="flex gap-2">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">mail</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-body-md" placeholder="Nhập email để mời..." type="text"/>
+</div>
+<button class="px-4 py-2 bg-primary-fixed text-primary font-bold rounded-lg hover:bg-surface-container-high transition-all">Mời</button>
+<button class="w-10 h-10 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-surface-tint transition-all active:scale-95">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+<!-- Students Table -->
+<div class="overflow-hidden border border-outline-variant rounded-lg flex-1">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface border-b border-outline-variant">
+<tr>
+<th class="w-12 px-4 py-3"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/></th>
+<th class="px-4 py-3 font-label-uppercase text-label-uppercase text-outline uppercase">Họ và tên</th>
+<th class="px-4 py-3 font-label-uppercase text-label-uppercase text-outline uppercase">Vai trò</th>
+<th class="px-4 py-3 font-label-uppercase text-label-uppercase text-outline uppercase text-center">Trạng thái</th>
+<th class="px-4 py-3 font-label-uppercase text-label-uppercase text-outline uppercase text-right">Thao tác</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Student 1 -->
+<tr class="hover:bg-surface/50 transition-colors">
+<td class="px-4 py-4"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A clean portrait of a smiling young Asian female student with long dark hair, wearing a casual white t-shirt. Background is a soft out-of-focus academic hallway with bright natural lighting. The mood is friendly and optimistic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB87mAHAAbTo-oHZ0eSJ65bDv60egrfz0i2sl4kCM2zpdqZAryVL2XCw8RbCmqFwL6mgmmxhGdPjUIpuN_RVKlHE0YyIj4dxPehEQOf_Md_JJVoBMuyATjcJjB0PuZpbH7HimIQJjZ0nrCGNIGZNvLCFQ3Y396bFa2WSWbbh-bMMuNjVWSG_HoUKoIBpQk96hByM3RzDFg9pYGsCZAQzL6NuiAyb4oorWWbBwtR_EyDAuFQm6xbKapoSSo1pzT-6c2fbpnsAaBLkp0"/>
+<span class="font-title-sm text-on-surface">Nguyễn Minh Anh</span>
+</div>
+</td>
+<td class="px-4 py-4"><span class="px-2 py-0.5 bg-primary-fixed text-[10px] font-bold text-primary rounded border border-primary/20">Học sinh</span></td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-tertiary-fixed text-[10px] font-bold text-tertiary rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Hoạt động
+                                        </span>
+</td>
+<td class="px-4 py-4">
+<div class="flex justify-end gap-1">
+<button class="p-1.5 hover:bg-surface-container rounded-md text-secondary transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-1.5 hover:bg-error-container rounded-md text-error transition-colors"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Student 2 -->
+<tr class="hover:bg-surface/50 transition-colors">
+<td class="px-4 py-4"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Headshot of a focused young Asian male student with short hair, wearing a navy blue polo shirt. Set against a clean studio background with soft directional light. He looks smart and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTgenTjALEYS671RKJabzFnZ7en7omw99phI4ssFZvH0BNbPjtnJ1aM01VsMX0rR81vKSpTWNw1CyLxN_WzYllC_C2VAGhoF9HC_C1dQchJ9fL70Indsja1jxqz85HmiLWQBg9_jX87JEXfi-3kBTaDBx9B6VRzcVsc1W3g1sJm48xKxzIxGML88Ps-ikp0dmuTMivXqRnSHJcfO9MDrk2XbBRHJU1GmxUMp1xihAqvD3Ga09eY99W5rMwfD5goAvu-VRt__Kcgts"/>
+<span class="font-title-sm text-on-surface">Trần Hoàng Nam</span>
+</div>
+</td>
+<td class="px-4 py-4"><span class="px-2 py-0.5 bg-primary-fixed text-[10px] font-bold text-primary rounded border border-primary/20">Học sinh</span></td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-tertiary-fixed text-[10px] font-bold text-tertiary rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Hoạt động
+                                        </span>
+</td>
+<td class="px-4 py-4">
+<div class="flex justify-end gap-1">
+<button class="p-1.5 hover:bg-surface-container rounded-md text-secondary transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-1.5 hover:bg-error-container rounded-md text-error transition-colors"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Student 3 - Pending -->
+<tr class="hover:bg-surface/50 transition-colors">
+<td class="px-4 py-4"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Portrait of a young Asian girl with a ponytail, looking curiously at the camera, wearing a light yellow blouse. The lighting is warm and sun-drenched, creating a soft, welcoming atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDetmdd0k3m5zTItiASTQoB7pMj7PpIvxClhpI5liPv8ATprZCrGG723CfYbnLZtaAdvBuEZHXQ0kVbLOfdpkH2oBMWoB1eKyur7DtrSDKpdEFGQqWry5fVITNjlwoay_1HK46e5WYcrKQsfEejwoij-hp3cDi917GFFwedRpAvHk5HuKx-2ilA-mRGFN4juEtprWg9b9Nb4lK0TmKnEYygRGXR2A0jiMrLu8__fcaz3iFowMoWpk1WHpxBYKaE8nvQcF98EHaJMIs"/>
+<span class="font-title-sm text-on-surface">Vũ Thảo Nguyên</span>
+</div>
+</td>
+<td class="px-4 py-4"><span class="px-2 py-0.5 bg-primary-fixed text-[10px] font-bold text-primary rounded border border-primary/20">Học sinh</span></td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-secondary-container text-[10px] font-bold text-secondary rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Chờ duyệt
+                                        </span>
+</td>
+<td class="px-4 py-4">
+<div class="flex justify-end gap-1">
+<button class="p-1.5 hover:bg-surface-container rounded-md text-secondary transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-1.5 hover:bg-error-container rounded-md text-error transition-colors"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Student 4 - Inactive -->
+<tr class="hover:bg-surface/50 transition-colors">
+<td class="px-4 py-4"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="px-4 py-4">
+<div class="flex items-center gap-3 opacity-60">
+<img class="w-8 h-8 rounded-full object-cover grayscale" data-alt="Headshot of a young student in a grey hoodie, looking neutral into the camera. The background is a plain light blue wall with minimal lighting. Corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLP8h9ett3hGKgCGxzTOQu28oRu-etbmM5XwHjw_o3F7ayqxVzoX6La1Np4ZYIAIWjRcITAvk3rQWY7ivwwVE8Obs40IvCS3Lb_JRfeGnfbnuMvU-NQbeSc_dgn5SGZT338WYd76MTOLCgZnPv8CIqSwzLrO0sY8vWGnOgd6L9pHoMwo7VUjUCvK3Sde1CI3r9CeJ2tByeKdxxyUv7qF-Fi48XTjo8qVAkX18UeN9DeKFlGjg5PbFJuH3frIyy34Nui7U19ISpBlc"/>
+<span class="font-title-sm text-on-surface">Hoàng Bảo Long</span>
+</div>
+</td>
+<td class="px-4 py-4"><span class="px-2 py-0.5 bg-secondary-container text-[10px] font-bold text-secondary rounded">Học sinh</span></td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-1 bg-outline-variant/30 text-[10px] font-bold text-outline rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span> Không hoạt động
+                                        </span>
+</td>
+<td class="px-4 py-4">
+<div class="flex justify-end gap-1">
+<button class="p-1.5 hover:bg-surface-container rounded-md text-secondary transition-colors"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-1.5 hover:bg-error-container rounded-md text-error transition-colors"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-between pt-4">
+<span class="text-body-sm text-secondary">Hiển thị 1-8 của 32 học sinh</span>
+<div class="flex items-center gap-2">
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded-lg text-secondary hover:bg-surface transition-colors"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+<button class="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-lg font-bold text-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded-lg text-secondary hover:bg-surface transition-colors font-bold text-sm">2</button>
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded-lg text-secondary hover:bg-surface transition-colors font-bold text-sm">3</button>
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded-lg text-secondary hover:bg-surface transition-colors"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Micro-interaction for class selection
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', function() {
+                if(this.parentElement.closest('table').parentElement.parentElement.classList.contains('col-span-12')) {
+                   // Logic for selecting a class from the list
+                   document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('bg-primary-fixed/30', 'border-l-4', 'border-primary'));
+                   this.classList.add('bg-primary-fixed/30', 'border-l-4', 'border-primary');
+                }
+            });
+        });
+    </script>
+</body></html>

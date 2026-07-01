@@ -35,6 +35,7 @@ def test_audit_ports_module_keeps_main_compatibility_export() -> None:
     assert hasattr(AuditRepository, "ensure_schema")
     assert hasattr(AuditRepository, "save_event")
     assert hasattr(AuditRepository, "list_events_for_lesson")
+    assert hasattr(AuditRepository, "list_events")
     assert MainAuditRepository is AuditRepository
 
 
@@ -62,6 +63,7 @@ def test_audit_repositories_module_keeps_main_compatibility_export(monkeypatch) 
     )
     repository.save_event(event)
     assert repository.list_events_for_lesson(event.lesson_id) == [event]
+    assert repository.list_events() == [event]
     repository.reset()
     assert repository.list_events_for_lesson(event.lesson_id) == []
 

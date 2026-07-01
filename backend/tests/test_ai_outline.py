@@ -14,12 +14,15 @@ from main import (
     create_class_profile,
     create_course,
     generate_course_outline,
+    get_content_repository,
+    get_generation_job_repository,
     list_generation_jobs,
     list_course_outlines,
     reset_demo_sessions_for_tests,
     reset_generation_job_store_for_tests,
     reset_learning_store_for_tests,
     reset_outline_store_for_tests,
+    retry_ai_generation_job,
     update_outline_session,
 )
 
@@ -212,6 +215,41 @@ def test_generate_course_outline_rejects_ai_session_count_mismatch() -> None:
     assert jobs[0].job_type == "outline_generation"
     assert jobs[0].status == "failed"
     assert jobs[0].error_message == "AI outline output session count mismatch: expected 2, got 1"
+
+
+def test_retry_ai_generation_job_reprocesses_failed_outline_job() -> None:
+    teacher = teacher_user()
+    course_id, class_id = create_course_and_class(teacher)
+    with pytest.raises(HTTPException):
+        generate_course_outline(
+            payload=CourseOutlineGenerateRequest(
+                course_id=course_id,
+                class_id=class_id,
+                selected_document_ids=["doc-1"],
+                topic="AI Agents",
+            ),
+            current_user=teacher,
+            repository=FakeKnowledgeRepository(),
+            ai_provider=FakeAIProvider(session_count=1),
+        )
+    failed_job = list_generation_jobs(teacher)[0]
+
+    retried = retry_ai_generation_job(
+        failed_job,
+        teacher,
+        FakeKnowledgeRepository(),
+        get_generation_job_repository(),
+        FakeAIProvider(session_count=2),
+        get_content_repository(),
+    )
+
+    assert retried.id == failed_job.id
+    assert retried.status == "completed"
+    assert retried.error_message is None
+    assert retried.output["outline_id"].startswith("outline-")
+    assert retried.output["retry_result_job_id"].startswith("job-")
+    assert retried.output["retry_result_job_id"] != failed_job.id
+    assert len(list_course_outlines(class_id=class_id, current_user=teacher)) == 1
 
 
 def test_update_outline_session_changes_only_selected_session() -> None:

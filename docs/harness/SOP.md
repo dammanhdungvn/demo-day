@@ -120,7 +120,7 @@ Các logic cần kiểm tra kỹ:
 
 ## 5. Env Và Secrets
 
-- `.env.example` là template; `.env` là local secret file.
+- `.env.example` là template; `.env.local` hoặc `.env` là local secret file.
 - Frontend chỉ dùng `URL_BACKEND` qua abstraction đọc từ env; không tạo thêm biến duplicate nếu không cần.
 - Không hardcode `localhost:3000/api/v1` trong source frontend.
 - Backend đọc `BACKEND_CORS_ORIGINS` từ env để cho phép origin frontend local/deploy gọi API.
