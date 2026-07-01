@@ -1,12 +1,19 @@
 import type { AuthSession, UserProfile, UserRole } from '../api/auth'
 
 const AUTH_SESSION_KEY = 'teachflow.auth:v1'
-const VALID_ROLES = new Set<UserRole>(['admin', 'teacher', 'student'])
+const VALID_ROLES = new Set<UserRole>([
+  'system_admin',
+  'admin',
+  'teacher',
+  'student',
+])
 
 type StoredAuthSession = {
   access_token: string
   token_type: 'bearer'
   user: UserProfile
+  refresh_token?: string | null
+  expires_in?: number | null
 }
 
 function getBrowserSessionStorage(): Storage | null {
@@ -29,7 +36,10 @@ function isUserProfile(value: unknown): value is UserProfile {
     typeof candidate.email === 'string' &&
     typeof candidate.name === 'string' &&
     typeof candidate.role === 'string' &&
-    VALID_ROLES.has(candidate.role as UserRole)
+    VALID_ROLES.has(candidate.role as UserRole) &&
+    (candidate.organization_id === undefined ||
+      candidate.organization_id === null ||
+      typeof candidate.organization_id === 'string')
   )
 }
 
@@ -43,7 +53,13 @@ function isStoredAuthSession(value: unknown): value is StoredAuthSession {
   return (
     typeof candidate.access_token === 'string' &&
     candidate.token_type === 'bearer' &&
-    isUserProfile(candidate.user)
+    isUserProfile(candidate.user) &&
+    (candidate.refresh_token === undefined ||
+      candidate.refresh_token === null ||
+      typeof candidate.refresh_token === 'string') &&
+    (candidate.expires_in === undefined ||
+      candidate.expires_in === null ||
+      typeof candidate.expires_in === 'number')
   )
 }
 
@@ -80,6 +96,8 @@ export function saveAuthSession(
     access_token: session.access_token,
     token_type: session.token_type,
     user: session.user,
+    refresh_token: session.refresh_token ?? null,
+    expires_in: session.expires_in ?? null,
   }
 
   try {

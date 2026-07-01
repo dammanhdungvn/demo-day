@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Harness cho AI agent triển khai MVP TeachFlow AI. Tài liệu nghiệp vụ, SOP, task notes và ghi chú quyết định chính phải viết bằng tiếng Việt. Tên biến, API, bảng, hàm có thể dùng tiếng Anh theo chuẩn kỹ thuật.
+Harness cho AI agent triển khai TeachFlow AI. Tài liệu nghiệp vụ, SOP, task notes và ghi chú quyết định chính phải viết bằng tiếng Việt. Tên biến, API, bảng, hàm có thể dùng tiếng Anh theo chuẩn kỹ thuật.
 
 `README.md` không phải tài liệu của dự án TeachFlow AI hiện tại. Không dùng `README.md` để suy luận nghiệp vụ, scope, tech stack, backlog hoặc product direction.
 
@@ -8,9 +8,14 @@ Harness cho AI agent triển khai MVP TeachFlow AI. Tài liệu nghiệp vụ, S
 
 Before writing code, làm theo startup workflow này:
 
-1. `docs/version1/MVP.md`
-2. `docs/version1/PRD_MVP.md`
-3. `docs/version1/USER_STORIES_MVP.md`
+1. Đọc tài liệu version phù hợp với task:
+   - Version 1/MVP history: `docs/version1/MVP.md`, `docs/version1/PRD_MVP.md`, `docs/version1/USER_STORIES_MVP.md`
+   - Version 2/production conversion: `docs/version2/README.md`, `docs/version2/PRD_V2_PRODUCTION.md`, `docs/version2/USER_STORIES_V2.md`, `docs/version2/V1_P2_MIGRATION.md`
+   - Version 3/growth roadmap: `docs/version3/README.md`, `docs/version3/PRD_V3_GROWTH.md`, `docs/version3/USER_STORIES_V3.md`
+   - Version 4/product excellence: `docs/version4/README.md`, `docs/version4/PRD_V4_PRODUCT_EXCELLENCE.md`, `docs/version4/USER_STORIES_V4.md`, `docs/version4/UX_RESEARCH_NOTES.md`, `docs/version4/PRODUCT_REVIEW.md`, `docs/version4/PRODUCTION_GAP_ANALYSIS.md`
+   - Version 5/market-fit product bets: `docs/version5/README.md`, `docs/version5/PRODUCT_MARKET_REVIEW.md`
+2. Nếu task không nói rõ version, đọc version mới nhất có liên quan trong `progress.md`/`session-handoff.md`; nếu vẫn mơ hồ thì hỏi user.
+3. Không dùng `README.md` để suy luận nghiệp vụ, scope, tech stack, backlog hoặc product direction.
 4. `feature_list.json`
 5. `docs/harness/SOP.md`
 6. `docs/harness/ARCHITECTURE.md`
@@ -25,8 +30,8 @@ Nếu tài liệu mâu thuẫn, thiếu business rule, hoặc không đủ thôn
 
 - One feature at a time: chỉ chọn đúng một feature `not-started` hoặc `in-progress` trong `feature_list.json`.
 - Stay in scope: chỉ sửa file liên quan trực tiếp đến feature đang làm.
-- Chỉ làm P0 Critical cho đến khi toàn bộ P0 pass demo end-to-end.
-- Không triển khai P1/P2/Future khi P0 chưa hoàn thành, kể cả khi có vẻ dễ làm.
+- Với version 1, P0/P1 lock trong `docs/version1` vẫn là lịch sử MVP đã hoàn thành.
+- Với version 2/3/4, dùng priority trong `docs/version2`, `docs/version3` hoặc `docs/version4`; trước khi code phải tạo/cập nhật backlog tương ứng thay vì tự suy đoán từ version 1.
 - Ưu tiên demo flow: Teacher -> RAG -> Lesson Studio -> Admin Publish -> Student View -> Web Presentation/PDF.
 - Làm từng vertical slice: backend + frontend + test/test plan + hướng dẫn validate thủ công.
 - Không làm backend-only hoặc mock UI-only nếu chức năng cần cả hai để user kiểm tra.
@@ -50,7 +55,7 @@ Nếu tài liệu mâu thuẫn, thiếu business rule, hoặc không đủ thôn
 1. Chọn đúng một feature `not-started` hoặc `in-progress` trong `feature_list.json` có dependencies đã xong.
 2. Tạo hoặc cập nhật exec plan trong `docs/harness/exec-plans/active/` theo `docs/harness/TASK_NOTE_TEMPLATE.md`.
 3. Viết unit test, integration test, hoặc test plan trước khi code. Nếu chưa có test framework, ghi test plan cụ thể trong exec plan rồi tạo test framework trong vertical slice setup.
-4. Xác nhận P1/P2 liên quan vẫn bị khóa.
+4. Xác nhận priority/scope lock theo đúng version docs đang làm.
 5. Kiểm tra `docs/harness/QUALITY_SCORE.md` và `docs/harness/RELIABILITY_SECURITY.md` để biết quality gate của feature.
 
 Các phần phải test kỹ: role permission, class membership, student access restriction, RAG retrieval, AI output schema validation, lesson status transition, admin publish flow.

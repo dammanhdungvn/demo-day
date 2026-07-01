@@ -3,9 +3,11 @@ import type {
   LessonBlock,
   LessonBlockType,
   LessonSession,
+  SourceDocument,
 } from './api/learning'
 
 const ROLE_LABELS: Record<UserRole, string> = {
+  system_admin: 'Owner hệ thống',
   admin: 'Quản trị viên',
   teacher: 'Giảng viên',
   student: 'Sinh viên',
@@ -21,6 +23,7 @@ const LESSON_STATUS_LABELS: Record<LessonSession['status'], string> = {
   teacher_reviewing: 'Giảng viên đang rà soát',
   submitted_for_admin_review: 'Chờ Admin duyệt',
   changes_requested: 'Admin yêu cầu chỉnh sửa',
+  admin_rejected: 'Admin từ chối',
   published: 'Đã xuất bản',
 }
 
@@ -52,6 +55,16 @@ export function roleLabel(role: UserRole): string {
   return ROLE_LABELS[role]
 }
 
+export function displayName(name: string): string {
+  const demoNames: Record<string, string> = {
+    'Admin Demo': 'Quản trị viên Demo',
+    'Teacher Demo': 'Giảng viên Demo',
+    'Student Demo': 'Sinh viên Demo',
+  }
+
+  return demoNames[name] ?? name
+}
+
 export function studentLevelLabel(level: string): string {
   return STUDENT_LEVEL_LABELS[level] ?? fallbackLabel(level)
 }
@@ -66,4 +79,17 @@ export function blockStatusLabel(status: LessonBlock['status']): string {
 
 export function blockTypeLabel(type: LessonBlockType): string {
   return BLOCK_TYPE_LABELS[type]
+}
+
+export function documentStatusLabel(document: SourceDocument): string {
+  if (!document.is_active) {
+    return 'Đã archive'
+  }
+  if (document.status === 'completed') {
+    return `${document.chunk_count} chunks`
+  }
+  if (document.status === 'failed') {
+    return 'Lỗi ingest'
+  }
+  return 'Đang xử lý'
 }

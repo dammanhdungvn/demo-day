@@ -1,0 +1,9 @@
+[
+  {
+    "id": "rag-transformer-baseline",
+    "query": "Transformer attention architecture",
+    "expected_document_ids": ["doc-transformer"],
+    "expected_chunk_ids": ["chunk-transformer-1"],
+    "minimum_chunk_recall": 1.0
+  }
+]

@@ -15,10 +15,12 @@ build/
 .pytest_cache/
 .mypy_cache/
 .cache/
+.runtime/
 
 # OS
 .DS_Store
+*:Zone.Identifier
 
 # AI logs — tracked structure, ignored content
 .ai-log/*.jsonl
-.data/
+data/books/

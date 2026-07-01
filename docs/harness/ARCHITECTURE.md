@@ -1,6 +1,6 @@
-# Architecture Harness - TeachFlow AI MVP
+# Architecture Harness - TeachFlow AI
 
-Tài liệu này là bản đồ kiến trúc tối thiểu cho agent. Không thay thế PRD; mọi nghiệp vụ vẫn lấy từ `docs/version1`.
+Tài liệu này là bản đồ kiến trúc tối thiểu cho agent. Không thay thế PRD; nghiệp vụ theo version tương ứng trong `docs/version1`, `docs/version2`, `docs/version3` và `docs/version4`.
 
 ## Nguyên Tắc
 
@@ -25,6 +25,7 @@ Backend `backend/`:
 - Router chia theo domain: auth/me, courses, classes, documents, rag, outlines, lessons, lesson-blocks, admin, student, exports.
 - Service layer xử lý business rules: role, ownership, membership, status transition, AI/RAG.
 - Repository/client layer nói chuyện Supabase/Postgres.
+- Current code vẫn tập trung trong `backend/main.py`; kế hoạch tách module V4 nằm ở `docs/version4/BACKEND_MODULARIZATION_PLAN.md` và phải được thực hiện theo từng slice nhỏ, không đổi API contract.
 
 AI/RAG:
 

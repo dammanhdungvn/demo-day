@@ -13,7 +13,7 @@ from pypdf import PdfReader
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from main import create_text_embedding, vector_to_sql  # noqa: E402
+from main import embedding_chunk_metadata, get_embedding_provider, vector_to_sql  # noqa: E402
 
 
 DEFAULT_BOOK_ROOT = Path(__file__).resolve().parents[2] / "data" / "books"
@@ -125,7 +125,6 @@ def extract_pdf_chunks(
                     chunk_index=len(chunks),
                     metadata={
                         "source_path": source_path_label(path),
-                        "embedding_model": "local-hash-v1",
                         "chunk_chars": chunk_chars,
                     },
                 )
@@ -147,6 +146,7 @@ def ensure_schema(conn: psycopg.Connection) -> None:
           source_type text not null default 'pdf',
           status text not null default 'processing'
             check (status in ('processing', 'completed', 'failed')),
+          is_active boolean not null default true,
           chunk_count integer not null default 0 check (chunk_count >= 0),
           last_ingested_at timestamptz,
           error_message text,
@@ -182,6 +182,14 @@ def ensure_schema(conn: psycopg.Connection) -> None:
         "alter table document_chunks enable row level security",
         "alter table generation_jobs enable row level security",
         "create index if not exists documents_status_idx on documents (status)",
+        """
+        alter table documents
+        add column if not exists is_active boolean not null default true
+        """,
+        """
+        create index if not exists documents_active_status_idx
+        on documents (is_active, status)
+        """,
         "create index if not exists document_chunks_document_id_idx on document_chunks (document_id)",
         "create index if not exists generation_jobs_type_status_idx on generation_jobs (job_type, status)",
         """
@@ -241,16 +249,18 @@ def upsert_document(
               file_hash,
               source_type,
               status,
+              is_active,
               chunk_count,
               last_ingested_at,
               error_message,
               updated_at
             )
-            values (%s, %s, %s, 'pdf', 'processing', 0, null, null, now())
+            values (%s, %s, %s, 'pdf', 'processing', true, 0, null, null, now())
             on conflict (file_hash) do update set
               title = excluded.title,
               file_name = excluded.file_name,
               status = 'processing',
+              is_active = true,
               chunk_count = 0,
               error_message = null,
               updated_at = now()
@@ -292,14 +302,16 @@ def insert_chunks(
     chunks: list[PdfChunk],
     batch_size: int,
 ) -> None:
+    embedding_provider = get_embedding_provider()
+    embedding = embedding_provider.metadata()
     rows = [
         (
             document_id,
             chunk.content,
             chunk.page_number,
             chunk.chunk_index,
-            vector_to_sql(create_text_embedding(chunk.content)),
-            json.dumps(chunk.metadata),
+            vector_to_sql(embedding_provider.embed_text(chunk.content)),
+            json.dumps(embedding_chunk_metadata(chunk.metadata, embedding)),
         )
         for chunk in chunks
     ]

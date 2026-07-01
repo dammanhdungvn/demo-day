@@ -14,8 +14,10 @@ from main import (
     create_class_profile,
     create_course,
     generate_course_outline,
+    list_generation_jobs,
     list_course_outlines,
     reset_demo_sessions_for_tests,
+    reset_generation_job_store_for_tests,
     reset_learning_store_for_tests,
     reset_outline_store_for_tests,
     update_outline_session,
@@ -116,6 +118,7 @@ def clear_state() -> None:
     reset_demo_sessions_for_tests()
     reset_learning_store_for_tests()
     reset_outline_store_for_tests()
+    reset_generation_job_store_for_tests()
 
 
 def teacher_user() -> UserProfile:
@@ -174,12 +177,17 @@ def test_generate_course_outline_validates_and_saves_sessions() -> None:
 
     assert outline.course_id == course_id
     assert outline.class_id == class_id
-    assert outline.generation_job_id == "job-1"
+    assert outline.generation_job_id.startswith("job-")
     assert [session.session_index for session in outline.sessions] == [1, 2]
     assert outline.sessions[0].source_references[0].chunk_id == "chunk-1"
     assert "KTPM-K18" in provider.prompt
     assert "Agents use models" in provider.prompt
     assert list_course_outlines(class_id=class_id, current_user=teacher) == [outline]
+    jobs = list_generation_jobs(teacher)
+    assert jobs[0].id == outline.generation_job_id
+    assert jobs[0].job_type == "outline_generation"
+    assert jobs[0].status == "completed"
+    assert jobs[0].output["outline_id"] == outline.id
 
 
 def test_generate_course_outline_rejects_ai_session_count_mismatch() -> None:
@@ -200,6 +208,10 @@ def test_generate_course_outline_rejects_ai_session_count_mismatch() -> None:
         )
 
     assert exc_info.value.status_code == 502
+    jobs = list_generation_jobs(teacher)
+    assert jobs[0].job_type == "outline_generation"
+    assert jobs[0].status == "failed"
+    assert jobs[0].error_message == "AI outline output session count mismatch: expected 2, got 1"
 
 
 def test_update_outline_session_changes_only_selected_session() -> None:

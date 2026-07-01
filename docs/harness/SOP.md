@@ -1,6 +1,6 @@
-# SOP Harness - TeachFlow AI MVP
+# SOP Harness - TeachFlow AI
 
-SOP này hướng dẫn AI agent triển khai MVP theo đúng `docs/version1`. Khi có mâu thuẫn giữa SOP và đặc tả, đọc lại `MVP.md`, `PRD_MVP.md`, `USER_STORIES_MVP.md`; nếu vẫn chưa rõ thì hỏi user.
+SOP này hướng dẫn AI agent triển khai TeachFlow AI theo đúng tài liệu version trong `docs/version*/`. Khi có mâu thuẫn giữa SOP và đặc tả, tài liệu version đang được user yêu cầu là source-of-truth nghiệp vụ; nếu vẫn chưa rõ thì hỏi user.
 
 `README.md` không phải source-of-truth của TeachFlow AI. Không dùng README để lấy yêu cầu sản phẩm, scope, backlog, tech stack hoặc quyết định nghiệp vụ.
 
@@ -8,7 +8,12 @@ SOP này hướng dẫn AI agent triển khai MVP theo đúng `docs/version1`. K
 
 1. Xác nhận đang ở root repo.
 2. Đọc `AGENTS.md`.
-3. Đọc 3 file đặc tả trong `docs/version1/`.
+3. Đọc tài liệu version phù hợp:
+   - Version 1/MVP: `docs/version1/MVP.md`, `docs/version1/PRD_MVP.md`, `docs/version1/USER_STORIES_MVP.md`.
+   - Version 2/production: `docs/version2/README.md`, `docs/version2/PRD_V2_PRODUCTION.md`, `docs/version2/USER_STORIES_V2.md`, `docs/version2/V1_P2_MIGRATION.md`.
+   - Version 3/growth: `docs/version3/README.md`, `docs/version3/PRD_V3_GROWTH.md`, `docs/version3/USER_STORIES_V3.md`.
+   - Version 4/product excellence: `docs/version4/README.md`, `docs/version4/PRD_V4_PRODUCT_EXCELLENCE.md`, `docs/version4/USER_STORIES_V4.md`, `docs/version4/UX_RESEARCH_NOTES.md`, `docs/version4/PRODUCT_REVIEW.md`, `docs/version4/PRODUCTION_GAP_ANALYSIS.md`.
+   - Version 5/market-fit product bets: `docs/version5/README.md`, `docs/version5/PRODUCT_MARKET_REVIEW.md`.
 4. Đọc `feature_list.json` để chọn đúng một feature P0 có dependency đã xong.
 5. Đọc `docs/harness/SOP.md` để nắm quy trình chi tiết.
 6. Đọc `docs/harness/ARCHITECTURE.md`, `docs/harness/QUALITY_SCORE.md`, `docs/harness/RELIABILITY_SECURITY.md`.
@@ -20,7 +25,7 @@ Không bắt đầu code nếu chưa có test hoặc test plan cho task hiện t
 
 ## 1.0 Triết Lý Harness Áp Dụng Cho Dự Án Nhỏ
 
-Dự án này là sản phẩm cá nhân, dự kiến không quá 100 user, nên không dùng harness enterprise nặng. Áp dụng vừa đủ các nguyên tắc:
+Dự án này là sản phẩm cá nhân/nhóm nhỏ, version 2 dự kiến không quá 1000 active users, nên không dùng harness enterprise nặng. Áp dụng vừa đủ các nguyên tắc:
 
 - Repo là system-of-record: kế hoạch, quyết định, evidence và debt phải ghi vào repo.
 - AGENTS.md là router ngắn; tài liệu sâu nằm trong `docs/harness/`.
@@ -63,7 +68,24 @@ Mỗi feature phải có đủ:
 
 Không làm riêng backend mà không có UI kiểm tra. Không làm mock UI nếu API/backend là phần cốt lõi của feature.
 
-## 3. Scope P0 Critical
+## 3. Scope Theo Version
+
+Version 1 da hoan thanh P0/P1 demo/polish. Khi user yeu cau version 2, uu tien production conversion trong `docs/version2`; khi user yeu cau version 3, uu tien growth roadmap trong `docs/version3`; khi user yeu cau version 4, uu tien product excellence/design system/clean architecture trong `docs/version4` ma khong pha V1/V2/V3 guardrails.
+
+Truoc khi code feature version 2/3/4, agent phai tao/cap nhat backlog/exec plan cho feature do. Khong lay P2 version 1 lam yeu cau truc tiep neu `docs/version2/V1_P2_MIGRATION.md` da reclassify sang V2/V3/Future.
+
+## 3.0 UI Approval Gate
+
+Moi khi chuyen sang code giao dien cho mot page/surface/workflow chua co concept duoc duyet, agent phai:
+
+1. Tao image concept bang Image Gen hoac cong cu thiet ke phu hop.
+2. Luu concept vao `images/` va neu la source-of-truth version thi luu them vao `docs/version4/assets/`.
+3. Gui cho user duyet voi lua chon ngan gon, uu tien format `1. Duyet` / `2. Lam lai`.
+4. Chi bat dau code UI sau khi user duyet. Neu user duyet kem ghi chu, agent phai ap dung ghi chu do vao implementation va evidence.
+
+Neu page/surface da co concept duoc duyet trong repo thi duoc dung concept do lam visual spec. Khong dung screenshot/thumbnail lam UI runtime; concept chi la reference, UI phai duoc build bang React/CSS/components that.
+
+## 3.1 Scope P0 Critical Version 1
 
 Ưu tiên flow demo:
 
